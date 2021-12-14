@@ -1,0 +1,45 @@
+Fallout4.exe+1D96CF1 - F3 0F59 40 2C         - mulss xmm0,[rax+2C]
+    - 플레이어의 스케일이 실제로 변경된 경우 메모리에서 Extends.Z를 읽어들이는 부분
+
+Fallout4.exe+1D96D31 - F3 0F59 50 20         - mulss xmm2,[rax+20]
+    - 플레이어의 스케일이 실제로 변경된 경우 메모리에서 Center.Z를 읽어들이는 부분
+
+Fallout4.exe+1D96830 - 스케일 변경시 BBX값을 조회하는 함수
+    - 액터의 스케일이 변경되었을 때 Extends.Z와 Center.Z를 조회하는 함수 시작점
+
+
+Fallout4.exe+1D96830 - 액터 스케일 변경시 BBX값을 조회?하는 부분. 인자에 액터 정보가 없음
+소스:
+    Fallout4.exe+1D96830 - mov rax,rsp
+    Fallout4.exe+1D96833 - push rbp
+    Fallout4.exe+1D96834 - push rdi
+    Fallout4.exe+1D96835 - push r12
+    Fallout4.exe+1D96837 - push r15
+    Fallout4.exe+1D96839 - lea rbp,[rax-000000E8]
+    Fallout4.exe+1D96840 - sub rsp,000001C8 { 456 }
+    Fallout4.exe+1D96847 - mov edx,[Fallout4.exe+67347B4] { (0) }
+
+Fallout4.exe+DCB200 - 액터 스케일 변경시 돌아가는 함수. 여기서 위 함수 호출. 인자에 액터 주소가 있음
+소스:
+    Fallout4.exe+DCB200 - mov [rsp+10],rbx
+    Fallout4.exe+DCB205 - mov [rsp+18],r8l
+    Fallout4.exe+DCB20A - push rbp
+    Fallout4.exe+DCB20B - push rsi
+    Fallout4.exe+DCB20C - push rdi
+    Fallout4.exe+DCB20D - push r12
+    Fallout4.exe+DCB20F - push r13
+    Fallout4.exe+DCB211 - push r14
+    Fallout4.exe+DCB213 - push r15
+    Fallout4.exe+DCB215 - sub rsp,00000090 { 144 }
+    Fallout4.exe+DCB21C - mov r14,[rcx+00000418]
+    Fallout4.exe+DCB223 - mov rdi,rdx
+
+Fallout4.exe+3F85B0 - 로딩시 1인칭 스케일 변경하는 함수. 인자는 액터, 스케일 로 보임
+소스:
+    Fallout4.exe+3F85B0 - push rbx
+    Fallout4.exe+3F85B2 - sub rsp,50 { 80 }
+    Fallout4.exe+3F85B6 - mov rbx,rcx
+    Fallout4.exe+3F85B9 - mov rcx,[rcx+000000E0]
+    Fallout4.exe+3F85C0 - movaps [rsp+40],xmm6
+    Fallout4.exe+3F85C5 - movaps xmm6,xmm1
+
