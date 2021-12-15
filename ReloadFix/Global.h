@@ -13,6 +13,6 @@
 #include "Hooks.h"
 
 #define PLUGIN_NAME	"ReloadFix"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 3, 3)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 4, 0)
 
 extern bool isSprintQueued;
