@@ -20,6 +20,10 @@ typedef void(*_ReadyWeaponHandler)(void*, ButtonEvent*);
 RelocAddr<uintptr_t> ReadyWeaponHandler_Target(0x2D49B48 + 0x40);
 _ReadyWeaponHandler ReadyWeaponHandler_Original;
 
+typedef EventResult(*_MenuOpenCloseEvent_ReceiveEvent)(void*, MenuOpenCloseEvent*, void*);
+RelocAddr<uintptr_t> MenuOpenCloseEvent_ReceiveEvent_Target(0x2D49200 + 0x08);
+_MenuOpenCloseEvent_ReceiveEvent MenuOpenCloseEvent_ReceiveEvent_Original;
+
 void TogglePOV_FirstToThird_Hook(void* arg1, ButtonEvent* event) {
 	if (IsReloading())
 		return;
@@ -91,6 +95,14 @@ void ReadyWeaponHandler_Hook(void* arg1, ButtonEvent* event) {
 	ReadyWeaponHandler_Original(arg1, event);
 }
 
+EventResult MenuOpenCloseEvent_ReceiveEvent_Hook(void* arg1, MenuOpenCloseEvent* evn, void* dispatcher) {
+	static BSFixedString LoadingMenu("LoadingMenu");
+	if (evn->menuName == LoadingMenu && evn->isOpen)
+		isSprintQueued = false;
+
+	return MenuOpenCloseEvent_ReceiveEvent_Original(arg1, evn, dispatcher);
+}
+
 void Install() {
 	TogglePOV_FirstToThird_Original = *(_TogglePOV*)(TogglePOV_FirstToThird_Target.GetUIntPtr());
 	SafeWrite64(TogglePOV_FirstToThird_Target.GetUIntPtr(), (uintptr_t)TogglePOV_FirstToThird_Hook);
@@ -106,4 +118,7 @@ void Install() {
 
 	ReadyWeaponHandler_Original = *(_ReadyWeaponHandler*)(ReadyWeaponHandler_Target.GetUIntPtr());
 	SafeWrite64(ReadyWeaponHandler_Target.GetUIntPtr(), (uintptr_t)ReadyWeaponHandler_Hook);
+
+	MenuOpenCloseEvent_ReceiveEvent_Original = *(_MenuOpenCloseEvent_ReceiveEvent*)(MenuOpenCloseEvent_ReceiveEvent_Target.GetUIntPtr());
+	SafeWrite64(MenuOpenCloseEvent_ReceiveEvent_Target.GetUIntPtr(), (uintptr_t)MenuOpenCloseEvent_ReceiveEvent_Hook);
 }
