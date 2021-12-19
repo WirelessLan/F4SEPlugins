@@ -2,6 +2,8 @@
 
 bool isSprintQueued = false;
 
+RelocPtr<float> minCurrentZoom(0x3805130);
+
 typedef void(*_TogglePOV)(void* arg1, ButtonEvent* event);
 RelocAddr<uintptr_t> TogglePOV_FirstToThird_Target(0x2D84518 + 0x40);
 RelocAddr<uintptr_t> TogglePOV_ThirdToFirst_Target(0x2D07A38 + 0x40);
@@ -50,7 +52,7 @@ void TogglePOV_ThirdToFirst_Hook(void* arg1, ButtonEvent* event) {
 
 		if (*controlId == ZoomIn) {
 			CustomThirdPersonState* stat = (CustomThirdPersonState*)arg1;
-			if (stat && stat->currentZoomOffset == 0.0f)
+			if (stat && minCurrentZoom && stat->currentZoomOffset <= *minCurrentZoom)
 				return;
 		}
 	}
