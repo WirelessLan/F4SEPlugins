@@ -167,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="InfiniteAmmo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -174,6 +175,7 @@
   <ItemGroup>
     <ClInclude Include="Events.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="Hooks.h" />
     <ClInclude Include="InfiniteAmmo.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>

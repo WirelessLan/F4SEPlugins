@@ -1,5 +1,5 @@
 #pragma once
 
-void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon);
+void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 equipIndex);
 
 void Init_InfiniteAmmo();

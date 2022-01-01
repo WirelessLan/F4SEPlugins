@@ -11,14 +11,6 @@ struct TESEquipEvent {
 
 DECLARE_EVENT_DISPATCHER(TESEquipEvent, 0x00442870);
 
-class BSAnimationGraphEvent {
-public:
-	TESObjectREFR*	refr;
-	BSFixedString	name;
-	BSFixedString	args;
-};
-
-
 class ItemEquipEvent : public BSTEventSink<TESEquipEvent> {
 protected:
 	virtual	EventResult ReceiveEvent(TESEquipEvent* evn, void* dispatcher) override;

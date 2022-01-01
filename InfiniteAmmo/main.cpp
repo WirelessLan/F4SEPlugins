@@ -13,6 +13,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
 		Init_InfiniteAmmo();
+		Install_Hooks();
 		Install_Events();
 		break;
 	}

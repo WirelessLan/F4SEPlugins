@@ -1,7 +1,6 @@
 #include "Global.h"
 
 UInt32 uNeverEndingCapacity = 10;
-UInt32 uMinAmmoCapacityMult = 2;
 bool bUseInfiniteAmmo = true;
 bool bUseInfiniteThrowableWeapon = true;
 std::unordered_set<UInt32> excludedWeapons;
@@ -17,37 +16,11 @@ bool IsExcludedWeapon(UInt32 weapFormId) {
 	return false;
 }
 
-void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon) {
-	const tArray<Actor::MiddleProcess::Data08::EquipData>* equipDataArr = GetEquipDataArray();
-	if (!equipDataArr)
+void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 equipIndex) {
+	if (!weapForm || IsExcludedWeapon(weapForm->formID))
 		return;
 
-	Actor::MiddleProcess::Data08::EquipData* equipData = nullptr;
-	if (weapFormId > 0) {
-		for (UInt32 ii = 0; ii < equipDataArr->count; ii++) {
-			if (equipDataArr->entries[ii].item->formID == weapFormId) {
-				equipData = &equipDataArr->entries[ii];
-				if (GetEquipIndex(equipData) == EquipIndex::kEquipIndex_Throwable)
-					isThrowableWeapon = true;
-				break;
-			}
-		}
-	}
-	else {
-		for (UInt32 ii = 0; ii < equipDataArr->count; ii++) {
-			if (!isThrowableWeapon && GetEquipIndex(&equipDataArr->entries[ii]) == EquipIndex::kEquipIndex_Default) {
-				equipData = &equipDataArr->entries[ii];
-				break;
-			}
-			else if (isThrowableWeapon && GetEquipIndex(&equipDataArr->entries[ii]) == EquipIndex::kEquipIndex_Throwable) {
-				equipData = &equipDataArr->entries[ii];
-				break;
-			}
-		}
-	}
-
-	if (!equipData)
-		return;
+	bool isThrowableWeapon = equipIndex == EquipIndex::kEquipIndex_Throwable;
 
 	if (!isThrowableWeapon && !bUseInfiniteAmmo)
 		return;
@@ -55,19 +28,14 @@ void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon) {
 	if (isThrowableWeapon && !bUseInfiniteThrowableWeapon)
 		return;
 
-	if (IsExcludedWeapon(equipData->item->formID))
-		return;
-
-	TESObjectWEAP::InstanceData* weapInst = (TESObjectWEAP::InstanceData*)equipData->instanceData;
 	if (!weapInst) {
-		TESObjectWEAP* objWeap = DYNAMIC_CAST(equipData->item, TESForm, TESObjectWEAP);
+		TESObjectWEAP* objWeap = DYNAMIC_CAST(weapForm, TESForm, TESObjectWEAP);
 		if (!objWeap)
 			return;
 		weapInst = &objWeap->weapData;
 	}
 
-	TESForm* ammo = isThrowableWeapon ? equipData->item : weapInst->ammo;
-
+	TESForm* ammo = isThrowableWeapon ? weapForm : weapInst->ammo;
 	/* Melee Weapons */
 	if (!ammo)
 		return;
@@ -84,6 +52,7 @@ void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon) {
 				totalAmmoCount += sp->count;
 				sp = sp->next;
 			}
+			break;
 		}
 	}
 
@@ -96,7 +65,6 @@ void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon) {
 			/* Never Ending */
 			if (ammoCapacity == 0)
 				ammoCapacity = uNeverEndingCapacity;
-
 		}
 		else	/* Fusion Core */
 			ammoCapacity = 1;
@@ -104,11 +72,8 @@ void CheckAmmo(UInt32 weapFormId, bool isWeaponFiring, bool isThrowableWeapon) {
 	else
 		ammoCapacity = 1;
 
-	if (isWeaponFiring)
-		totalAmmoCount--;
-
-	if (totalAmmoCount < ammoCapacity * uMinAmmoCapacityMult) {
-		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - totalAmmoCount;
+	if (totalAmmoCount < ammoCapacity) {
+		UInt32 diff = ammoCapacity - totalAmmoCount;
 		AddItem(*g_player, ammo, diff, true);
 	}
 }
@@ -179,8 +144,6 @@ void Init_InfiniteAmmo() {
 
 			if (optionName == "uNeverEndingCapacity")
 				optionValue >> uNeverEndingCapacity;
-			else if (optionName == "uMinAmmoCapacityMult")
-				optionValue >> uMinAmmoCapacityMult;
 			else if (optionName == "bUseInfiniteAmmo")
 				optionValue >> bUseInfiniteAmmo;
 			else if (optionName == "bUseInfiniteThrowableWeapon")
@@ -233,7 +196,6 @@ void Init_InfiniteAmmo() {
 	settingFile.close();
 
 	_MESSAGE("uNeverEndingCapacity: %u", uNeverEndingCapacity);
-	_MESSAGE("uMinAmmoCapacityMult: %u", uMinAmmoCapacityMult);
 	_MESSAGE("bUseInfiniteAmmo: %u", bUseInfiniteAmmo);
 	_MESSAGE("bUseInfiniteThrowableWeapon: %u", bUseInfiniteThrowableWeapon);
 }

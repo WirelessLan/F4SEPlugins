@@ -16,8 +16,9 @@
 #include <unordered_set>
 
 #include "Events.h"
+#include "Hooks.h"
 #include "Utils.h"
 #include "InfiniteAmmo.h"
 
 #define PLUGIN_NAME	"InfiniteAmmo"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 2, 0)

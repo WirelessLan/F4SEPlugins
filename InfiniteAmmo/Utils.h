@@ -22,7 +22,7 @@ extern RelocAddr <_AddItem> AddItem_Internal;
 
 void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent);
 
-const tArray<Actor::MiddleProcess::Data08::EquipData>* GetEquipDataArray();
+Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId);
 
 UInt32 GetEquipIndex(Actor::MiddleProcess::Data08::EquipData* equipData);
 

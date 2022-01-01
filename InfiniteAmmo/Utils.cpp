@@ -15,7 +15,7 @@ void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent) {
 	AddItem_Internal(&addItemData, &itemData);
 }
 
-const tArray<Actor::MiddleProcess::Data08::EquipData>* GetEquipDataArray() {
+Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId) {
 	if (!*g_player || !(*g_player)->middleProcess || !(*g_player)->middleProcess->unk08)
 		return nullptr;;
 
@@ -23,7 +23,12 @@ const tArray<Actor::MiddleProcess::Data08::EquipData>* GetEquipDataArray() {
 	if (equipDataArray.count == 0)
 		return nullptr;
 
-	return (tArray<Actor::MiddleProcess::Data08::EquipData>*)&(*g_player)->middleProcess->unk08->equipData;
+	for (UInt32 ii = 0; ii < equipDataArray.count; ii++) {
+		if (equipDataArray.entries[ii].item->formID == formId)
+			return &equipDataArray.entries[ii];
+	}
+
+	return nullptr;
 }
 
 UInt32 GetEquipIndex(Actor::MiddleProcess::Data08::EquipData* equipData) {
