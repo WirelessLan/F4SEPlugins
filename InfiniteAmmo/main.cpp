@@ -9,12 +9,17 @@
 PluginHandle			g_pluginHandle;
 F4SEMessagingInterface* g_messaging;
 
+UInt16 CurrentAmmoCapacity;
+
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
 		Init_InfiniteAmmo();
 		Install_Hooks();
 		Install_Events();
+		break;
+	case F4SEMessagingInterface::kMessage_PostLoadGame:
+		CurrentAmmoCapacity = GetCurrentAmmoCapacity();
 		break;
 	}
 }

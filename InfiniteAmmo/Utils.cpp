@@ -15,25 +15,59 @@ void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent) {
 	AddItem_Internal(&addItemData, &itemData);
 }
 
-Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId) {
+const tArray<Actor::MiddleProcess::Data08::EquipData>* GetEquipDataArray() {
 	if (!*g_player || !(*g_player)->middleProcess || !(*g_player)->middleProcess->unk08)
-		return nullptr;;
+		return nullptr;
 
 	tArray<Actor::MiddleProcess::Data08::EquipData> equipDataArray = reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
 	if (equipDataArray.count == 0)
 		return nullptr;
 
-	for (UInt32 ii = 0; ii < equipDataArray.count; ii++) {
-		if (equipDataArray.entries[ii].item->formID == formId)
-			return &equipDataArray.entries[ii];
+	return &reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
+}
+
+Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId) {
+	const tArray<Actor::MiddleProcess::Data08::EquipData>* equipDataArray = GetEquipDataArray();
+	if (!equipDataArray)
+		return nullptr;
+
+	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
+		if (equipDataArray->entries[ii].item->formID == formId)
+			return &equipDataArray->entries[ii];
 	}
 
 	return nullptr;
 }
 
-UInt32 GetEquipIndex(Actor::MiddleProcess::Data08::EquipData* equipData) {
-	UInt32 index = static_cast<UInt32>(equipData->unk18);
-	return index;
+UInt16 GetCurrentAmmoCapacity() {
+	const tArray<Actor::MiddleProcess::Data08::EquipData>* equipDataArray = GetEquipDataArray();
+	if (!equipDataArray) 
+		return 0;
+
+	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
+		if (!IsThrowableWeapon(equipDataArray->entries[ii].unk18))
+			return GetCurrentAmmoCapacity(equipDataArray->entries[ii].item, (TESObjectWEAP::InstanceData*)Runtime_DynamicCast(equipDataArray->entries[ii].instanceData, RTTI_TBO_InstanceData, RTTI_TESObjectWEAP__InstanceData));
+	}
+
+	return 0;
+}
+
+UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst) {
+	if (!weapInst) {
+		if (!weap)
+			return 0;
+
+		TESObjectWEAP* objWeap = DYNAMIC_CAST(weap, TESForm, TESObjectWEAP);
+		if (!objWeap)
+			return 0;
+		weapInst = &objWeap->weapData;
+	}
+	
+	return weapInst->ammoCapacity;
+}
+
+bool IsThrowableWeapon(UInt32 equipIndex) {
+	return equipIndex == EquipIndex::kEquipIndex_Throwable;
 }
 
 static inline void ltrim(std::string& s) {

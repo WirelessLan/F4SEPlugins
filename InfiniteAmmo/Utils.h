@@ -1,6 +1,11 @@
 #pragma once
 #include <f4se/GameReferences.h>
 
+enum EquipIndex {
+	kEquipIndex_Default = 0,
+	kEquipIndex_Throwable = 2
+};
+
 struct AddItemData {
 	TESObjectREFR* ref;	// 00
 	UInt64 unk08;		// 08
@@ -24,7 +29,11 @@ void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent);
 
 Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId);
 
-UInt32 GetEquipIndex(Actor::MiddleProcess::Data08::EquipData* equipData);
+UInt16 GetCurrentAmmoCapacity();
+
+UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst);
+
+bool IsThrowableWeapon(UInt32 equipIndex);
 
 void trim(std::string& s);
 

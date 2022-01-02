@@ -5,27 +5,20 @@ bool bUseInfiniteAmmo = true;
 bool bUseInfiniteThrowableWeapon = true;
 std::unordered_set<UInt32> excludedWeapons;
 
-enum EquipIndex {
-	kEquipIndex_Default = 0,
-	kEquipIndex_Throwable = 2
-};
-
 bool IsExcludedWeapon(UInt32 weapFormId) {
 	if (excludedWeapons.find(weapFormId) != excludedWeapons.end())
 		return true;
 	return false;
 }
 
-void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 equipIndex) {
-	if (!weapForm || IsExcludedWeapon(weapForm->formID))
-		return;
-
-	bool isThrowableWeapon = equipIndex == EquipIndex::kEquipIndex_Throwable;
-
+void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, bool isThrowableWeapon, UInt32 shotCount) {
 	if (!isThrowableWeapon && !bUseInfiniteAmmo)
 		return;
 
 	if (isThrowableWeapon && !bUseInfiniteThrowableWeapon)
+		return;
+
+	if (!weapForm || IsExcludedWeapon(weapForm->formID))
 		return;
 
 	if (!weapInst) {
@@ -36,8 +29,7 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 	}
 
 	TESForm* ammo = isThrowableWeapon ? weapForm : weapInst->ammo;
-	/* Melee Weapons */
-	if (!ammo)
+	if (!ammo)	// Melee Weapons
 		return;
 
 	BGSInventoryList* playerInventory = (*g_player)->inventoryList;
@@ -45,6 +37,7 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 		return;
 
 	UInt32 totalAmmoCount = 0;
+	playerInventory->inventoryLock.LockForRead();
 	for (UInt32 ii = 0; ii < playerInventory->items.count; ii++) {
 		if (playerInventory->items[ii].form == ammo) {
 			BGSInventoryItem::Stack* sp = playerInventory->items[ii].stack;
@@ -55,25 +48,35 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 			break;
 		}
 	}
+	playerInventory->inventoryLock.Unlock();
 
 	UInt16 ammoCapacity = 0;
 	if (!isThrowableWeapon) {
 		UInt32 ammoHealth = static_cast<UInt32>(weapInst->ammo->unk160[1]);
 		if (ammoHealth == 0) {
-			ammoCapacity = weapInst->ammoCapacity;
+			ammoCapacity = CurrentAmmoCapacity;
 
-			/* Never Ending */
+			// Never Ending Legendary
 			if (ammoCapacity == 0)
 				ammoCapacity = uNeverEndingCapacity;
 		}
-		else	/* Fusion Core */
+		else	// Fusion Core
 			ammoCapacity = 1;
 	}
 	else
 		ammoCapacity = 1;
 
-	if (totalAmmoCount < ammoCapacity) {
-		UInt32 diff = ammoCapacity - totalAmmoCount;
+	// Laser Musket, Salvaged Assaultron Head..
+	if (weapInst->flags & TESObjectWEAP::InstanceData::WeaponFlags::kFlag_ChargingReload) {
+		Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByFormID(weapForm->formID);
+		if (equipData && equipData->equippedData) {
+			UInt32 loadedAmmoCount = static_cast<UInt32>(equipData->equippedData->unk18);
+			shotCount = loadedAmmoCount;
+		}
+	}
+
+	if (totalAmmoCount - shotCount < ammoCapacity) {
+		UInt32 diff = ammoCapacity - (totalAmmoCount - shotCount);
 		AddItem(*g_player, ammo, diff, true);
 	}
 }
