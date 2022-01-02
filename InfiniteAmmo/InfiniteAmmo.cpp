@@ -1,6 +1,7 @@
 #include "Global.h"
 
 UInt32 uNeverEndingCapacity = 10;
+UInt32 uMinAmmoCapacityMult = 1;
 bool bUseInfiniteAmmo = true;
 bool bUseInfiniteThrowableWeapon = true;
 std::unordered_set<UInt32> excludedWeapons;
@@ -75,8 +76,8 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, bool is
 		}
 	}
 
-	if (totalAmmoCount - shotCount < ammoCapacity) {
-		UInt32 diff = ammoCapacity - (totalAmmoCount - shotCount);
+	if (totalAmmoCount - shotCount < ammoCapacity * uMinAmmoCapacityMult) {
+		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - (totalAmmoCount - shotCount);
 		AddItem(*g_player, ammo, diff, true);
 	}
 }
@@ -147,6 +148,8 @@ void Init_InfiniteAmmo() {
 
 			if (optionName == "uNeverEndingCapacity")
 				optionValue >> uNeverEndingCapacity;
+			else if (optionName == "uMinAmmoCapacityMult")
+				optionValue >> uMinAmmoCapacityMult;
 			else if (optionName == "bUseInfiniteAmmo")
 				optionValue >> bUseInfiniteAmmo;
 			else if (optionName == "bUseInfiniteThrowableWeapon")
@@ -199,6 +202,7 @@ void Init_InfiniteAmmo() {
 	settingFile.close();
 
 	_MESSAGE("uNeverEndingCapacity: %u", uNeverEndingCapacity);
+	_MESSAGE("uMinAmmoCapacityMult: %u", uMinAmmoCapacityMult);
 	_MESSAGE("bUseInfiniteAmmo: %u", bUseInfiniteAmmo);
 	_MESSAGE("bUseInfiniteThrowableWeapon: %u", bUseInfiniteThrowableWeapon);
 }
