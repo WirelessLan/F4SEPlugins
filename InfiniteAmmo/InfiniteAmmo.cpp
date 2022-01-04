@@ -76,8 +76,9 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, bool is
 		}
 	}
 
-	if (totalAmmoCount - shotCount < ammoCapacity * uMinAmmoCapacityMult) {
-		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - (totalAmmoCount - shotCount);
+	UInt32 calculatedTotalAmmoCount = totalAmmoCount > shotCount ? totalAmmoCount - shotCount : 0;
+	if (calculatedTotalAmmoCount < ammoCapacity * uMinAmmoCapacityMult) {
+		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - calculatedTotalAmmoCount;
 		AddItem(*g_player, ammo, diff, true);
 	}
 }

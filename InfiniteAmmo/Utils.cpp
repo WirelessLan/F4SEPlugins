@@ -10,7 +10,10 @@ void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent) {
 		return;
 
 	AddItemData addItemData = { refr, 0, isSilent };
-	ItemData itemData = { item, 0, count, 0, 0, 0, 1.0 };
+	ItemData itemData = { 0 };
+	itemData.item = item;
+	itemData.count = count;
+	itemData.unk28 = 1.0f;
 
 	AddItem_Internal(&addItemData, &itemData);
 }
@@ -93,6 +96,9 @@ T GetOffset(const void* baseObject, int offset) {
 }
 
 TESForm* GetFormFromIdentifier(const std::string& identifier) {
+	if (!*g_dataHandler)
+		return nullptr;
+
 	auto delimiter = identifier.find('|');
 	if (delimiter != std::string::npos) {
 		std::string modName = identifier.substr(0, delimiter);

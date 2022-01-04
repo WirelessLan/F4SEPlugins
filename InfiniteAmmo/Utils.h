@@ -20,6 +20,8 @@ struct ItemData {
 	UInt64	unk18;		// 18
 	UInt64	unk20;		// 20
 	float	unk28;		// 28
+	UInt32	unk2C;		// 2C
+	UInt64	unk30[(0x580 - 0x30) >> 3];	// 30
 };
 
 typedef void (*_AddItem)(AddItemData*, ItemData*);
