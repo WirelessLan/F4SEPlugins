@@ -42,6 +42,19 @@ Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId) {
 	return nullptr;
 }
 
+Actor::MiddleProcess::Data08::EquipData* GetEquipDataByEquipIndex(EquipIndex equipIndex) {
+	const tArray<Actor::MiddleProcess::Data08::EquipData>* equipDataArray = GetEquipDataArray();
+	if (!equipDataArray)
+		return nullptr;
+
+	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
+		if (equipDataArray->entries[ii].unk18 == equipIndex)
+			return &equipDataArray->entries[ii];
+	}
+
+	return nullptr;
+}
+
 UInt16 GetCurrentAmmoCapacity() {
 	const tArray<Actor::MiddleProcess::Data08::EquipData>* equipDataArray = GetEquipDataArray();
 	if (!equipDataArray) 

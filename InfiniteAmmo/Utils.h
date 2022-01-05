@@ -31,6 +31,8 @@ void AddItem(TESObjectREFR* refr, TESForm* item, UInt32 count, bool isSilent);
 
 Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId);
 
+Actor::MiddleProcess::Data08::EquipData* GetEquipDataByEquipIndex(EquipIndex equipIndex);
+
 UInt16 GetCurrentAmmoCapacity();
 
 UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst);

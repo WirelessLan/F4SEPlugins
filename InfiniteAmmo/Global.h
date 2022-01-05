@@ -21,6 +21,6 @@
 #include "InfiniteAmmo.h"
 
 #define PLUGIN_NAME	"InfiniteAmmo"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 3, 2)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 4, 0)
 
 extern UInt16 CurrentAmmoCapacity;

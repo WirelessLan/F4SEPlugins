@@ -8,7 +8,7 @@ EventResult ItemEquipEvent::ReceiveEvent(TESEquipEvent* evn, void* dispatcher) {
 			bool isThrowable = IsThrowableWeapon(equipData->unk18);
 			if (!isThrowable)
 				CurrentAmmoCapacity = GetCurrentAmmoCapacity(equipData->item, weapInst);
-			CheckAmmo(equipData->item, weapInst, isThrowable, 0);
+			CheckAmmo(equipData->item, weapInst, isThrowable, true, 0);
 		}
 	}
 	return kEvent_Continue;
