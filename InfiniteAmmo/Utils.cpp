@@ -48,7 +48,8 @@ Actor::MiddleProcess::Data08::EquipData* GetEquipDataByEquipIndex(EquipIndex equ
 		return nullptr;
 
 	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
-		if (equipDataArray->entries[ii].unk18 == equipIndex)
+		UInt32 eIdx = static_cast<UInt32>(equipDataArray->entries[ii].unk18);
+		if (eIdx == equipIndex)
 			return &equipDataArray->entries[ii];
 	}
 
