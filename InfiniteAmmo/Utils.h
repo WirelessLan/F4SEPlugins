@@ -37,6 +37,8 @@ UInt16 GetCurrentAmmoCapacity();
 
 UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst);
 
+UInt32 GetInventoryItemCount(Actor* actor, TESForm* item);
+
 bool IsThrowableWeapon(UInt32 equipIndex);
 
 void trim(std::string& s);

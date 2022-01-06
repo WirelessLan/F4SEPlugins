@@ -79,8 +79,32 @@ UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapIn
 			return 0;
 		weapInst = &objWeap->weapData;
 	}
-	
 	return weapInst->ammoCapacity;
+}
+
+UInt32 GetInventoryItemCount(Actor* actor, TESForm* item) {
+	if (!actor || !item)
+		return 0;
+
+	BGSInventoryList* inventory = actor->inventoryList;
+	if (!inventory)
+		return 0;
+
+	UInt32 totalItemCount = 0;
+	inventory->inventoryLock.LockForRead();
+	for (UInt32 ii = 0; ii < inventory->items.count; ii++) {
+		if (inventory->items[ii].form == item) {
+			BGSInventoryItem::Stack* sp = inventory->items[ii].stack;
+			while (sp) {
+				totalItemCount += sp->count;
+				sp = sp->next;
+			}
+			break;
+		}
+	}
+	inventory->inventoryLock.Unlock();
+
+	return totalItemCount;
 }
 
 bool IsThrowableWeapon(UInt32 equipIndex) {

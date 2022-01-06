@@ -7,6 +7,8 @@ enum AmmoType {
 	kAmmoType_NeverEnding = 0x04
 };
 
-void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, bool isThrowableWeapon, bool forcedReplenishAmmo, UInt32 shotCount);
+bool IsExcludedWeapon(UInt32 weapFormId);
+
+void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 shotCount, bool forcedReplenishAmmo);
 
 void Init_InfiniteAmmo();

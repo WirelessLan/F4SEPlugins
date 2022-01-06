@@ -7,8 +7,15 @@ RelocAddr<uintptr_t> PlayerAnimGraphEvent_ReceiveEvent_Target(0x2D442D8 + 0x8);
 _PlayerAnimGraphEvent_ReceiveEvent PlayerAnimationEvent_Original;
 
 std::uint32_t UseAmmo_Hook(Actor* actor, const WeaponData& a_weapon, std::uint32_t a_equipIndex, std::uint32_t a_shotCount) {
-	if (actor == *g_player)
-		CheckAmmo(a_weapon.item, (TESObjectWEAP::InstanceData*)a_weapon.instanceData, IsThrowableWeapon(a_equipIndex), false, a_shotCount);
+	if (actor == *g_player) {
+		if (IsThrowableWeapon(a_equipIndex)) {
+			if (bUseInfiniteThrowableWeapon && a_weapon.item && !IsExcludedWeapon(a_weapon.item->formID))
+				return GetInventoryItemCount(actor, a_weapon.item);
+		} 
+		else {
+			CheckAmmo(a_weapon.item, (TESObjectWEAP::InstanceData*)a_weapon.instanceData, a_shotCount, false);
+		}
+	}
 	return UseAmmo_Original(actor, a_weapon, a_equipIndex, a_shotCount);
 }
 
@@ -17,7 +24,7 @@ EventResult PlayerAnimGraphEvent_ReceiveEvent_Hook(void* arg1, BSAnimationGraphE
 	if (evn->name == ReloadComplete) {
 		Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByEquipIndex(EquipIndex::kEquipIndex_Default);
 		if (equipData)
-			CheckAmmo(equipData->item, (TESObjectWEAP::InstanceData*)equipData->instanceData, IsThrowableWeapon(equipData->unk18), true, 0);
+			CheckAmmo(equipData->item, (TESObjectWEAP::InstanceData*)equipData->instanceData, 0, true);
 	}
 
 	return PlayerAnimationEvent_Original(arg1, evn, dispatcher);
