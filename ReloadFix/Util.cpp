@@ -8,56 +8,6 @@ bool IsReloading() {
 	return reload_flag == 0x04;
 }
 
-bool IsWeaponReloadable() {
-	if (!*g_player || !(*g_player)->middleProcess || !(*g_player)->middleProcess->unk08)
-		return false;
-
-	tArray<Actor::MiddleProcess::Data08::EquipData> equipData = reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
-	if (equipData.count == 0)
-		return false;
-
-	EquippedWeaponData* equipedWeap = equipData.entries[0].equippedData;
-	if (!equipedWeap || !equipedWeap->ammo)
-		return false;
-
-	TESObjectWEAP::InstanceData* weapInst = (TESObjectWEAP::InstanceData*)equipData.entries[0].instanceData;
-	if (!weapInst) {
-		TESObjectWEAP* objWeap = DYNAMIC_CAST(equipData.entries[0].item, TESForm, TESObjectWEAP);
-		if (!objWeap)
-			return false;
-
-		weapInst = &objWeap->weapData;
-	}
-
-	UInt32 loadedAmmoCount = static_cast<UInt32>(equipedWeap->unk18);
-	if (loadedAmmoCount == weapInst->ammoCapacity)
-		return false;
-
-	BGSInventoryList* playerInventory = (*g_player)->inventoryList;
-	if (!playerInventory)
-		return false;
-
-	UInt32 totalAmmoCount = 0;
-
-	playerInventory->inventoryLock.LockForRead();
-	for (UInt32 ii = 0; ii < playerInventory->items.count; ii++) {
-		if (playerInventory->items[ii].form == equipedWeap->ammo) {
-			if (playerInventory->items[ii].stack)
-				totalAmmoCount = playerInventory->items[ii].stack->count;
-			break;
-		}
-	}
-	playerInventory->inventoryLock.Unlock();
-
-	if (totalAmmoCount == 0)
-		return false;
-
-	if (totalAmmoCount <= loadedAmmoCount)
-		return false;
-
-	return true;
-}
-
 bool IsSprinting() {
 	if (!*g_player)
 		return false;
@@ -79,9 +29,41 @@ bool IsWeaponDrawn() {
 	return (*g_player)->actorState.IsWeaponDrawn();
 }
 
-#define BUTTON_UP 0.0f
-#define BUTTON_DOWN 1.0f
-#define BUTTON_HOLD_TIMER 0.4f
+bool IsAutoMove() {
+	if (!*g_playerControls)
+		return false;
+
+	return (*g_playerControls)->unk88 & 0x01;
+}
+
+RelocAddr <_IsReloadable> IsReloadable_Internal(0xE24B80);
+
+bool IsWeaponReloadable() {
+	if (!*g_player || !(*g_player)->middleProcess || !(*g_player)->middleProcess->unk08)
+		return false;
+
+	tArray<Actor::MiddleProcess::Data08::EquipData> equipDataArr = reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
+	if (equipDataArr.count == 0)
+		return false;
+
+	Actor::MiddleProcess::Data08::EquipData* equipData = nullptr;
+	for (UInt32 ii = 0; ii < equipDataArr.count; ii++) {
+		UInt32 equipIndex = *reinterpret_cast<UInt32*>(&equipDataArr.entries[ii].unk18);
+		if (equipIndex == 0) {
+			equipData = &equipDataArr.entries[ii];
+			break;
+		}
+	}
+	if (!equipData)
+		return false;
+
+	IsReloadableData data = { 0 };
+	data.actor = *g_player;
+
+	IsReloadableDataWrapper wrapper = { &data.unk00, &data.actor };
+
+	return !IsReloadable_Internal(&wrapper, equipData);
+}
 
 bool IsButtonPressed(ButtonEvent* btnEvent) {
 	if (btnEvent->isDown == BUTTON_UP && (btnEvent->timer > 0 && btnEvent->timer < BUTTON_HOLD_TIMER))

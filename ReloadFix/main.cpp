@@ -15,6 +15,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PostLoadGame:
 		isSprintQueued = false;
+		isAutoMoveSprint = false;
 		break;
 	}
 }
