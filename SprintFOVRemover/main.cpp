@@ -6,59 +6,41 @@
 // User Defined Header
 #include "Global.h"
 
-#define SPRINTING_STATE	0x0100
-
-bool bDisable1stPersonFOV = true;
-bool bDisable3rdPersonFOV = true;
-
-bool IsSprinting() {
-	if (!*g_player)
-		return false;
-	return ((*g_player)->actorState.unk08 & SPRINTING_STATE);
-}
-
 void Install() {
 	struct AiProcess_Code : Xbyak::CodeGenerator {
-		AiProcess_Code(void* buf, UInt64 targetAddr, UInt64 funcAddr) : Xbyak::CodeGenerator(4096, buf) {
-			Xbyak::Label funcLabel;
+		AiProcess_Code(void* buf, UInt64 targetAddr) : Xbyak::CodeGenerator(4096, buf) {
+			Xbyak::Label jmpLabel;
 			Xbyak::Label retnLabel;
 
-			push(rax);
-			push(rcx);
-			call(ptr[rip + funcLabel]);
-			and (al, 0x01);
-			pop(rcx);
-			pop(rax);
-			jne("Return");
+			cmp(r8, 0x4);
+			jne("RETURN");
 
-			mov(ptr[rcx + 0x17C], eax);
+			cmp(byte[rax + 0x10], 0x4F);
+			jne("RETURN");
 
-			L("Return");
+			xorps(xmm0, xmm0);
+			movaps(ptr[rcx], xmm0);
+
+			jmp(ptr[rip + jmpLabel]);
+
+			L("RETURN");
+			andps(xmm3, xmm4);
+			andnps(xmm4, ptr[rcx]);
 			jmp(ptr[rip + retnLabel]);
 
-			L(funcLabel);
-			dq(funcAddr);
+			L(jmpLabel);
+			dq(targetAddr + 0x1B);
 
 			L(retnLabel);
 			dq(targetAddr + 0x06);
 		}
 	};
 
-	if (bDisable1stPersonFOV) {
-		uintptr_t _1stPersonFOVAdjust_Target = RelocAddr<uintptr_t>(0x1243943);
-		void* codeBuf = g_localTrampoline.StartAlloc();
-		AiProcess_Code code(codeBuf, _1stPersonFOVAdjust_Target, (uintptr_t)IsSprinting);
-		g_localTrampoline.EndAlloc(code.getCurr());
-		g_branchTrampoline.Write6Branch(_1stPersonFOVAdjust_Target, (uintptr_t)code.getCode());
-	}
-
-	if (bDisable3rdPersonFOV) {
-		uintptr_t _3rdPersonFOVAdjust_Target = RelocAddr<uintptr_t>(0x12519AB);
-		void* codeBuf = g_localTrampoline.StartAlloc();
-		AiProcess_Code code(codeBuf, _3rdPersonFOVAdjust_Target, (uintptr_t)IsSprinting);
-		g_localTrampoline.EndAlloc(code.getCurr());
-		g_branchTrampoline.Write6Branch(_3rdPersonFOVAdjust_Target, (uintptr_t)code.getCode());
-	}
+	uintptr_t hookTarget = RelocAddr<uintptr_t>(0x1EC5E60 + 0x19D);
+	void* codeBuf = g_localTrampoline.StartAlloc();
+	AiProcess_Code code(codeBuf, hookTarget);
+	g_localTrampoline.EndAlloc(code.getCurr());
+	g_branchTrampoline.Write6Branch(hookTarget, (uintptr_t)code.getCode());
 }
 
 /* Plugin Query */
@@ -92,11 +74,6 @@ extern "C" {
 			_ERROR("couldn't create codegen buffer. this is fatal. skipping remainder of init process.");
 			return false;
 		}
-
-		GetConfigValue("Settings", "bRemove1stPersonFOV", &bDisable1stPersonFOV);
-		GetConfigValue("Settings", "bRemove3rdPersonFOV", &bDisable3rdPersonFOV);
-		_MESSAGE("bRemove1stPersonFOV: %d", bDisable1stPersonFOV);
-		_MESSAGE("bRemove3rdPersonFOV: %d", bDisable3rdPersonFOV);
 
 		Install();
 
