@@ -4,10 +4,18 @@ UInt32 uNeverEndingCapacity = 10;
 UInt32 uMinAmmoCapacityMult = 1;
 bool bUseInfiniteAmmo = true;
 bool bUseInfiniteThrowableWeapon = true;
+bool bUseWhiteListMode = false;
 std::unordered_set<UInt32> excludedWeapons;
+std::unordered_set<UInt32> includedWeapons;
 
 bool IsExcludedWeapon(UInt32 weapFormId) {
 	if (excludedWeapons.find(weapFormId) != excludedWeapons.end())
+		return true;
+	return false;
+}
+
+bool IsIncludedWeapon(UInt32 weapFormId) {
+	if (includedWeapons.find(weapFormId) != includedWeapons.end())
 		return true;
 	return false;
 }
@@ -19,6 +27,10 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 
 	// 현재 무기가 제외 무기일 경우 무시
 	if (!weapForm || IsExcludedWeapon(weapForm->formID))
+		return;
+
+	// 화이트리스트 모드가 켜져있고 현재 무기가 화이트리스트에 포함되지 않는 경우 무시
+	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return;
 
 	if (!weapInst) {
@@ -103,6 +115,25 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 	}
 }
 
+bool IsInfiniteThrowable(TESForm* weapForm) {
+	if (!weapForm)
+		return false;
+
+	// 투척무기 무한이 아닌 경우 유한
+	if (!bUseInfiniteThrowableWeapon)
+		return false;
+
+	// 제외 무기에 포함된 경우 유한
+	if (IsExcludedWeapon(weapForm->formID))
+		return false;
+
+	// 화이트리스트 모드이고 화이트 리스트 무기가 아닌 경우 유한
+	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
+		return false;
+
+	return true;
+}
+
 void Init_InfiniteAmmo() {
 	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  ".txt" };
 	std::fstream settingFile(settingFilePath);
@@ -175,12 +206,14 @@ void Init_InfiniteAmmo() {
 				optionValue >> bUseInfiniteAmmo;
 			else if (optionName == "bUseInfiniteThrowableWeapon")
 				optionValue >> bUseInfiniteThrowableWeapon;
+			else if (optionName == "bUseWhiteListMode")
+				optionValue >> bUseWhiteListMode;
 			else {
 				_MESSAGE("Unknown Option Name[%s]", line.c_str());
 				continue;
 			}
 		}
-		else if (lineType == "Exclude") {
+		else if (lineType == "Exclude" || lineType == "Include") {
 			pluginName = "";
 			for (; index < lineLen; index++) {
 				if (line[index] == '|') {
@@ -212,7 +245,10 @@ void Init_InfiniteAmmo() {
 				continue;
 			}
 
-			excludedWeapons.insert(weapForm->formID);
+			if (lineType == "Exclude")
+				excludedWeapons.insert(weapForm->formID);
+			else if (lineType == "Include")
+				includedWeapons.insert(weapForm->formID);
 		}
 		else {
 			_MESSAGE("Can't determine Line Type[%s]", line.c_str());
@@ -226,4 +262,5 @@ void Init_InfiniteAmmo() {
 	_MESSAGE("uMinAmmoCapacityMult: %u", uMinAmmoCapacityMult);
 	_MESSAGE("bUseInfiniteAmmo: %u", bUseInfiniteAmmo);
 	_MESSAGE("bUseInfiniteThrowableWeapon: %u", bUseInfiniteThrowableWeapon);
+	_MESSAGE("bUseWhiteListMode: %u", bUseWhiteListMode);
 }

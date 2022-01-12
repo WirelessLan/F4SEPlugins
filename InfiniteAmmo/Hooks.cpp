@@ -9,7 +9,7 @@ _PlayerAnimGraphEvent_ReceiveEvent PlayerAnimationEvent_Original;
 std::uint32_t UseAmmo_Hook(Actor* actor, const WeaponData& a_weapon, std::uint32_t a_equipIndex, std::uint32_t a_shotCount) {
 	if (actor == *g_player) {
 		if (IsThrowableWeapon(a_equipIndex)) {
-			if (bUseInfiniteThrowableWeapon && a_weapon.item && !IsExcludedWeapon(a_weapon.item->formID))
+			if (IsInfiniteThrowable(a_weapon.item))
 				return GetInventoryItemCount(actor, a_weapon.item);
 		} 
 		else {

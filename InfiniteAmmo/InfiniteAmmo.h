@@ -9,6 +9,10 @@ enum AmmoType {
 
 bool IsExcludedWeapon(UInt32 weapFormId);
 
+bool IsIncludedWeapon(UInt32 weapFormId);
+
 void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 shotCount, bool forcedReplenishAmmo);
+
+bool IsInfiniteThrowable(TESForm* weapForm);
 
 void Init_InfiniteAmmo();
