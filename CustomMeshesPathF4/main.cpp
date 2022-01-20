@@ -1,15 +1,9 @@
 // F4SE
 #include "common/IDebugLog.h"  // IDebugLog
-#include <f4se/PluginAPI.h>
-
-// Common
-#include "f4se_common/f4se_version.h"
-#include "f4se_common\BranchTrampoline.h"
 
 #include <shlobj.h>	// CSIDL_MYCODUMENTS
-#include "Globals.h"
-#include "CACS.h"
-#include "Hooks.h"
+
+#include "Global.h"
 
 PluginHandle			g_pluginHandle = kPluginHandle_Invalid;
 F4SEMessagingInterface* g_messaging = NULL;
@@ -68,7 +62,7 @@ extern "C" {
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 
-		Hooks_ActorChangeAC();
+		Hooks_ActorChangeMeshes();
 		Hooks_SetModelPath();
 		Hooks_GetNiObject();
 

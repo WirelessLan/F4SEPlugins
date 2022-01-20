@@ -1,8 +1,8 @@
 #pragma once
 
 enum RuleType {
-	ActorType,
-	RaceType
+	kRuleType_Actor,
+	kRuleType_Race
 };
 
 void InitCACS();
