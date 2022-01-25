@@ -10,8 +10,10 @@ F4SEMessagingInterface* g_messaging = NULL;
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
-	case F4SEMessagingInterface::kMessage_GameLoaded:
-		InitCACS();
+	case F4SEMessagingInterface::kMessage_NewGame:
+	case F4SEMessagingInterface::kMessage_PreLoadGame:
+		_MESSAGE("Load Rules...");
+		LoadRules();
 		break;
 	}
 }

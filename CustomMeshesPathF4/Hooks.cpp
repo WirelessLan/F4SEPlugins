@@ -11,7 +11,7 @@ _SetModelPath SetModelPath_Original;
 RelocAddr <uintptr_t> GetNiObject_HookTarget(0x02E14818 + 0x20);
 _GetNiObject GetNiObject_Original;
 
-static void ActorChangeMeshes_Hook(void* arg1, Actor* arg2) {
+void ActorChangeMeshes_Hook(void* arg1, Actor* arg2) {
 	bool isTarget = false;
 	std::thread::id threadId = std::this_thread::get_id();
 
@@ -28,7 +28,7 @@ static void ActorChangeMeshes_Hook(void* arg1, Actor* arg2) {
 		g_acThreadMap.erase(threadId);
 }
 
-static const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, const char* prefixPath) {
+const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, const char* prefixPath) {
 	std::thread::id threadId = std::this_thread::get_id();
 
 	auto it = g_acThreadMap.find(threadId);

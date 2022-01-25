@@ -17,7 +17,7 @@ std::string GetString(const std::string& line, UInt32& index, char delimeter) {
 	return retVal;
 }
 
-void ParseRule(std::fstream& ruleFile) {
+void ParseRules(std::fstream& ruleFile) {
 	std::string ruleType, pluginName, formId, meshesPath;
 	std::string line;
 
@@ -59,7 +59,7 @@ void ParseRule(std::fstream& ruleFile) {
 		if (meshesPath[meshesPath.length() - 1] != '\\')
 			meshesPath += '\\';
 
-		TESForm* ruleTargetForm = GetFormFromIdentifier(pluginName + "|" + formId);
+		TESForm* ruleTargetForm = GetFormFromIdentifier(pluginName, formId);
 		if (!ruleTargetForm) {
 			_MESSAGE("Can't find Form[%s|%s]!!!", pluginName.c_str(), formId.c_str());
 			continue;
@@ -77,16 +77,18 @@ void ParseRule(std::fstream& ruleFile) {
 	}
 }
 
-void InitCACS() {
+void LoadRules() {
 	std::string rulePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Rules.txt" };
-
 	std::fstream ruleFile(rulePath);
 	if (!ruleFile.is_open()) {
-		_MESSAGE("Can't open a rule file!!");
+		_MESSAGE("Cannot open a Rules file!!");
 		return;
 	}
 
-	ParseRule(ruleFile);
+	actorRules.clear();
+	raceRules.clear();
+
+	ParseRules(ruleFile);
 	ruleFile.close();
 }
 

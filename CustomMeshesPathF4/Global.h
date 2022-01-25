@@ -14,13 +14,11 @@
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
+#include <thread>
 
 #include "CACS.h"
 #include "Hooks.h"
 #include "Utils.h"
 
-#include <unordered_map>
-#include <thread>
-
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 5, 0)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 0)
