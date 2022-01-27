@@ -1,10 +1,10 @@
 #include "Global.h"
 
-UInt32 uNeverEndingCapacity = 10;
-UInt32 uMinAmmoCapacityMult = 1;
-bool bUseInfiniteAmmo = true;
-bool bUseInfiniteThrowableWeapon = true;
-bool bUseWhiteListMode = false;
+UInt32 uNeverEndingCapacity;
+UInt32 uMinAmmoCapacityMult;
+bool bUseInfiniteAmmo;
+bool bUseInfiniteThrowableWeapon;
+bool bUseWhiteListMode;
 std::unordered_set<UInt32> excludedWeapons;
 std::unordered_set<UInt32> includedWeapons;
 
@@ -134,13 +134,37 @@ bool IsInfiniteThrowable(TESForm* weapForm) {
 	return true;
 }
 
-void Init_InfiniteAmmo() {
+std::string GetNextData(const std::string& line, UInt32& index, char delimeter) {
+	std::string retVal = "";
+	for (; index < line.length(); index++) {
+		if (delimeter != 0 && line[index] == delimeter) {
+			index++;
+			break;
+		}
+
+		retVal += line[index];
+	}
+
+	trim(retVal);
+	return retVal;
+}
+
+void LoadInfiniteAmmoSetting() {
 	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  ".txt" };
 	std::fstream settingFile(settingFilePath);
 	if (!settingFile.is_open()) {
 		_MESSAGE("Can't open plugin setting file!");
 		return;
 	}
+
+	uNeverEndingCapacity = 10;
+	uMinAmmoCapacityMult = 2;
+	bUseInfiniteAmmo = true;
+	bUseInfiniteThrowableWeapon = true;
+	bUseWhiteListMode = false;
+
+	excludedWeapons.clear();
+	includedWeapons.clear();
 
 	std::string line;
 	std::string lineType, optionName, optionValueStr, pluginName, formId;
@@ -150,43 +174,21 @@ void Init_InfiniteAmmo() {
 			continue;
 
 		UInt32 index = 0;
-		UInt32 lineLen = line.length();
 
-		lineType = "";
-		for (; index < lineLen; index++) {
-			if (line[index] == '|') {
-				index++;
-				break;
-			}
-
-			lineType += line[index];
-		}
-		trim(lineType);
+		lineType = GetNextData(line, index, '|');
 		if (lineType.length() == 0) {
 			_MESSAGE("Can't read Line Type[%s]", line.c_str());
 			continue;
 		}
 
 		if (lineType == "Option") {
-			optionName = "";
-			for (; index < lineLen; index++) {
-				if (line[index] == '=') {
-					index++;
-					break;
-				}
-
-				optionName += line[index];
-			}
-			trim(optionName);
+			optionName = GetNextData(line, index, '=');
 			if (optionName.length() == 0) {
 				_MESSAGE("Can't read Option Name[%s]", line.c_str());
 				continue;
 			}
 
-			optionValueStr = "";
-			for (; index < lineLen; index++)
-				optionValueStr += line[index];
-			trim(optionValueStr);
+			optionValueStr = GetNextData(line, index, 0);
 			if (optionValueStr.length() == 0) {
 				_MESSAGE("Can't read Option Value[%s]", line.c_str());
 				continue;
@@ -214,32 +216,19 @@ void Init_InfiniteAmmo() {
 			}
 		}
 		else if (lineType == "Exclude" || lineType == "Include") {
-			pluginName = "";
-			for (; index < lineLen; index++) {
-				if (line[index] == '|') {
-					index++;
-					break;
-				}
-
-				pluginName += line[index];
-			}
-			trim(pluginName);
+			pluginName = GetNextData(line, index, '|');
 			if (pluginName.length() == 0) {
 				_MESSAGE("Can't read Plugin Name[%s]", line.c_str());
 				continue;
 			}
 
-			formId = "";
-			for (; index < lineLen; index++)
-				formId += line[index];
-			trim(formId);
+			formId = GetNextData(line, index, 0);
 			if (formId.length() == 0) {
 				_MESSAGE("Can't read Form ID[%s]", line.c_str());
 				continue;
 			}
 
-			std::string weapFormId = pluginName + "|" + formId;
-			TESForm* weapForm = GetFormFromIdentifier(weapFormId);
+			TESForm* weapForm = GetFormFromIdentifier(pluginName, formId);
 			if (!weapForm) {
 				_MESSAGE("Can't find Weapon[%s]", line.c_str());
 				continue;
@@ -249,6 +238,8 @@ void Init_InfiniteAmmo() {
 				excludedWeapons.insert(weapForm->formID);
 			else if (lineType == "Include")
 				includedWeapons.insert(weapForm->formID);
+
+			_MESSAGE("%s Weapon: %s | 0x%08X", lineType, pluginName, weapForm->formID);
 		}
 		else {
 			_MESSAGE("Can't determine Line Type[%s]", line.c_str());

@@ -15,4 +15,4 @@ void CheckAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst, UInt32 
 
 bool IsInfiniteThrowable(TESForm* weapForm);
 
-void Init_InfiniteAmmo();
+void LoadInfiniteAmmoSetting();
