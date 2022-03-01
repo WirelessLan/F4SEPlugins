@@ -10,7 +10,7 @@ bool IsAAFDoppelganger(UInt32 formId) {
 	if (!*g_dataHandler)
 		return false;
 
-	static TESForm* aaf_doppForm = GetFormFromIdentifier("AAF.esm|72E2");
+	static TESForm* aaf_doppForm = GetFormFromIdentifier("AAF.esm", 0x72E2);
 	if (!aaf_doppForm)
 		return false;
 	return formId == aaf_doppForm->formID;
@@ -32,7 +32,7 @@ bool IsAAFDoppelganger(Actor* actor, bool isFemale) {
 }
 
 EventResult SceneActionEventReceiver::ReceiveEvent(TESSceneActionEvent* evn, void* dispatcher) {
-	static TESForm* aaf_DoppelgangerWaitQuest = GetFormFromIdentifier("AAF.esm|72E6");
+	static TESForm* aaf_DoppelgangerWaitQuest = GetFormFromIdentifier("AAF.esm", 0x72E6);
 	if (!aaf_DoppelgangerWaitQuest || aaf_DoppelgangerWaitQuest->formID != evn->sceneFormID || evn->actionIndex != 1)
 		return kEvent_Continue;
 

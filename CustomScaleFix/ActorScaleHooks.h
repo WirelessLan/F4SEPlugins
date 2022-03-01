@@ -16,5 +16,4 @@ public:
     TESImageSpaceModifier* isMod;  // 38
 };
 
-void Hooks_ActorScaleChanged();
 void Hooks_GetZoomData();

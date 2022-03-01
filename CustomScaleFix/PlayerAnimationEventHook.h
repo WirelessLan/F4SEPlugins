@@ -1,12 +1,12 @@
 #pragma once
 
-#include "f4se/GameEvents.h"
-
 class BSAnimationGraphEvent {
 public:
-	// members
-	UInt64				unk00;
-	BSFixedString		name;
+	TESObjectREFR* refr;
+	BSFixedString name;
+	BSFixedString args;
 };
+
+typedef EventResult(*_PlayerAnimationEvent)(void* arg1, BSAnimationGraphEvent* evn, void* dispatcher);
 
 void Hooks_PlayerAnimationEvent();

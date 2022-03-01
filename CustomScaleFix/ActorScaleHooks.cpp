@@ -1,24 +1,9 @@
 #include "Global.h"
 
-#include "f4se/xbyak/xbyak.h"
-
-#include "f4se_common/BranchTrampoline.h"
-#include "f4se_common/Relocation.h"
-
-typedef void (*_ActorScaleChanged)(Actor*, void*);
-RelocAddr <_ActorScaleChanged> ActorScaleChanged(0xDCB200);
-_ActorScaleChanged ActorScaleChanged_Original;
-
 typedef NiPoint3* (*_GetZoomData)(BGSZoomData*);
 RelocAddr <_GetZoomData> GetZoomData_Target(0x12444E6);
 
-void ActorScaleChaged_Hook(Actor* actor, void* arg2) {
-	if (actor == *g_player) 
-		UpdateBBX(actor, GetScale(*g_player));
-	ActorScaleChanged_Original(actor, arg2);
-}
-
-NiPoint3* GetZoomData_Hook(TESObjectWEAP::InstanceData* arg1) {
+NiPoint3* GetModifiedZoomData(TESObjectWEAP::InstanceData* arg1) {
 	static NiPoint3 cameraOffset = {};
 
 	if (!arg1->zoomData)
@@ -28,29 +13,6 @@ NiPoint3* GetZoomData_Hook(TESObjectWEAP::InstanceData* arg1) {
 	cameraOffset *= GetScale(*g_player);
 
 	return &cameraOffset;
-}
-
-void Hooks_ActorScaleChanged() {
-	struct AiProcess_Code : Xbyak::CodeGenerator {
-		AiProcess_Code(void* buf) : Xbyak::CodeGenerator(4096, buf) {
-			Xbyak::Label retnLabel;
-
-			mov(ptr[rsp + 0x10], rbx);
-			mov(ptr[rsp + 0x18], r8b);
-
-			jmp(ptr[rip + retnLabel]);
-
-			L(retnLabel);
-			dq(ActorScaleChanged.GetUIntPtr() + 0x0A);
-		}
-	};
-	void* codeBuf = g_localTrampoline.StartAlloc();
-	AiProcess_Code code(codeBuf);
-	g_localTrampoline.EndAlloc(code.getCurr());
-
-	ActorScaleChanged_Original = (_ActorScaleChanged)codeBuf;
-
-	g_branchTrampoline.Write6Branch(ActorScaleChanged.GetUIntPtr(), (uintptr_t)ActorScaleChaged_Hook);
 }
 
 void Hooks_GetZoomData() {
@@ -102,7 +64,7 @@ void Hooks_GetZoomData() {
 		}
 	};
 	void* codeBuf = g_localTrampoline.StartAlloc();
-	AiProcess_Code code(codeBuf, (uintptr_t)GetZoomData_Hook, GetZoomData_Target.GetUIntPtr());
+	AiProcess_Code code(codeBuf, (uintptr_t)GetModifiedZoomData, GetZoomData_Target.GetUIntPtr());
 	g_localTrampoline.EndAlloc(code.getCurr());
 
 	g_branchTrampoline.Write6Branch(GetZoomData_Target.GetUIntPtr(), (uintptr_t)code.getCode());

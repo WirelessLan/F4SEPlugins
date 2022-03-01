@@ -1,8 +1,8 @@
 #pragma once
 
 struct TESSceneActionEvent {
-	UInt32						sceneFormID;		// 00
-	UInt32						actionIndex;		// 04
+	UInt32 sceneFormID;		// 00
+	UInt32 actionIndex;		// 04
 };
 
 class SceneActionEventReceiver : public BSTEventSink<TESSceneActionEvent> {

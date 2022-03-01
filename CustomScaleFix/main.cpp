@@ -60,19 +60,16 @@ extern "C" {
 			return false;
 		}
 
-		GetConfigValue("Options", "bUseDynamicVerticalCollision", &g_pluginOptions.useDynamicVerticalCollision);
 		GetConfigValue("Options", "bUseCameraOverrideScaleFix", &g_pluginOptions.useCameraOverrideScaleFix);
 		GetConfigValue("Options", "bUseUnifyAAFDoppelgangerScale", &g_pluginOptions.useUnifyAAFDoppelgangerScale);
-		_MESSAGE("bUseDynamicVerticalCollision: %d", g_pluginOptions.useDynamicVerticalCollision);
 		_MESSAGE("bUseCameraOverrideScaleFix: %d", g_pluginOptions.useCameraOverrideScaleFix);
 		_MESSAGE("bUseUnifyAAFDoppelgangerScale: %d", g_pluginOptions.useUnifyAAFDoppelgangerScale);
 
 		Hooks_GetZoomData();
 
-		if (g_pluginOptions.useDynamicVerticalCollision)
-			Hooks_ActorScaleChanged();
 		if (g_pluginOptions.useCameraOverrideScaleFix)
 			Hooks_PlayerAnimationEvent();
+
 		if (g_messaging && g_pluginOptions.useUnifyAAFDoppelgangerScale)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 

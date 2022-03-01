@@ -1,6 +1,7 @@
 #include "Global.h"
 
 RelocAddr <_GetScale> GetScale(0x3F8540);
+RelocAddr <_SetScale> SetScale(0x3F85B0);
 
 bool IsActorFemale(Actor* actor) {
 	TESNPC* actorBase = DYNAMIC_CAST(actor->baseForm, TESForm, TESNPC);
@@ -27,27 +28,28 @@ T GetOffset(const void* baseObject, int offset) {
 	return *reinterpret_cast<T*>((uintptr_t)baseObject + offset);
 }
 
-TESForm* GetFormFromIdentifier(const std::string& identifier) {
-	auto delimiter = identifier.find('|');
-	if (delimiter != std::string::npos) {
-		std::string modName = identifier.substr(0, delimiter);
-		std::string modForm = identifier.substr(delimiter + 1);
+TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
+	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
+	return GetFormFromIdentifier(pluginName, formID);
+}
 
-		const ModInfo* mod = (*g_dataHandler)->LookupModByName(modName.c_str());
-		if (mod && mod->modIndex != -1) {
-			UInt32 formID = std::stoul(modForm, nullptr, 16) & 0xFFFFFF;
-			UInt32 flags = GetOffset<UInt32>(mod, 0x334);
-			if (flags & (1 << 9)) {
-				// ESL
-				formID &= 0xFFF;
-				formID |= 0xFE << 24;
-				formID |= GetOffset<UInt16>(mod, 0x372) << 12;	// ESL load order
-			}
-			else {
-				formID |= (mod->modIndex) << 24;
-			}
-			return LookupFormByID(formID);
-		}
+TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId) {
+	if (!*g_dataHandler)
+		return nullptr;
+
+	const ModInfo* mod = (*g_dataHandler)->LookupModByName(pluginName.c_str());
+	if (!mod || mod->modIndex == -1)
+		return nullptr;
+
+	UInt32 actualFormId = formId;
+	UInt32 flags = GetOffset<UInt32>(mod, 0x334);
+	if (flags & (1 << 9)) {
+		actualFormId &= 0xFFF;
+		actualFormId |= 0xFE << 24;
+		actualFormId |= GetOffset<UInt16>(mod, 0x372) << 12;
 	}
-	return nullptr;
+	else {
+		actualFormId |= (mod->modIndex) << 24;
+	}
+	return LookupFormByID(actualFormId);
 }
