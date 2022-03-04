@@ -10,6 +10,4 @@ protected:
 	virtual	EventResult ReceiveEvent(TESSceneActionEvent* evn, void* dispatcher) override;
 };
 
-bool IsAAFDoppelganger(Actor* actor, bool isFemale);
-
 DECLARE_EVENT_DISPATCHER(TESSceneActionEvent, 0x004438B0)

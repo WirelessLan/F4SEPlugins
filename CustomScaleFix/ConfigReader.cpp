@@ -31,7 +31,7 @@ const char* GetTypeFormatting(T* dataOut) {
 
 template<> const char* GetTypeFormatting(double* dataOut) { return "%lf"; }
 template<> const char* GetTypeFormatting(float* dataOut) { return "%f"; }
-template<> const char* GetTypeFormatting(bool* dataOut) { return "%c"; }
+template<> const char* GetTypeFormatting(bool* dataOut) { return "%d"; }
 template<> const char* GetTypeFormatting(SInt16* dataOut) { return "%hd"; }
 template<> const char* GetTypeFormatting(UInt16* dataOut) { return "%hu"; }
 template<> const char* GetTypeFormatting(SInt32* dataOut) { return "%d"; }
@@ -65,6 +65,19 @@ bool GetConfigValue(const char* section, const char* key, bool* dataOut) {
 }
 
 template<>
+bool GetConfigValue(const char* section, const char* key, UInt32* dataOut) {
+	std::string	data = GetConfigOption(section, key);
+	if (data.empty())
+		return false;
+
+	UInt32 tmp;
+	bool res = (sscanf_s(data.c_str(), GetTypeFormatting(&tmp), &tmp) == 1);
+	if (res)
+		*dataOut = tmp;
+	return res;
+}
+
+template<>
 bool GetConfigValue(const char* section, const char* key, std::string* dataOut) {
 	std::string	data = GetConfigOption(section, key);
 	if (data.empty())
@@ -72,4 +85,76 @@ bool GetConfigValue(const char* section, const char* key, std::string* dataOut) 
 
 	*dataOut = data;
 	return true;
+}
+
+const std::vector<FurnitureKeywordOffset>& FurnitureConfigReader::ReadConfig() {
+	static std::vector<FurnitureKeywordOffset> configs;
+	
+	if (configs.size())
+		configs.clear();
+
+	std::fstream configFile(ConfigPath);
+	if (!configFile.is_open()) {
+		_MESSAGE("Can't read furniture config file! [%s]", ConfigPath.c_str());
+		return configs;
+	}
+
+	std::string pluginName, formId, horOffset, verOffset;
+	while (std::getline(configFile, line)) {
+		lineIndex = 0;
+
+		trim(line);
+		if (line.length() == 0 || line[0] == '#')
+			continue;
+
+		pluginName = getNextData('|');
+		if (pluginName.length() == 0) {
+			_MESSAGE("Can't read Plugin Name[%s]", line.c_str());
+			continue;
+		}
+
+		formId = getNextData('|');
+		if (formId.length() == 0) {
+			_MESSAGE("Can't read Form ID[%s]", line.c_str());
+			continue;
+		}
+
+		horOffset = getNextData(',');
+		if (horOffset.length() == 0) {
+			_MESSAGE("Can't read horOffset[%s]", line.c_str());
+			continue;
+		}
+
+		verOffset = getNextData(0);
+		if (verOffset.length() == 0) {
+			_MESSAGE("Can't read verOffset[%s]", line.c_str());
+			continue;
+		}
+
+		TESForm* keyword = GetFormFromIdentifier(pluginName, formId);
+		if (!keyword) {
+			_MESSAGE("Can't find Keyword[%s]", line.c_str());
+			continue;
+		}
+
+		configs.push_back({ (BGSKeyword*)keyword, stof(horOffset), stof(verOffset)});
+	}
+	configFile.close();
+
+	return configs;
+}
+
+std::string FurnitureConfigReader::getNextData(char delimeter) {
+	std::string retVal = "";
+	for (; lineIndex < line.length(); lineIndex++) {
+		if (delimeter != 0 && line[lineIndex] == delimeter) {
+			lineIndex++;
+			break;
+		}
+
+		retVal += line[lineIndex];
+	}
+
+	trim(retVal);
+	return retVal;
 }
