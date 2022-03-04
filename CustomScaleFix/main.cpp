@@ -13,7 +13,15 @@ PluginOptions			g_pluginOptions;
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
-		GetEventDispatcher<TESSceneActionEvent>()->AddEventSink(new SceneActionEventReceiver());
+		if (g_pluginOptions.useUnifyAAFDoppelgangerScale)
+			GetEventDispatcher<TESSceneActionEvent>()->AddEventSink(new SceneActionEventReceiver());
+		break;
+	case F4SEMessagingInterface::kMessage_NewGame:
+	case F4SEMessagingInterface::kMessage_PreLoadGame:
+		if (g_pluginOptions.useCustomFurniturePosition) {
+			_MESSAGE("Load Furniture Config...");
+			LoadFurnitureConfig();
+		}
 		break;
 	}
 }
@@ -62,15 +70,24 @@ extern "C" {
 
 		GetConfigValue("Options", "bUseCameraOverrideScaleFix", &g_pluginOptions.useCameraOverrideScaleFix);
 		GetConfigValue("Options", "bUseUnifyAAFDoppelgangerScale", &g_pluginOptions.useUnifyAAFDoppelgangerScale);
+		GetConfigValue("Options", "bUseCustomFurniturePosition", &g_pluginOptions.useCustomFurniturePosition);
+		GetConfigValue("Options", "bPlayerOnlyCustomFurniturePosition", &g_pluginOptions.playerOnlyCustomFurniturePosition);
+		GetConfigValue("Options", "uFurniturePositionType", &g_pluginOptions.furniturePositionType);
+		
 		_MESSAGE("bUseCameraOverrideScaleFix: %d", g_pluginOptions.useCameraOverrideScaleFix);
 		_MESSAGE("bUseUnifyAAFDoppelgangerScale: %d", g_pluginOptions.useUnifyAAFDoppelgangerScale);
+		_MESSAGE("bUseCustomFurniturePosition: %d", g_pluginOptions.useCustomFurniturePosition);
+		_MESSAGE("bPlayerOnlyCustomFurniturePosition: %d", g_pluginOptions.playerOnlyCustomFurniturePosition);
+		_MESSAGE("uFurniturePositionType: %u", g_pluginOptions.furniturePositionType);
 
 		Hooks_GetZoomData();
 
 		if (g_pluginOptions.useCameraOverrideScaleFix)
 			Hooks_PlayerAnimationEvent();
+		if (g_pluginOptions.useCustomFurniturePosition)
+			Hooks_GetFurniturePosition();
 
-		if (g_messaging && g_pluginOptions.useUnifyAAFDoppelgangerScale)
+		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 
 		return true;

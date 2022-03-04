@@ -53,3 +53,37 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 	}
 	return LookupFormByID(actualFormId);
 }
+
+template <typename T>
+T GetVirtualFunction(void* baseObject, int vtblIndex) {
+	uintptr_t* vtbl = reinterpret_cast<uintptr_t**>(baseObject)[0];
+	return reinterpret_cast<T>(vtbl[vtblIndex]);
+}
+
+bool HasKeyword(TESForm* form, BGSKeyword* keyword) {
+	IKeywordFormBase* keywordFormBase = DYNAMIC_CAST(form, TESForm, IKeywordFormBase);
+	if (keywordFormBase) {
+		auto HasKeyword_Internal = GetVirtualFunction<_IKeywordFormBase_HasKeyword>(keywordFormBase, 1);
+		if (HasKeyword_Internal(keywordFormBase, keyword, 0)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+inline void ltrim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}));
+}
+
+inline void rtrim(std::string& s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}).base(), s.end());
+}
+
+void trim(std::string& s) {
+	ltrim(s);
+	rtrim(s);
+}
