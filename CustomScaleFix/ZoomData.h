@@ -10,8 +10,8 @@ public:
         NiPoint3 cameraOffset;      // 0C
     };
 
-    Data zoomData;                 // 20
-    TESImageSpaceModifier* isMod;  // 38
+    Data zoomData;                  // 20
+    TESImageSpaceModifier* isMod;   // 38
 };
 
 typedef NiPoint3* (*_GetZoomData)(BGSZoomData*);

@@ -1,12 +1,14 @@
 #include "Global.h"
 
 RelocAddr <uintptr_t> GetFurniturePosition_Target(0xE857C2);
+RelocAddr <uintptr_t> GetFurniturePosition_Jmp_Target1(0xE8580E);
+RelocAddr <uintptr_t> GetFurniturePosition_Jmp_Target2(0xE85836);
 
 std::vector<FurnitureKeywordOffset> furnitureOffsets;
 
 FurnitureKeywordOffset* GetFurnitureKeywordOffset(TESObjectREFR* furn) {
 	for (UInt32 ii = 0; ii < furnitureOffsets.size(); ii++) {
-		if (HasKeyword(furn, furnitureOffsets[ii].keyword))
+		if (HasKeyword(furn->baseForm, furnitureOffsets[ii].keyword))
 			return &furnitureOffsets[ii];
 	}
 
@@ -135,12 +137,12 @@ void Hooks_GetFurniturePosition() {
 	AiProcess_Code code(codeBuf, (uintptr_t)GetModifiedFurniturePosition, GetFurniturePosition_Target.GetUIntPtr());
 	g_localTrampoline.EndAlloc(code.getCurr());
 
-	g_branchTrampoline.Write6Branch(GetFurniturePosition_Target.GetUIntPtr(), (uintptr_t)code.getCode());
+	g_branchTrampoline.Write6Branch(GetFurniturePosition_Target, (uintptr_t)code.getCode());
 
 	unsigned char buf[2] = { 0xEB, 0x11 };
-	SafeWriteBuf(RelocAddr<uintptr_t>(0xE8580E), buf, 2);
+	SafeWriteBuf(GetFurniturePosition_Jmp_Target1, buf, 2);
 	buf[1] = 0x03;
-	SafeWriteBuf(RelocAddr<uintptr_t>(0xE85836), buf, 2);
+	SafeWriteBuf(GetFurniturePosition_Jmp_Target2, buf, 2);
 }
 
 void LoadFurnitureConfig() {

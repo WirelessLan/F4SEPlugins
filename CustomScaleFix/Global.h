@@ -23,7 +23,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"CustomScaleFix"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 5, 0)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 5, 1)
 
 enum FurniturePositionType {
 	kFurniturePositionType_Relative = 1,

@@ -7,12 +7,10 @@ bool IsPrewarNora(UInt32 formId, UInt32 baseFormId) {
 }
 
 bool IsAAFDoppelganger(UInt32 formId) {
-	if (!*g_dataHandler)
-		return false;
-
 	static TESForm* aaf_doppForm = GetFormFromIdentifier("AAF.esm", 0x72E2);
 	if (!aaf_doppForm)
 		return false;
+
 	return formId == aaf_doppForm->formID;
 }
 

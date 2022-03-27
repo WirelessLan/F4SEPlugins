@@ -23,11 +23,6 @@ void SetRefScale(Actor* actor, float scale, bool isFemale) {
 	memcpy(&actor->unk104, &refScale, sizeof std::uint16_t);
 }
 
-template <typename T>
-T GetOffset(const void* baseObject, int offset) {
-	return *reinterpret_cast<T*>((uintptr_t)baseObject + offset);
-}
-
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
 	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
 	return GetFormFromIdentifier(pluginName, formID);
@@ -42,32 +37,25 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 		return nullptr;
 
 	UInt32 actualFormId = formId;
-	UInt32 flags = GetOffset<UInt32>(mod, 0x334);
-	if (flags & (1 << 9)) {
-		actualFormId &= 0xFFF;
-		actualFormId |= 0xFE << 24;
-		actualFormId |= GetOffset<UInt16>(mod, 0x372) << 12;
-	}
-	else {
-		actualFormId |= (mod->modIndex) << 24;
-	}
+	UInt32 pluginIndex = mod->GetPartialIndex();
+	if (!mod->IsLight())
+		actualFormId |= pluginIndex << 24;
+	else
+		actualFormId |= pluginIndex << 12;
+
 	return LookupFormByID(actualFormId);
 }
 
-template <typename T>
-T GetVirtualFunction(void* baseObject, int vtblIndex) {
-	uintptr_t* vtbl = reinterpret_cast<uintptr_t**>(baseObject)[0];
-	return reinterpret_cast<T>(vtbl[vtblIndex]);
-}
-
 bool HasKeyword(TESForm* form, BGSKeyword* keyword) {
-	IKeywordFormBase* keywordFormBase = DYNAMIC_CAST(form, TESForm, IKeywordFormBase);
-	if (keywordFormBase) {
-		auto HasKeyword_Internal = GetVirtualFunction<_IKeywordFormBase_HasKeyword>(keywordFormBase, 1);
-		if (HasKeyword_Internal(keywordFormBase, keyword, 0)) {
+	BGSKeywordForm* pKeywords = DYNAMIC_CAST(form, TESForm, BGSKeywordForm);
+	if (!pKeywords)
+		return false;
+
+	for (UInt32 ii = 0; ii < pKeywords->numKeywords; ii++) {
+		if (pKeywords->keywords[ii] == keyword)
 			return true;
-		}
 	}
+
 	return false;
 }
 

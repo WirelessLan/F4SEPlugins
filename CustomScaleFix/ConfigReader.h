@@ -21,4 +21,5 @@ private:
 	UInt32 lineIndex;
 
 	std::string getNextData(char delimeter);
+	char getNextChar();
 };

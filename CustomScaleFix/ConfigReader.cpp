@@ -104,29 +104,29 @@ const std::vector<FurnitureKeywordOffset>& FurnitureConfigReader::ReadConfig() {
 		lineIndex = 0;
 
 		trim(line);
-		if (line.length() == 0 || line[0] == '#')
+		if (line.empty() || line[0] == '#')
 			continue;
 
 		pluginName = getNextData('|');
-		if (pluginName.length() == 0) {
+		if (pluginName.empty()) {
 			_MESSAGE("Can't read Plugin Name[%s]", line.c_str());
 			continue;
 		}
 
 		formId = getNextData('|');
-		if (formId.length() == 0) {
+		if (formId.empty()) {
 			_MESSAGE("Can't read Form ID[%s]", line.c_str());
 			continue;
 		}
 
 		horOffset = getNextData(',');
-		if (horOffset.length() == 0) {
+		if (horOffset.empty()) {
 			_MESSAGE("Can't read horOffset[%s]", line.c_str());
 			continue;
 		}
 
 		verOffset = getNextData(0);
-		if (verOffset.length() == 0) {
+		if (verOffset.empty()) {
 			_MESSAGE("Can't read verOffset[%s]", line.c_str());
 			continue;
 		}
@@ -145,16 +145,28 @@ const std::vector<FurnitureKeywordOffset>& FurnitureConfigReader::ReadConfig() {
 }
 
 std::string FurnitureConfigReader::getNextData(char delimeter) {
+	char ch;
 	std::string retVal = "";
-	for (; lineIndex < line.length(); lineIndex++) {
-		if (delimeter != 0 && line[lineIndex] == delimeter) {
-			lineIndex++;
+
+	while ((ch = getNextChar()) > 0) {
+		if (ch == '#') {
+			lineIndex--;
 			break;
 		}
 
-		retVal += line[lineIndex];
+		if (delimeter != 0 && ch == delimeter)
+			break;
+
+		retVal += ch;
 	}
 
 	trim(retVal);
 	return retVal;
+}
+
+char FurnitureConfigReader::getNextChar() {
+	if (lineIndex < line.length())
+		return line[lineIndex++];
+
+	return -1;
 }
