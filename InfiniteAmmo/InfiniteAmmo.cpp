@@ -19,16 +19,16 @@ bool IsIncludedWeapon(UInt32 weapFormId) {
 UInt16 GetAmmoType(TESObjectWEAP::InstanceData* weapInst, UInt16 ammoCapacity) {
 	UInt16 ammoType = AmmoType::kAmmoType_Default;
 
-	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ ÃÖ´ë ÀåÀü °¡´É Åº¾à·®ÀÌ 0ÀÏ¶§: ³¡¾ø´Â 
+	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ ìµœëŒ€ ì¥ì „ ê°€ëŠ¥ íƒ„ì•½ëŸ‰ì´ 0ì¼ë•Œ: ëì—†ëŠ” 
 	if (ammoCapacity == 0)
 		ammoType |= AmmoType::kAmmoType_NeverEnding;
 
 	UInt32 ammoHealth = reinterpret_cast<UInt32&>(weapInst->ammo->unk160[1]);
-	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ Åº¾àÀÇ Health°¡ 0ÀÌ ¾Æ´Ò¶§: Ç»ÀüÄÚ¾î
+	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ íƒ„ì•½ì˜ Healthê°€ 0ì´ ì•„ë‹ë•Œ: í“¨ì „ì½”ì–´
 	if (ammoHealth != 0)
 		ammoType |= AmmoType::kAmmoType_FusionCore;
 
-	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ ÇÃ·¡±×¿¡ ChargingReload°¡ ÀÖÀ»¶§: ÃæÀü½Ä ÀåÀü
+	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ í”Œë˜ê·¸ì— ChargingReloadê°€ ìˆì„ë•Œ: ì¶©ì „ì‹ ì¥ì „
 	if (weapInst->flags & TESObjectWEAP::InstanceData::WeaponFlags::kFlag_ChargingReload)
 		ammoType |= AmmoType::kAmmoType_Charging;
 
@@ -39,33 +39,33 @@ void AddAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst) {
 	if (!weapForm || !weapInst)
 		return;
 
-	// Åº¾à ¹«ÇÑ ¿É¼ÇÀÌ ²¨Á®ÀÖÀ» ¶§ ¹«½Ã
+	// íƒ„ì•½ ë¬´í•œ ì˜µì…˜ì´ êº¼ì ¸ìˆì„ ë•Œ ë¬´ì‹œ
 	if (!bUseInfiniteAmmo)
 		return;
 
-	// ÇöÀç ¹«±â°¡ Á¦¿Ü ¹«±âÀÏ °æ¿ì ¹«½Ã
+	// í˜„ì¬ ë¬´ê¸°ê°€ ì œì™¸ ë¬´ê¸°ì¼ ê²½ìš° ë¬´ì‹œ
 	if (IsExcludedWeapon(weapForm->formID))
 		return;
 
-	// È­ÀÌÆ®¸®½ºÆ® ¸ğµå°¡ ÄÑÁ®ÀÖ°í ÇöÀç ¹«±â°¡ È­ÀÌÆ®¸®½ºÆ®¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â °æ¿ì ¹«½Ã
+	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œê°€ ì¼œì ¸ìˆê³  í˜„ì¬ ë¬´ê¸°ê°€ í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê²½ìš° ë¬´ì‹œ
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return;
 
-	// Åº¾àÀÌ Á¸ÀçÇÏÁö ¾Ê´Â ¹«±âÀÎ °æ¿ì ¹«½Ã
+	// íƒ„ì•½ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¬´ê¸°ì¸ ê²½ìš° ë¬´ì‹œ
 	TESForm* ammo = weapInst->ammo;
 	if (!ammo)
 		return;
 
 	UInt16 ammoCapacity = CurrentAmmoCapacity;
 
-	// ³¡¾ø´Â ¹«±âÀÇ °æ¿ì ³¡¾ø´Â ¹«±â ±âº» ÅºÈ¯ ¼ö·®À» ÀÌ¿ë
+	// ëì—†ëŠ” ë¬´ê¸°ì˜ ê²½ìš° ëì—†ëŠ” ë¬´ê¸° ê¸°ë³¸ íƒ„í™˜ ìˆ˜ëŸ‰ì„ ì´ìš©
 	if (GetAmmoType(weapInst, ammoCapacity) & AmmoType::kAmmoType_NeverEnding)
 		ammoCapacity = uNeverEndingCapacity;
 
-	// ÇöÀç ÅºÈ¯ÀÇ ÃÑ º¸À¯¼ö·® Á¶È¸
+	// í˜„ì¬ íƒ„í™˜ì˜ ì´ ë³´ìœ ìˆ˜ëŸ‰ ì¡°íšŒ
 	UInt32 totalAmmoCount = GetInventoryItemCount(*g_player, ammo);
 
-	// Åº¾à Ãß°¡
+	// íƒ„ì•½ ì¶”ê°€
 	if (totalAmmoCount < ammoCapacity * uMinAmmoCapacityMult) {
 		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - totalAmmoCount;
 		AddItem(*g_player, ammo, diff, true);
@@ -76,15 +76,15 @@ bool IsInfiniteThrowable(TESForm* weapForm) {
 	if (!weapForm)
 		return false;
 
-	// ÅõÃ´¹«±â ¹«ÇÑÀÌ ¾Æ´Ñ °æ¿ì À¯ÇÑ
+	// íˆ¬ì²™ë¬´ê¸° ë¬´í•œì´ ì•„ë‹Œ ê²½ìš° ìœ í•œ
 	if (!bUseInfiniteThrowableWeapon)
 		return false;
 
-	// Á¦¿Ü¹«±â¿¡ Æ÷ÇÔµÈ °æ¿ì À¯ÇÑ
+	// ì œì™¸ë¬´ê¸°ì— í¬í•¨ëœ ê²½ìš° ìœ í•œ
 	if (IsExcludedWeapon(weapForm->formID))
 		return false;
 
-	// È­ÀÌÆ®¸®½ºÆ® ¸ğµåÀÌ°í È­ÀÌÆ® ¸®½ºÆ® ¹«±â°¡ ¾Æ´Ñ °æ¿ì À¯ÇÑ
+	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œì´ê³  í™”ì´íŠ¸ ë¦¬ìŠ¤íŠ¸ ë¬´ê¸°ê°€ ì•„ë‹Œ ê²½ìš° ìœ í•œ
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return false;
 
@@ -95,15 +95,15 @@ bool IsNeverEndingWeapon(TESForm* weapForm, TESObjectWEAP::InstanceData* weapIns
 	if (!weapInst || !weapInst->ammo)
 		return false;
 
-	// Åº¾à¹«ÇÑÀÌ ¾Æ´Ñ °æ¿ì À¯ÇÑ
+	// íƒ„ì•½ë¬´í•œì´ ì•„ë‹Œ ê²½ìš° ìœ í•œ
 	if (!bUseInfiniteAmmo)
 		return false;
 
-	// Á¦¿Ü¹«±â¿¡ Æ÷ÇÔµÈ °æ¿ì À¯ÇÑ
+	// ì œì™¸ë¬´ê¸°ì— í¬í•¨ëœ ê²½ìš° ìœ í•œ
 	if (IsExcludedWeapon(weapForm->formID))
 		return false;
 
-	// È­ÀÌÆ®¸®½ºÆ® ¸ğµåÀÌ°í È­ÀÌÆ® ¸®½ºÆ® ¹«±â°¡ ¾Æ´Ñ °æ¿ì À¯ÇÑ
+	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œì´ê³  í™”ì´íŠ¸ ë¦¬ìŠ¤íŠ¸ ë¬´ê¸°ê°€ ì•„ë‹Œ ê²½ìš° ìœ í•œ
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return false;
 
@@ -145,7 +145,7 @@ void LoadInfiniteAmmoSetting() {
 		return;
 	}
 
-	uNeverEndingCapacity = 10;
+	uNeverEndingCapacity = 1;
 	uMinAmmoCapacityMult = 2;
 	bUseInfiniteAmmo = true;
 	bUseInfiniteThrowableWeapon = true;
