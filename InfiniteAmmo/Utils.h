@@ -35,7 +35,11 @@ Actor::MiddleProcess::Data08::EquipData* GetEquipDataByEquipIndex(EquipIndex equ
 
 UInt16 GetCurrentAmmoCapacity();
 
-UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst);
+UInt16 GetCurrentAmmoCapacity(TESObjectWEAP::InstanceData* weapInst);
+
+UInt16 GetAmmoCapacity(TESObjectWEAP::InstanceData* weapInst, UInt16 weapAmmoCap);
+
+TESObjectWEAP::InstanceData* GetWeaponInstanceData(TESForm* weapForm, TBO_InstanceData* weapInst);
 
 UInt32 GetInventoryItemCount(Actor* actor, TESForm* item);
 

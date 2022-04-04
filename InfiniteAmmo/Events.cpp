@@ -4,10 +4,10 @@ EventResult ItemEquipEvent::ReceiveEvent(TESEquipEvent* evn, void* dispatcher) {
 	if (evn->ref == *g_player && evn->isEquipping) {
 		Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByFormID(evn->formId);
 		if (equipData) {
-			if (!IsThrowableWeapon(equipData->unk18)) {
-				TESObjectWEAP::InstanceData* weapInst = (TESObjectWEAP::InstanceData*)Runtime_DynamicCast(equipData->instanceData, RTTI_TBO_InstanceData, RTTI_TESObjectWEAP__InstanceData);
-				CurrentAmmoCapacity = GetCurrentAmmoCapacity(equipData->item, weapInst);
-				CheckAmmo(equipData->item, weapInst, 0, true);
+			if (!IsThrowableWeapon(reinterpret_cast<UInt32&>(equipData->unk18))) {
+				TESObjectWEAP::InstanceData* weapInst = GetWeaponInstanceData(equipData->item, equipData->instanceData);
+				CurrentAmmoCapacity = GetCurrentAmmoCapacity(weapInst);
+				AddAmmo(equipData->item, weapInst);
 			}
 		}
 	}

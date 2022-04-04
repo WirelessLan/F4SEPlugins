@@ -13,7 +13,9 @@ std::uint32_t UseAmmo_Hook(Actor* actor, const WeaponData& a_weapon, std::uint32
 				return GetInventoryItemCount(actor, a_weapon.item);
 		} 
 		else {
-			CheckAmmo(a_weapon.item, (TESObjectWEAP::InstanceData*)a_weapon.instanceData, a_shotCount, false);
+			TESObjectWEAP::InstanceData* weapInst = GetWeaponInstanceData(a_weapon.item, a_weapon.instanceData);
+			if (IsNeverEndingWeapon(a_weapon.item, weapInst))
+				return GetInventoryItemCount(actor, weapInst->ammo);
 		}
 	}
 	return UseAmmo_Original(actor, a_weapon, a_equipIndex, a_shotCount);
@@ -24,7 +26,7 @@ EventResult PlayerAnimGraphEvent_ReceiveEvent_Hook(void* arg1, BSAnimationGraphE
 	if (evn->name == ReloadComplete) {
 		Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByEquipIndex(EquipIndex::kEquipIndex_Default);
 		if (equipData)
-			CheckAmmo(equipData->item, (TESObjectWEAP::InstanceData*)equipData->instanceData, 0, true);
+			AddAmmo(equipData->item, GetWeaponInstanceData(equipData->item, equipData->instanceData));
 	}
 
 	return PlayerAnimationEvent_Original(arg1, evn, dispatcher);

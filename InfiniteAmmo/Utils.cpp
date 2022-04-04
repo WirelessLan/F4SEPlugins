@@ -22,11 +22,11 @@ const tArray<Actor::MiddleProcess::Data08::EquipData>* GetEquipDataArray() {
 	if (!*g_player || !(*g_player)->middleProcess || !(*g_player)->middleProcess->unk08)
 		return nullptr;
 
-	tArray<Actor::MiddleProcess::Data08::EquipData> equipDataArray = reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
+	tArray<Actor::MiddleProcess::Data08::EquipData> equipDataArray = reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData>&>((*g_player)->middleProcess->unk08->equipData);
 	if (equipDataArray.count == 0)
 		return nullptr;
 
-	return &reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData> &>((*g_player)->middleProcess->unk08->equipData);
+	return &reinterpret_cast<tArray<Actor::MiddleProcess::Data08::EquipData>&>((*g_player)->middleProcess->unk08->equipData);
 }
 
 Actor::MiddleProcess::Data08::EquipData* GetEquipDataByFormID(UInt32 formId) {
@@ -48,7 +48,7 @@ Actor::MiddleProcess::Data08::EquipData* GetEquipDataByEquipIndex(EquipIndex equ
 		return nullptr;
 
 	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
-		UInt32 eIdx = static_cast<UInt32>(equipDataArray->entries[ii].unk18);
+		UInt32 eIdx = reinterpret_cast<UInt32&>(equipDataArray->entries[ii].unk18);
 		if (eIdx == equipIndex)
 			return &equipDataArray->entries[ii];
 	}
@@ -62,24 +62,51 @@ UInt16 GetCurrentAmmoCapacity() {
 		return 0;
 
 	for (UInt32 ii = 0; ii < equipDataArray->count; ii++) {
-		if (!IsThrowableWeapon(equipDataArray->entries[ii].unk18))
-			return GetCurrentAmmoCapacity(equipDataArray->entries[ii].item, (TESObjectWEAP::InstanceData*)Runtime_DynamicCast(equipDataArray->entries[ii].instanceData, RTTI_TBO_InstanceData, RTTI_TESObjectWEAP__InstanceData));
+		if (!IsThrowableWeapon(reinterpret_cast<UInt32&>(equipDataArray->entries[ii].unk18)))
+			return GetCurrentAmmoCapacity(GetWeaponInstanceData(equipDataArray->entries[ii].item, equipDataArray->entries[ii].instanceData));
 	}
 
 	return 0;
 }
 
-UInt16 GetCurrentAmmoCapacity(TESForm* weap, TESObjectWEAP::InstanceData* weapInst) {
-	if (!weapInst) {
-		if (!weap)
-			return 0;
+UInt16 GetCurrentAmmoCapacity(TESObjectWEAP::InstanceData* weapInst) {
+	if (!weapInst)
+		return 0;
+	return GetAmmoCapacity(weapInst, weapInst->ammoCapacity);
+}
 
-		TESObjectWEAP* objWeap = DYNAMIC_CAST(weap, TESForm, TESObjectWEAP);
-		if (!objWeap)
-			return 0;
-		weapInst = &objWeap->weapData;
-	}
-	return weapInst->ammoCapacity;
+UInt16 GetAmmoCapacity(TESObjectWEAP::InstanceData* weapInst, UInt16 weapAmmoCap) {
+	if (!weapInst)
+		return 0;
+
+	// 탄약의 타입을 체크
+	UInt16 ammoType = GetAmmoType(weapInst, weapAmmoCap);
+
+	// 현재 무기의 장전가능한 탄환 수량 조회
+	UInt16 ammoCapacity = 0;
+	// 일반 무기의 경우 기존의 장전가능한 탄환 수량을 이용하면 됨
+	if (ammoType == AmmoType::kAmmoType_Default || ammoType == AmmoType::kAmmoType_Charging)
+		ammoCapacity = weapAmmoCap;
+	// 끝없는 무기의 경우 장전가능 탄환 수량 0
+	else if (ammoType & AmmoType::kAmmoType_NeverEnding)
+		ammoCapacity = 0;
+	// 퓨전코어 무기의 경우 무조건 퓨전코어 1개
+	else if (ammoType & AmmoType::kAmmoType_FusionCore)
+		ammoCapacity = 1;
+
+	return ammoCapacity;
+}
+
+TESObjectWEAP::InstanceData* GetWeaponInstanceData(TESForm* weapForm, TBO_InstanceData* weapInst) {
+	TESObjectWEAP::InstanceData* weapInstData = (TESObjectWEAP::InstanceData*)Runtime_DynamicCast(weapInst, RTTI_TBO_InstanceData, RTTI_TESObjectWEAP__InstanceData);
+	if (weapInstData)
+		return weapInstData;
+
+	TESObjectWEAP* objWeap = DYNAMIC_CAST(weapForm, TESForm, TESObjectWEAP);
+	if (!objWeap)
+		return nullptr;
+
+	return &objWeap->weapData;
 }
 
 UInt32 GetInventoryItemCount(Actor* actor, TESForm* item) {
@@ -111,13 +138,13 @@ bool IsThrowableWeapon(UInt32 equipIndex) {
 	return equipIndex == EquipIndex::kEquipIndex_Throwable;
 }
 
-static inline void ltrim(std::string& s) {
+inline void ltrim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
 		return !std::isspace(ch);
 		}));
 }
 
-static inline void rtrim(std::string& s) {
+inline void rtrim(std::string& s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
 		return !std::isspace(ch);
 		}).base(), s.end());
@@ -126,11 +153,6 @@ static inline void rtrim(std::string& s) {
 void trim(std::string& s) {
 	ltrim(s);
 	rtrim(s);
-}
-
-template <typename T>
-T GetOffset(const void* baseObject, int offset) {
-	return *reinterpret_cast<T*>((uintptr_t)baseObject + offset);
 }
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
@@ -147,14 +169,11 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 		return nullptr;
 
 	UInt32 actualFormId = formId;
-	UInt32 flags = GetOffset<UInt32>(mod, 0x334);
-	if (flags & (1 << 9)) {
-		actualFormId &= 0xFFF;
-		actualFormId |= 0xFE << 24;
-		actualFormId |= GetOffset<UInt16>(mod, 0x372) << 12;
-	}
-	else {
-		actualFormId |= (mod->modIndex) << 24;
-	}
+	UInt32 pluginIndex = mod->GetPartialIndex();
+	if (!mod->IsLight())
+		actualFormId |= pluginIndex << 24;
+	else
+		actualFormId |= pluginIndex << 12;
+
 	return LookupFormByID(actualFormId);
 }
