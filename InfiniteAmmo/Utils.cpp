@@ -177,3 +177,7 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 
 	return LookupFormByID(actualFormId);
 }
+
+void ShowMessagebox(std::string asText) {
+	CallGlobalFunctionNoWait1<BSFixedString>("Debug", "Messagebox", BSFixedString(asText.c_str()));
+}

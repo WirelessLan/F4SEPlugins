@@ -6,6 +6,9 @@
 #include <f4se/GameExtraData.h>
 #include <f4se/GameRTTI.h>
 #include <f4se/GameData.h>
+#include <f4se/PapyrusEvents.h>
+#include <f4se/ScaleformValue.h>
+#include <f4se/ScaleformCallbacks.h>
 
 #include <f4se_common/f4se_version.h>
 #include <f4se_common/Relocation.h>
@@ -18,9 +21,10 @@
 #include "Events.h"
 #include "Hooks.h"
 #include "Utils.h"
+#include "ConfigReader.h"
 #include "InfiniteAmmo.h"
 
 #define PLUGIN_NAME	"InfiniteAmmo"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 8, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 8, 1)
 
 extern UInt16 CurrentAmmoCapacity;

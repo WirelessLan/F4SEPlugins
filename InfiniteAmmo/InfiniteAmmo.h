@@ -19,4 +19,9 @@ bool IsInfiniteThrowable(TESForm* weapForm);
 
 bool IsNeverEndingWeapon(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst);
 
-void LoadInfiniteAmmoSetting();
+void LoadSettings();
+
+class InfiniteAmmo_MCMSettings : public GFxFunctionHandler {
+public:
+	virtual void Invoke(Args* args);
+};

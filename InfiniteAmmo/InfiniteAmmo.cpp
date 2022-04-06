@@ -1,7 +1,7 @@
 #include "Global.h"
 
-UInt16 uNeverEndingCapacity;
-UInt32 uMinAmmoCapacityMult;
+UInt16 iNeverEndingCapacity;
+UInt32 iMinAmmoCapacityMult;
 bool bUseInfiniteAmmo;
 bool bUseInfiniteThrowableWeapon;
 bool bUseWhiteListMode;
@@ -19,16 +19,16 @@ bool IsIncludedWeapon(UInt32 weapFormId) {
 UInt16 GetAmmoType(TESObjectWEAP::InstanceData* weapInst, UInt16 ammoCapacity) {
 	UInt16 ammoType = AmmoType::kAmmoType_Default;
 
-	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ ìµœëŒ€ ì¥ì „ ê°€ëŠ¥ íƒ„ì•½ëŸ‰ì´ 0ì¼ë•Œ: ëì—†ëŠ” 
+	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ ÃÖ´ë ÀåÀü °¡´É Åº¾à·®ÀÌ 0ÀÏ¶§: ³¡¾ø´Â 
 	if (ammoCapacity == 0)
 		ammoType |= AmmoType::kAmmoType_NeverEnding;
 
 	UInt32 ammoHealth = reinterpret_cast<UInt32&>(weapInst->ammo->unk160[1]);
-	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ íƒ„ì•½ì˜ Healthê°€ 0ì´ ì•„ë‹ë•Œ: í“¨ì „ì½”ì–´
+	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ Åº¾àÀÇ Health°¡ 0ÀÌ ¾Æ´Ò¶§: Ç»ÀüÄÚ¾î
 	if (ammoHealth != 0)
 		ammoType |= AmmoType::kAmmoType_FusionCore;
 
-	// í˜„ì¬ ì¥ë¹„í•œ ë¬´ê¸°ì˜ í”Œë˜ê·¸ì— ChargingReloadê°€ ìˆì„ë•Œ: ì¶©ì „ì‹ ì¥ì „
+	// ÇöÀç ÀåºñÇÑ ¹«±âÀÇ ÇÃ·¡±×¿¡ ChargingReload°¡ ÀÖÀ»¶§: ÃæÀü½Ä ÀåÀü
 	if (weapInst->flags & TESObjectWEAP::InstanceData::WeaponFlags::kFlag_ChargingReload)
 		ammoType |= AmmoType::kAmmoType_Charging;
 
@@ -39,35 +39,35 @@ void AddAmmo(TESForm* weapForm, TESObjectWEAP::InstanceData* weapInst) {
 	if (!weapForm || !weapInst)
 		return;
 
-	// íƒ„ì•½ ë¬´í•œ ì˜µì…˜ì´ êº¼ì ¸ìˆì„ ë•Œ ë¬´ì‹œ
+	// Åº¾à ¹«ÇÑ ¿É¼ÇÀÌ ²¨Á®ÀÖÀ» ¶§ ¹«½Ã
 	if (!bUseInfiniteAmmo)
 		return;
 
-	// í˜„ì¬ ë¬´ê¸°ê°€ ì œì™¸ ë¬´ê¸°ì¼ ê²½ìš° ë¬´ì‹œ
+	// ÇöÀç ¹«±â°¡ Á¦¿Ü ¹«±âÀÏ °æ¿ì ¹«½Ã
 	if (IsExcludedWeapon(weapForm->formID))
 		return;
 
-	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œê°€ ì¼œì ¸ìˆê³  í˜„ì¬ ë¬´ê¸°ê°€ í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê²½ìš° ë¬´ì‹œ
+	// È­ÀÌÆ®¸®½ºÆ® ¸ğµå°¡ ÄÑÁ®ÀÖ°í ÇöÀç ¹«±â°¡ È­ÀÌÆ®¸®½ºÆ®¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â °æ¿ì ¹«½Ã
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return;
 
-	// íƒ„ì•½ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¬´ê¸°ì¸ ê²½ìš° ë¬´ì‹œ
+	// Åº¾àÀÌ Á¸ÀçÇÏÁö ¾Ê´Â ¹«±âÀÎ °æ¿ì ¹«½Ã
 	TESForm* ammo = weapInst->ammo;
 	if (!ammo)
 		return;
 
 	UInt16 ammoCapacity = CurrentAmmoCapacity;
 
-	// ëì—†ëŠ” ë¬´ê¸°ì˜ ê²½ìš° ëì—†ëŠ” ë¬´ê¸° ê¸°ë³¸ íƒ„í™˜ ìˆ˜ëŸ‰ì„ ì´ìš©
+	// ³¡¾ø´Â ¹«±âÀÇ °æ¿ì ³¡¾ø´Â ¹«±â ±âº» ÅºÈ¯ ¼ö·®À» ÀÌ¿ë
 	if (GetAmmoType(weapInst, ammoCapacity) & AmmoType::kAmmoType_NeverEnding)
-		ammoCapacity = uNeverEndingCapacity;
+		ammoCapacity = iNeverEndingCapacity;
 
-	// í˜„ì¬ íƒ„í™˜ì˜ ì´ ë³´ìœ ìˆ˜ëŸ‰ ì¡°íšŒ
+	// ÇöÀç ÅºÈ¯ÀÇ ÃÑ º¸À¯¼ö·® Á¶È¸
 	UInt32 totalAmmoCount = GetInventoryItemCount(*g_player, ammo);
 
-	// íƒ„ì•½ ì¶”ê°€
-	if (totalAmmoCount < ammoCapacity * uMinAmmoCapacityMult) {
-		UInt32 diff = ammoCapacity * uMinAmmoCapacityMult - totalAmmoCount;
+	// Åº¾à Ãß°¡
+	if (totalAmmoCount < ammoCapacity * iMinAmmoCapacityMult) {
+		UInt32 diff = ammoCapacity * iMinAmmoCapacityMult - totalAmmoCount;
 		AddItem(*g_player, ammo, diff, true);
 	}
 }
@@ -76,15 +76,15 @@ bool IsInfiniteThrowable(TESForm* weapForm) {
 	if (!weapForm)
 		return false;
 
-	// íˆ¬ì²™ë¬´ê¸° ë¬´í•œì´ ì•„ë‹Œ ê²½ìš° ìœ í•œ
+	// ÅõÃ´¹«±â ¹«ÇÑÀÌ ¾Æ´Ñ °æ¿ì À¯ÇÑ
 	if (!bUseInfiniteThrowableWeapon)
 		return false;
 
-	// ì œì™¸ë¬´ê¸°ì— í¬í•¨ëœ ê²½ìš° ìœ í•œ
+	// Á¦¿Ü¹«±â¿¡ Æ÷ÇÔµÈ °æ¿ì À¯ÇÑ
 	if (IsExcludedWeapon(weapForm->formID))
 		return false;
 
-	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œì´ê³  í™”ì´íŠ¸ ë¦¬ìŠ¤íŠ¸ ë¬´ê¸°ê°€ ì•„ë‹Œ ê²½ìš° ìœ í•œ
+	// È­ÀÌÆ®¸®½ºÆ® ¸ğµåÀÌ°í È­ÀÌÆ® ¸®½ºÆ® ¹«±â°¡ ¾Æ´Ñ °æ¿ì À¯ÇÑ
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return false;
 
@@ -95,15 +95,15 @@ bool IsNeverEndingWeapon(TESForm* weapForm, TESObjectWEAP::InstanceData* weapIns
 	if (!weapInst || !weapInst->ammo)
 		return false;
 
-	// íƒ„ì•½ë¬´í•œì´ ì•„ë‹Œ ê²½ìš° ìœ í•œ
+	// Åº¾à¹«ÇÑÀÌ ¾Æ´Ñ °æ¿ì À¯ÇÑ
 	if (!bUseInfiniteAmmo)
 		return false;
 
-	// ì œì™¸ë¬´ê¸°ì— í¬í•¨ëœ ê²½ìš° ìœ í•œ
+	// Á¦¿Ü¹«±â¿¡ Æ÷ÇÔµÈ °æ¿ì À¯ÇÑ
 	if (IsExcludedWeapon(weapForm->formID))
 		return false;
 
-	// í™”ì´íŠ¸ë¦¬ìŠ¤íŠ¸ ëª¨ë“œì´ê³  í™”ì´íŠ¸ ë¦¬ìŠ¤íŠ¸ ë¬´ê¸°ê°€ ì•„ë‹Œ ê²½ìš° ìœ í•œ
+	// È­ÀÌÆ®¸®½ºÆ® ¸ğµåÀÌ°í È­ÀÌÆ® ¸®½ºÆ® ¹«±â°¡ ¾Æ´Ñ °æ¿ì À¯ÇÑ
 	if (bUseWhiteListMode && !IsIncludedWeapon(weapForm->formID))
 		return false;
 
@@ -137,25 +137,17 @@ std::string GetNextData(const std::string& line, UInt32& index, char delimeter) 
 	return retVal;
 }
 
-void LoadInfiniteAmmoSetting() {
-	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  ".txt" };
-	std::fstream settingFile(settingFilePath);
+void ReadWeaponsConfigFile() {
+	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Weapons.cfg" };
+	std::ifstream settingFile(settingFilePath);
+
 	if (!settingFile.is_open()) {
-		_MESSAGE("Can't open plugin setting file!");
+		_MESSAGE("Cannot open a weapon config file!");
 		return;
 	}
 
-	uNeverEndingCapacity = 1;
-	uMinAmmoCapacityMult = 2;
-	bUseInfiniteAmmo = true;
-	bUseInfiniteThrowableWeapon = true;
-	bUseWhiteListMode = false;
-
-	excludedWeapons.clear();
-	includedWeapons.clear();
-
 	std::string line;
-	std::string lineType, optionName, optionValueStr, pluginName, formId;
+	std::string lineType, pluginName, formId;
 	while (std::getline(settingFile, line)) {
 		trim(line);
 		if (line.length() == 0 || line[0] == '#')
@@ -165,60 +157,26 @@ void LoadInfiniteAmmoSetting() {
 
 		lineType = GetNextData(line, index, '|');
 		if (lineType.length() == 0) {
-			_MESSAGE("Can't read Line Type[%s]", line.c_str());
+			_MESSAGE("Cannot read Line Type[%s]", line.c_str());
 			continue;
 		}
 
-		if (lineType == "Option") {
-			optionName = GetNextData(line, index, '=');
-			if (optionName.length() == 0) {
-				_MESSAGE("Can't read Option Name[%s]", line.c_str());
-				continue;
-			}
-
-			optionValueStr = GetNextData(line, index, 0);
-			if (optionValueStr.length() == 0) {
-				_MESSAGE("Can't read Option Value[%s]", line.c_str());
-				continue;
-			}
-
-			std::stringstream optionValue(optionValueStr);
-			if (optionValue.fail()) {
-				_MESSAGE("Can't read Option Value[%s]", line.c_str());
-				continue;
-			}
-
-			if (optionName == "uNeverEndingCapacity")
-				optionValue >> uNeverEndingCapacity;
-			else if (optionName == "uMinAmmoCapacityMult")
-				optionValue >> uMinAmmoCapacityMult;
-			else if (optionName == "bUseInfiniteAmmo")
-				optionValue >> bUseInfiniteAmmo;
-			else if (optionName == "bUseInfiniteThrowableWeapon")
-				optionValue >> bUseInfiniteThrowableWeapon;
-			else if (optionName == "bUseWhiteListMode")
-				optionValue >> bUseWhiteListMode;
-			else {
-				_MESSAGE("Unknown Option Name[%s]", line.c_str());
-				continue;
-			}
-		}
-		else if (lineType == "Exclude" || lineType == "Include") {
+		if (lineType == "Exclude" || lineType == "Include") {
 			pluginName = GetNextData(line, index, '|');
 			if (pluginName.length() == 0) {
-				_MESSAGE("Can't read Plugin Name[%s]", line.c_str());
+				_MESSAGE("Cannot read Plugin Name[%s]", line.c_str());
 				continue;
 			}
 
 			formId = GetNextData(line, index, 0);
 			if (formId.length() == 0) {
-				_MESSAGE("Can't read Form ID[%s]", line.c_str());
+				_MESSAGE("Cannot read Form ID[%s]", line.c_str());
 				continue;
 			}
 
 			TESForm* weapForm = GetFormFromIdentifier(pluginName, formId);
 			if (!weapForm) {
-				_MESSAGE("Can't find Weapon[%s]", line.c_str());
+				_MESSAGE("Cannot find Weapon[%s]", line.c_str());
 				continue;
 			}
 
@@ -230,16 +188,158 @@ void LoadInfiniteAmmoSetting() {
 			_MESSAGE("%s Weapon: %s | 0x%08X", lineType, pluginName, weapForm->formID);
 		}
 		else {
-			_MESSAGE("Can't determine Line Type[%s]", line.c_str());
+			_MESSAGE("Cannot determine Line Type[%s]", line.c_str());
 			continue;
 		}
 	}
 
 	settingFile.close();
+}
 
-	_MESSAGE("uNeverEndingCapacity: %u", uNeverEndingCapacity);
-	_MESSAGE("uMinAmmoCapacityMult: %u", uMinAmmoCapacityMult);
+void UpdateWeaponsConfigFile() {
+	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Weapons.cfg" };
+	std::ofstream settingFile(settingFilePath);
+
+	if (!settingFile.is_open()) {
+		_MESSAGE("Cannot open a plugin setting file!");
+		return;
+	}
+
+	for (UInt32 element : excludedWeapons) {
+		TESForm* weapForm = LookupFormByID(element);
+		if (!weapForm)
+			continue;
+
+		ModInfo* modInfo = weapForm->unk08->entries[0];
+
+		UInt32 formId = modInfo->IsLight() ? element & 0xFFF : element & 0xFFFFFF;
+		settingFile << "Exclude|" << modInfo->name << "|" << std::uppercase << std::hex << formId << std::endl;
+	}
+
+	for (UInt32 element : includedWeapons) {
+		TESForm* weapForm = LookupFormByID(element);
+		if (!weapForm)
+			continue;
+
+		ModInfo* modInfo = weapForm->unk08->entries[0];
+
+		UInt32 formId = modInfo->IsLight() ? element & 0xFFF : element & 0xFFFFFF;
+		settingFile << "Include|" << modInfo->name << "|" << std::uppercase << std::hex << formId << std::endl;
+	}
+
+	settingFile.close();
+}
+
+void LoadSettings() {
+	excludedWeapons.clear();
+	includedWeapons.clear();
+
+	// Default Settings
+	bUseInfiniteAmmo = true;
+	bUseInfiniteThrowableWeapon = true;
+	iNeverEndingCapacity = 1;
+	iMinAmmoCapacityMult = 2;
+	bUseWhiteListMode = false;
+
+	GetConfigValue("Settings", "bUseInfiniteAmmo", &bUseInfiniteAmmo);
+	GetConfigValue("Settings", "bUseInfiniteThrowableWeapon", &bUseInfiniteThrowableWeapon);
+	GetConfigValue("Settings", "iNeverEndingCapacity", &iNeverEndingCapacity);
+	GetConfigValue("Settings", "iMinAmmoCapacityMult", &iMinAmmoCapacityMult);
+	GetConfigValue("Settings", "bUseWhiteListMode", &bUseWhiteListMode);
+
 	_MESSAGE("bUseInfiniteAmmo: %u", bUseInfiniteAmmo);
 	_MESSAGE("bUseInfiniteThrowableWeapon: %u", bUseInfiniteThrowableWeapon);
+	_MESSAGE("iNeverEndingCapacity: %u", iNeverEndingCapacity);
+	_MESSAGE("iMinAmmoCapacityMult: %u", iMinAmmoCapacityMult);
 	_MESSAGE("bUseWhiteListMode: %u", bUseWhiteListMode);
+
+	ReadWeaponsConfigFile();
+}
+
+std::string AddCurrentWeaponToList(bool isExcluded, EquipIndex equipIndex) {
+	Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByEquipIndex(equipIndex);
+	if (!equipData)
+		return "You are not equipped with a weapon";
+
+	if (excludedWeapons.find(equipData->item->formID) != excludedWeapons.end())
+		return "It is already included in the excluded weapons list";
+
+	if (includedWeapons.find(equipData->item->formID) != includedWeapons.end())
+		return "It is already included in the included weapons list";
+
+	if (isExcluded)
+		excludedWeapons.insert(equipData->item->formID);
+	else 
+		includedWeapons.insert(equipData->item->formID);
+
+	return "";
+}
+
+std::string RemoveCurrentWeaponFromList(bool isExcluded, EquipIndex equipIndex) {
+	Actor::MiddleProcess::Data08::EquipData* equipData = GetEquipDataByEquipIndex(equipIndex);
+	if (!equipData)
+		return "You are not equipped with a weapon";
+
+	if (isExcluded) {
+		if (excludedWeapons.find(equipData->item->formID) == excludedWeapons.end())
+			return "It is not in the excluded weapons list";
+		excludedWeapons.erase(equipData->item->formID);
+	}
+	else {
+		if (includedWeapons.find(equipData->item->formID) == includedWeapons.end())
+			return "It is not in the included weapons list";
+		includedWeapons.erase(equipData->item->formID);
+	}
+
+	return "";
+}
+
+void InfiniteAmmo_MCMSettings::Invoke(Args* args) {
+	if (args->numArgs == 0 || !args->args[0].IsString())
+		return;
+
+	if (args->numArgs == 2) {
+		if (strcmp(args->args[0].GetString(), "bUseInfiniteAmmo") == 0)
+			bUseInfiniteAmmo = args->args[1].GetBool();
+		else if (strcmp(args->args[0].GetString(), "bUseInfiniteThrowableWeapon") == 0)
+			bUseInfiniteThrowableWeapon = args->args[1].GetBool();
+		else if (strcmp(args->args[0].GetString(), "iNeverEndingCapacity") == 0)
+			iNeverEndingCapacity = args->args[1].GetInt();
+		else if (strcmp(args->args[0].GetString(), "iMinAmmoCapacityMult") == 0)
+			iMinAmmoCapacityMult = args->args[1].GetInt();
+		else if (strcmp(args->args[0].GetString(), "bUseWhiteListMode") == 0)
+			bUseWhiteListMode = args->args[1].GetBool();
+	}
+	else if (args->numArgs == 1) {
+		std::string result;
+
+		if (strcmp(args->args[0].GetString(), "AddWeapon_Excluded") == 0)
+			result = AddCurrentWeaponToList(true, EquipIndex::kEquipIndex_Default);
+		else if (strcmp(args->args[0].GetString(), "AddThrowable_Excluded") == 0)
+			result = AddCurrentWeaponToList(true, EquipIndex::kEquipIndex_Throwable);
+		else if (strcmp(args->args[0].GetString(), "RemoveWeapon_Excluded") == 0)
+			result = RemoveCurrentWeaponFromList(true, EquipIndex::kEquipIndex_Default);
+		else if (strcmp(args->args[0].GetString(), "RemoveThrowable_Excluded") == 0)
+			result = RemoveCurrentWeaponFromList(true, EquipIndex::kEquipIndex_Throwable);
+		else if (strcmp(args->args[0].GetString(), "ClearExcludedWeapons") == 0)
+			excludedWeapons.clear();
+
+		else if (strcmp(args->args[0].GetString(), "AddWeapon_Included") == 0)
+			result = AddCurrentWeaponToList(false, EquipIndex::kEquipIndex_Default);
+		else if (strcmp(args->args[0].GetString(), "AddThrowable_Included") == 0)
+			result = AddCurrentWeaponToList(false, EquipIndex::kEquipIndex_Throwable);
+		else if (strcmp(args->args[0].GetString(), "RemoveWeapon_Included") == 0)
+			result = RemoveCurrentWeaponFromList(false, EquipIndex::kEquipIndex_Default);
+		else if (strcmp(args->args[0].GetString(), "RemoveThrowable_Included") == 0)
+			result = RemoveCurrentWeaponFromList(false, EquipIndex::kEquipIndex_Throwable);
+		else if (strcmp(args->args[0].GetString(), "ClearIncludedWeapons") == 0)
+			includedWeapons.clear();
+
+		if (!result.empty()) {
+			ShowMessagebox(result);
+			return;
+		}
+
+		UpdateWeaponsConfigFile();
+	}
 }

@@ -9,7 +9,7 @@ typedef std::uint32_t(*_UseAmmo)(Actor* actor, const WeaponData& a_weapon, std::
 
 class BSAnimationGraphEvent {
 public:
-	TESObjectREFR* refr;
+	TESObjectREFR*	refr;
 	BSFixedString	name;
 	BSFixedString	args;
 };
