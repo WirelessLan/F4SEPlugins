@@ -141,6 +141,9 @@ void ReadWeaponsConfigFile() {
 	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Weapons.cfg" };
 	std::ifstream settingFile(settingFilePath);
 
+	excludedWeapons.clear();
+	includedWeapons.clear();
+
 	if (!settingFile.is_open()) {
 		_MESSAGE("Cannot open a weapon config file!");
 		return;
@@ -185,7 +188,7 @@ void ReadWeaponsConfigFile() {
 			else if (lineType == "Include")
 				includedWeapons.insert(weapForm->formID);
 
-			_MESSAGE("%s Weapon: %s | 0x%08X", lineType, pluginName, weapForm->formID);
+			_MESSAGE("%s Weapon: %s | 0x%08X", lineType, pluginName.c_str(), weapForm->formID);
 		}
 		else {
 			_MESSAGE("Cannot determine Line Type[%s]", line.c_str());
@@ -231,8 +234,6 @@ void UpdateWeaponsConfigFile() {
 }
 
 void LoadSettings() {
-	excludedWeapons.clear();
-	includedWeapons.clear();
 
 	// Default Settings
 	bUseInfiniteAmmo = true;
