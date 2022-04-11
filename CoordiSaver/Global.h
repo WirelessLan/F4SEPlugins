@@ -13,4 +13,4 @@
 #include "Util.h"
 
 #define PLUGIN_NAME	"CoordiSaver"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 1)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 1, 0)

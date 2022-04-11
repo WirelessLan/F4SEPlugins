@@ -8,19 +8,25 @@
 
 F4SEPapyrusInterface* g_papyrus;
 
-VMArray<TESForm*> GetCoordiFromFile(StaticFunctionTag*, BSFixedString slot) {
-	return SlotManager::ReadSlot(slot);
+VMArray<TESForm*> LoadCoordiFromFile(StaticFunctionTag*, BSFixedString slot) {
+	return SlotManager::LoadSlot(slot);
 }
 
 bool SaveCoordiToFile(StaticFunctionTag*, BSFixedString slot) {
 	return SlotManager::SaveSlot(slot);
 }
 
+UInt32 HexToInt(StaticFunctionTag*, BSFixedString hex) {
+	return std::stoul(hex.c_str(), nullptr, 16);
+}
+
 bool RegisterFuncs(VirtualMachine* vm) {
 	vm->RegisterFunction(
-		new NativeFunction1<StaticFunctionTag, VMArray<TESForm*>, BSFixedString>("GetCoordiFromFile", "CoordiSaver", GetCoordiFromFile, vm));
+		new NativeFunction1<StaticFunctionTag, VMArray<TESForm*>, BSFixedString>("LoadCoordiFromFile", "CoordiSaver", LoadCoordiFromFile, vm));
 	vm->RegisterFunction(
 		new NativeFunction1<StaticFunctionTag, bool, BSFixedString>("SaveCoordiToFile", "CoordiSaver", SaveCoordiToFile, vm));
+	vm->RegisterFunction(
+		new NativeFunction1<StaticFunctionTag, UInt32, BSFixedString>("HexToInt", "CoordiSaver", HexToInt, vm));
 	return true;
 }
 

@@ -28,7 +28,7 @@ namespace SlotManager {
 		return retVal;
 	}
 
-	VMArray<TESForm*> ReadSlot(BSFixedString slot) {
+	VMArray<TESForm*> LoadSlot(BSFixedString slot) {
 		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\slot_" + std::string(slot.c_str()) + ".codss";
 		std::ifstream slotFile(slotPath);
 
@@ -58,14 +58,15 @@ namespace SlotManager {
 				continue;
 			}
 
-			TESForm* armorForm = Util::GetFormFromIdentifier(pluginName, formId);
-			if (!armorForm) {
-				_MESSAGE("Cannot find Armor[%s]", line.c_str());
+			TESForm* form = Util::GetFormFromIdentifier(pluginName, formId);
+			if (!form) {
+				_MESSAGE("Cannot find Form[%s]", line.c_str());
 				continue;
 			}
 
-			result.Push(&armorForm);
+			result.Push(&form);
 		}
+
 		slotFile.close();
 
 		return result;

@@ -1,6 +1,6 @@
 #pragma once
 
 namespace SlotManager {
-	VMArray<TESForm*> ReadSlot(BSFixedString slot);
+	VMArray<TESForm*> LoadSlot(BSFixedString slot);
 	bool SaveSlot(BSFixedString slot);
 }
