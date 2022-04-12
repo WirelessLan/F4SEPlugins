@@ -4,7 +4,7 @@ Form[] Function LoadCoordiFromFile(string slot) global native
 bool Function SaveCoordiToFile(string slot) global native
 int Function HexToInt(string hex) global native
 
-Function UnequipAllExceptPipboy(Actor actor) global
+Function UnequipAll(Actor actor) global
     Int ii = 0
     While ii <= 28
         actor.UnequipItemSlot(ii)
@@ -35,11 +35,11 @@ Function EquipSlot(string refId, string slot) global
     int intId = HexToInt(refId)
     Actor actor = Game.GetForm(intId) as Actor
     if actor == None
-        Debug.MessageBox("Cannot Load Actor " + intId + " " + refId + "!")
+        Debug.MessageBox("액터 " + refId + "를 불러올 수 없습니다.")
         Return
     EndIf
 
-    UnequipAllExceptPipboy(actor)
+    UnequipAll(actor)
 
     int ii = 0
     While ii < armorList.Length
