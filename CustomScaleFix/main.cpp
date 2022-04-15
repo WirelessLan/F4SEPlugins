@@ -18,7 +18,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 		break;
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
-		if (g_pluginOptions.useCustomFurniturePosition) {
+		if (g_pluginOptions.useCustomFurniturePosition && ShouldLoadFurnitureConfig()) {
 			_MESSAGE("Load Furniture Config...");
 			LoadFurnitureConfig();
 		}

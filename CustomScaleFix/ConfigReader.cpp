@@ -150,7 +150,7 @@ std::string FurnitureConfigReader::getNextData(char delimeter) {
 
 	while ((ch = getNextChar()) > 0) {
 		if (ch == '#') {
-			lineIndex--;
+			undoGetNextChar();
 			break;
 		}
 
@@ -169,4 +169,9 @@ char FurnitureConfigReader::getNextChar() {
 		return line[lineIndex++];
 
 	return -1;
+}
+
+void FurnitureConfigReader::undoGetNextChar() {
+	if (lineIndex > 0)
+		lineIndex--;
 }

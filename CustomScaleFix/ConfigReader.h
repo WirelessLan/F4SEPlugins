@@ -22,4 +22,5 @@ private:
 
 	std::string getNextData(char delimeter);
 	char getNextChar();
+	void undoGetNextChar();
 };

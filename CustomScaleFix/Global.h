@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "Util.h"
 #include "ZoomData.h"
@@ -23,7 +25,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"CustomScaleFix"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 5, 1)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 5, 2)
 
 enum FurniturePositionType {
 	kFurniturePositionType_Relative = 1,

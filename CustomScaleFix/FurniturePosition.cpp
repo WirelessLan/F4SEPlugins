@@ -4,6 +4,8 @@ RelocAddr <uintptr_t> GetFurniturePosition_Target(0xE857C2);
 RelocAddr <uintptr_t> GetFurniturePosition_Jmp_Target1(0xE8580E);
 RelocAddr <uintptr_t> GetFurniturePosition_Jmp_Target2(0xE85836);
 
+std::string furnConfigPath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Furnitures.cfg" };
+time_t furnConfigLoadedTime = 0;
 std::vector<FurnitureKeywordOffset> furnitureOffsets;
 
 FurnitureKeywordOffset* GetFurnitureKeywordOffset(TESObjectREFR* furn) {
@@ -145,9 +147,20 @@ void Hooks_GetFurniturePosition() {
 	SafeWriteBuf(GetFurniturePosition_Jmp_Target2, buf, 2);
 }
 
-void LoadFurnitureConfig() {
-	std::string configFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Furnitures.cfg" };
-	FurnitureConfigReader reader(configFilePath);
+bool ShouldLoadFurnitureConfig() {
+	struct _stat64 stat;
+	if (_stat64(furnConfigPath.c_str(), &stat) != 0)
+		return false;
 
+	if (furnConfigLoadedTime == 0 || furnConfigLoadedTime != stat.st_mtime) {
+		furnConfigLoadedTime = stat.st_mtime;
+		return true;
+	}
+
+	return false;
+}
+
+void LoadFurnitureConfig() {
+	FurnitureConfigReader reader(furnConfigPath);
 	furnitureOffsets = reader.ReadConfig();
 }

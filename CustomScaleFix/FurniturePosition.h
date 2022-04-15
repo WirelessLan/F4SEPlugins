@@ -8,4 +8,5 @@ struct FurnitureKeywordOffset {
 
 void Hooks_GetFurniturePosition();
 
+bool ShouldLoadFurnitureConfig();
 void LoadFurnitureConfig();
