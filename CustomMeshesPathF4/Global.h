@@ -21,4 +21,4 @@
 #include "Utils.h"
 
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 0)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 1)

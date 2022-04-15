@@ -1,19 +1,36 @@
 #include "Global.h"
 
+std::string rulePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Rules.txt" };
+time_t ruleLoadedTime = 0;
+
 std::unordered_map<UInt32, std::string> actorRules;
 std::unordered_map<UInt32, std::string> raceRules;
 
+char GetChar(const std::string& line, UInt32& index) {
+	if (index < line.length())
+		return line[index++];
+
+	return -1;
+}
+
 std::string GetString(const std::string& line, UInt32& index, char delimeter) {
+	char ch;
 	std::string retVal = "";
-	for (; index < line.length(); index++) {
-		if (delimeter != 0 && line[index] == delimeter) {
-			index++;
+
+	while ((ch = GetChar(line, index)) > 0) {
+		if (ch == '#') {
+			if (index > 0)
+				index--;
 			break;
 		}
 
-		retVal += line[index];
+		if (delimeter != 0 && ch == delimeter)
+			break;
+
+		retVal += ch;
 	}
 
+	trim(retVal);
 	return retVal;
 }
 
@@ -22,36 +39,32 @@ void ParseRules(std::fstream& ruleFile) {
 	std::string line;
 
 	while (std::getline(ruleFile, line)) {
-		trim(line);
-		if (line.length() == 0 || line[0] == '#')
-			continue;
-
 		UInt32 lineIdx = 0;
 
+		trim(line);
+		if (line.empty() || line[0] == '#')
+			continue;
+
 		ruleType = GetString(line, lineIdx, '|');
-		trim(ruleType);
-		if (ruleType == "") {
+		if (ruleType.empty()) {
 			_MESSAGE("Can't read ruleType!!!");
 			continue;
 		}
 
 		pluginName = GetString(line, lineIdx, '|');
-		trim(pluginName);
-		if (pluginName == "") {
+		if (pluginName.empty()) {
 			_MESSAGE("Can't read pluginName!!!");
 			continue;
 		}
 
 		formId = GetString(line, lineIdx, ':');
-		trim(formId);
-		if (formId == "") {
+		if (formId.empty()) {
 			_MESSAGE("Can't read formId!!!");
 			continue;
 		}
 
 		meshesPath = GetString(line, lineIdx, 0);
-		trim(meshesPath);
-		if (meshesPath == "") {
+		if (meshesPath.empty()) {
 			_MESSAGE("Can't read meshesPath!!!");
 			continue;
 		}
@@ -65,7 +78,6 @@ void ParseRules(std::fstream& ruleFile) {
 			continue;
 		}
 
-
 		if (_stricmp(ruleType.c_str(), "Actor") == 0)
 			actorRules.insert(std::pair<UInt32, std::string>(ruleTargetForm->formID, meshesPath));
 		else if (_stricmp(ruleType.c_str(), "Race") == 0)
@@ -77,8 +89,20 @@ void ParseRules(std::fstream& ruleFile) {
 	}
 }
 
+bool ShouldLoadRules() {
+	struct _stat64 stat;
+	if (_stat64(rulePath.c_str(), &stat) != 0)
+		return false;
+
+	if (ruleLoadedTime == 0 || ruleLoadedTime != stat.st_mtime) {
+		ruleLoadedTime = stat.st_mtime;
+		return true;
+	}
+
+	return false;
+}
+
 void LoadRules() {
-	std::string rulePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Rules.txt" };
 	std::fstream ruleFile(rulePath);
 	if (!ruleFile.is_open()) {
 		_MESSAGE("Cannot open a Rules file!!");
