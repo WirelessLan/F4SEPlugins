@@ -13,8 +13,6 @@
 
 #include <vector>
 #include <fstream>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "Util.h"
 #include "ZoomData.h"
