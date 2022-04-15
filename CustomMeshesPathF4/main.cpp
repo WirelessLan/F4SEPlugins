@@ -13,7 +13,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		if (ShouldLoadRules()) {
-			_MESSAGE("Load Rules...")
+			_MESSAGE("Load Rules...");
 			LoadRules();
 		}
 		break;

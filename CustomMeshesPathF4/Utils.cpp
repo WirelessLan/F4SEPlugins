@@ -27,11 +27,6 @@ bool IsFileExists(const std::string& path) {
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-template <typename T>
-T GetOffset(const void* baseObject, int offset) {
-	return *reinterpret_cast<T*>((uintptr_t)baseObject + offset);
-}
-
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
 	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
 	return GetFormFromIdentifier(pluginName, formID);
@@ -46,14 +41,11 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 		return nullptr;
 
 	UInt32 actualFormId = formId;
-	UInt32 flags = GetOffset<UInt32>(mod, 0x334);
-	if (flags & (1 << 9)) {
-		actualFormId &= 0xFFF;
-		actualFormId |= 0xFE << 24;
-		actualFormId |= GetOffset<UInt16>(mod, 0x372) << 12;
-	}
-	else {
-		actualFormId |= (mod->modIndex) << 24;
-	}
+	UInt32 pluginIndex = mod->GetPartialIndex();
+	if (!mod->IsLight())
+		actualFormId |= pluginIndex << 24;
+	else
+		actualFormId |= pluginIndex << 12;
+
 	return LookupFormByID(actualFormId);
 }
