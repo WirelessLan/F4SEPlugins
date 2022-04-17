@@ -57,8 +57,7 @@ extern "C" {
 		}
 
 		g_scaleform = (F4SEScaleformInterface*)f4se->QueryInterface(kInterface_Scaleform);
-		if (!g_scaleform)
-		{
+		if (!g_scaleform) {
 			_FATALERROR("couldn't get scaleform interface");
 			return false;
 		}

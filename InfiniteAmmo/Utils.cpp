@@ -76,7 +76,7 @@ UInt16 GetCurrentAmmoCapacity(TESObjectWEAP::InstanceData* weapInst) {
 }
 
 UInt16 GetAmmoCapacity(TESObjectWEAP::InstanceData* weapInst, UInt16 weapAmmoCap) {
-	if (!weapInst)
+	if (!weapInst || !weapInst->ammo)
 		return 0;
 
 	// 탄약의 타입을 체크
