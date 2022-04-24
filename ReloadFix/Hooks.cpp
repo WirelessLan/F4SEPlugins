@@ -5,30 +5,34 @@ bool isAutoMoveSprint = false;
 
 RelocPtr<float> minCurrentZoom(0x3805130);
 
-typedef void(*_TogglePOV)(void* arg1, ButtonEvent* event);
+RelocAddr<uintptr_t> TogglePOV_Target(0x2D49E48 + 0x40);
 RelocAddr<uintptr_t> TogglePOV_FirstToThird_Target(0x2D84518 + 0x40);
 RelocAddr<uintptr_t> TogglePOV_ThirdToFirst_Target(0x2D07A38 + 0x40);
+_TogglePOV TogglePOV_Original;
 _TogglePOV TogglePOV_FirstToThird_Original;
 _TogglePOV TogglePOV_ThirdToFirst_Original;
 
-typedef void(*_MovementHandler)(void*, ButtonEvent*);
 RelocAddr<uintptr_t> MovementHandler_Target(0x2D49908 + 0x40);
 _MovementHandler MovementHandler_Original;
 
-typedef void(*_SprintHandler)(void*, ButtonEvent*);
 RelocAddr<uintptr_t> SprintHandler_Target(0x2D499C8 + 0x40);
 _SprintHandler SprintHandler_Original;
 
-typedef void(*_ReadyWeaponHandler)(void*, ButtonEvent*);
 RelocAddr<uintptr_t> ReadyWeaponHandler_Target(0x2D49B48 + 0x40);
 _ReadyWeaponHandler ReadyWeaponHandler_Original;
 
 RelocAddr<uintptr_t> PlayerAnimGraphEvent_ReceiveEvent_Target(0x2D442D8 + 0x8);
 _PlayerAnimGraphEvent_ReceiveEvent PlayerAnimationEvent_Original;
 
-typedef EventResult(*_MenuOpenCloseEvent_ReceiveEvent)(void*, MenuOpenCloseEvent*, void*);
 RelocAddr<uintptr_t> MenuOpenCloseEvent_ReceiveEvent_Target(0x2D49200 + 0x08);
 _MenuOpenCloseEvent_ReceiveEvent MenuOpenCloseEvent_ReceiveEvent_Original;
+
+void TogglePOV_Hook(void* arg1, ButtonEvent* event) {
+	if (IsReloading())
+		return;
+
+	TogglePOV_Original(arg1, event);
+}
 
 void TogglePOV_FirstToThird_Hook(void* arg1, ButtonEvent* event) {
 	if (IsReloading())
@@ -100,10 +104,10 @@ void ReadyWeaponHandler_Hook(void* arg1, ButtonEvent* event) {
 }
 
 EventResult PlayerAnimGraphEvent_ReceiveEvent_Hook(void* arg1, BSAnimationGraphEvent* evn, void* dispatcher) {
-	static BSFixedString ReloadComplete("ReloadEnd");
+	static BSFixedString ReloadEnd("ReloadEnd");
 
 	if (IsAutoMove() && isAutoMoveSprint) {
-		if (evn->name == ReloadComplete) {
+		if (evn->name == ReloadEnd) {
 			isAutoMoveSprint = false;
 			ToggleSprint(true);
 		}
@@ -122,6 +126,9 @@ EventResult MenuOpenCloseEvent_ReceiveEvent_Hook(void* arg1, MenuOpenCloseEvent*
 }
 
 void Install() {
+	TogglePOV_Original = *(_TogglePOV*)(TogglePOV_Target.GetUIntPtr());
+	SafeWrite64(TogglePOV_Target.GetUIntPtr(), (uintptr_t)TogglePOV_Hook);
+
 	TogglePOV_FirstToThird_Original = *(_TogglePOV*)(TogglePOV_FirstToThird_Target.GetUIntPtr());
 	SafeWrite64(TogglePOV_FirstToThird_Target.GetUIntPtr(), (uintptr_t)TogglePOV_FirstToThird_Hook);
 
