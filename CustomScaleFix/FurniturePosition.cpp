@@ -53,7 +53,7 @@ NiPoint3* GetModifiedFurniturePosition(TESObjectREFR* refr, TESObjectREFR* furni
 	float verOffset = 0.0f;
 
 	if (g_pluginOptions.furniturePositionType == FurniturePositionType::kFurniturePositionType_Relative) {
-		float scale = GetScale(refr);
+		float scale = GetFurnitureScale(refr);
 		if (scale == 0.0f || scale == 1.0f)
 			return nullptr;
 
@@ -67,8 +67,6 @@ NiPoint3* GetModifiedFurniturePosition(TESObjectREFR* refr, TESObjectREFR* furni
 	else {
 		return nullptr;
 	}
-
-	_MESSAGE("Target[0x%08X] Keyword %s[0x%08X] Horizontal Offset[%f] Vertical Offset[%f]", refr->formID, offset->keyword->keyword.c_str(), offset->keyword->formID, horOffset, verOffset);
 
 	furniturePos = furniture->pos;
 	float furnitureRot = furniture->rot.z + GetCurrentFurnitureMarkerRotation(refr, furniture);

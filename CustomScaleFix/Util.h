@@ -6,6 +6,8 @@ extern RelocAddr <_GetScale> GetScale;
 typedef float (*_SetScale)(TESObjectREFR*, float);
 extern RelocAddr <_SetScale> SetScale;
 
+float GetFurnitureScale(TESObjectREFR* refr);
+
 bool IsActorFemale(Actor* actor);
 void SetRefScale(Actor* actor, float scale, bool isFemale);
 

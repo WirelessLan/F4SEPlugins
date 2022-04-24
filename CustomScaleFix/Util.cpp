@@ -3,6 +3,41 @@
 RelocAddr <_GetScale> GetScale(0x3F8540);
 RelocAddr <_SetScale> SetScale(0x3F85B0);
 
+float GetFurnitureScale(TESObjectREFR* refr) {
+	if (!refr)
+		return 0.0f;
+
+	float actualScale = GetScale(refr);
+
+	NiAVObject* skeleton = refr->GetActorRootNode(false);
+	if (!skeleton)
+		return actualScale;
+
+	static BSFixedString rootSurgeonNodeStr("RootSurgeonInserted");
+	NiAVObject* rootSurgeonNode = skeleton->GetObjectByName(&rootSurgeonNodeStr);
+	if (rootSurgeonNode)
+		actualScale *= rootSurgeonNode->m_localTransform.scale;
+
+	static BSFixedString rootNodeStr("Root");
+	NiAVObject* rootNode = skeleton->GetObjectByName(&rootNodeStr);
+	if (!rootNode)
+		return actualScale;
+
+	static BSFixedString comOverrideSurgeonNodeStr("COM_OverrideSurgeonInserted");
+	NiAVObject* comOverrideSurgeonNode = rootNode->GetObjectByName(&comOverrideSurgeonNodeStr);
+	if (comOverrideSurgeonNode)
+		actualScale *= comOverrideSurgeonNode->m_localTransform.scale;
+
+	static BSFixedString comOverrideNodeStr("COM_Override");
+	NiAVObject* comOverrideNode = rootNode->GetObjectByName(&comOverrideNodeStr);
+	if (!comOverrideNode)
+		return actualScale;
+
+	actualScale *= comOverrideNode->m_localTransform.scale;
+
+	return actualScale;
+}
+
 bool IsActorFemale(Actor* actor) {
 	TESNPC* actorBase = DYNAMIC_CAST(actor->baseForm, TESForm, TESNPC);
 	if (!actorBase)
@@ -59,19 +94,11 @@ bool HasKeyword(TESForm* form, BGSKeyword* keyword) {
 	return false;
 }
 
-inline void ltrim(std::string& s) {
+void trim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
 		return !std::isspace(ch);
-		}));
-}
-
-inline void rtrim(std::string& s) {
+	}));
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
 		return !std::isspace(ch);
-		}).base(), s.end());
-}
-
-void trim(std::string& s) {
-	ltrim(s);
-	rtrim(s);
+	}).base(), s.end());
 }
