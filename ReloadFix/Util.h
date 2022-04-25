@@ -12,6 +12,7 @@ struct IsReloadableDataWrapper {
 
 bool IsReloading();
 bool IsSprinting();
+bool IsFirstPerson();
 bool IsThirdPerson();
 bool IsWeaponDrawn();
 bool IsAutoMove();

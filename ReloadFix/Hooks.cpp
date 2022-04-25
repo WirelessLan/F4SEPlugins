@@ -31,6 +31,9 @@ void TogglePOV_Hook(void* arg1, ButtonEvent* event) {
 	if (IsReloading())
 		return;
 
+	if (IsFirstPerson() && IsWeaponDrawn())
+		return;
+
 	TogglePOV_Original(arg1, event);
 }
 

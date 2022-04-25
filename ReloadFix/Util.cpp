@@ -15,6 +15,13 @@ bool IsSprinting() {
 	return (*g_player)->actorState.unk08 & 0x0100;
 }
 
+bool IsFirstPerson() {
+	if (!*g_playerCamera)
+		return false;
+
+	return (*g_playerCamera)->cameraState == (*g_playerCamera)->cameraStates[PlayerCamera::kCameraState_FirstPerson];
+}
+
 bool IsThirdPerson() {
 	if (!*g_playerCamera)
 		return false;
