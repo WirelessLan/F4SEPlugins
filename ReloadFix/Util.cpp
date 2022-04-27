@@ -43,17 +43,21 @@ bool IsAutoMove() {
 	return (*g_playerControls)->unk88 & 0x01;
 }
 
-bool IsPreventTogglePOVEnabled() {
-	if (!*g_playerControls || !*g_playerCamera)
+bool IsVanityModeEnabled() {
+	if (!*g_playerControls)
 		return false;
 
-	FirstPersonState* firstPersonState = (FirstPersonState*)(*g_playerCamera)->cameraStates[PlayerCamera::kCameraState_FirstPerson];
-	if (!firstPersonState)
-		return false;
+	return (*g_playerControls)->unk88 & 0x1000000;
+}
 
-	bool isVanityModeEnabled = (*g_playerControls)->unk88 & 0x1000000;
+void ToggleVanityMode(bool enable) {
+	if (!*g_playerControls)
+		return;
 
-	return isVanityModeEnabled && !firstPersonState->unk83;
+	if (enable)
+		(*g_playerControls)->unk88 |= 0x1000000;
+	else
+		(*g_playerControls)->unk88 &= ~0x1000000;
 }
 
 RelocAddr <_IsReloadable> IsReloadable_Internal(0xE24B80);
