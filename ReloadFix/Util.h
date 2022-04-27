@@ -17,6 +17,17 @@ bool IsThirdPerson();
 bool IsWeaponDrawn();
 bool IsAutoMove();
 
+class FirstPersonState : public TESCameraState {
+public:
+	UInt64	unk28[(0x80 - 0x28) >> 3];
+	bool	unk80;
+	bool	unk81;
+	bool	unk82;
+	bool	unk83;
+};
+
+bool IsPreventTogglePOVEnabled();
+
 typedef bool (*_IsReloadable)(IsReloadableDataWrapper*, Actor::MiddleProcess::Data08::EquipData*);
 bool IsWeaponReloadable();
 

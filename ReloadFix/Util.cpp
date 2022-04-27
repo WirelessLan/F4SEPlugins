@@ -43,6 +43,19 @@ bool IsAutoMove() {
 	return (*g_playerControls)->unk88 & 0x01;
 }
 
+bool IsPreventTogglePOVEnabled() {
+	if (!*g_playerControls || !*g_playerCamera)
+		return false;
+
+	FirstPersonState* firstPersonState = (FirstPersonState*)(*g_playerCamera)->cameraStates[PlayerCamera::kCameraState_FirstPerson];
+	if (!firstPersonState)
+		return false;
+
+	bool isVanityModeEnabled = (*g_playerControls)->unk88 & 0x1000000;
+
+	return isVanityModeEnabled && !firstPersonState->unk83;
+}
+
 RelocAddr <_IsReloadable> IsReloadable_Internal(0xE24B80);
 
 bool IsWeaponReloadable() {

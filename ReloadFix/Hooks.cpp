@@ -28,11 +28,13 @@ RelocAddr<uintptr_t> MenuOpenCloseEvent_ReceiveEvent_Target(0x2D49200 + 0x08);
 _MenuOpenCloseEvent_ReceiveEvent MenuOpenCloseEvent_ReceiveEvent_Original;
 
 void TogglePOV_Hook(void* arg1, ButtonEvent* event) {
-	if (IsReloading())
-		return;
+	if (IsPreventTogglePOVEnabled()) {
+		if (IsReloading())
+			return;
 
-	if (IsFirstPerson() && IsWeaponDrawn())
-		return;
+		if (IsFirstPerson() && IsWeaponDrawn())
+			return;
+	}
 
 	TogglePOV_Original(arg1, event);
 }
