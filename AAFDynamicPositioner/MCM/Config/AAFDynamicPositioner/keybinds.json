@@ -1,0 +1,83 @@
+{
+	"modName": "AAFDynamicPositioner",
+	"keybinds": [
+		{
+			"id": "TogglePositioner",
+			"desc": "위치 조절 모드를 시작하거나 종료합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "TogglePositioner"
+			}
+		},
+		{
+			"id": "ChangeActor",
+			"desc": "위치를 이동시킬 액터를 변경합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "ChangeActor"
+			}
+		},
+		{
+			"id": "IncXAxis",
+			"desc": "X축으로 좌표를 1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["X", true]
+			}
+    	},
+		{
+			"id": "IncYAxis",
+			"desc": "Y축으로 좌표를 1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["Y", true]
+			}
+    	},
+		{
+			"id": "IncZAxis",
+			"desc": "Z축으로 좌표를 1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["Z", true]
+			}
+    	},
+		{
+			"id": "DecXAxis",
+			"desc": "X축으로 좌표를 -1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["X", false]
+			}
+    	},
+		{
+			"id": "DecYAxis",
+			"desc": "Y축으로 좌표를 -1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["Y", false]
+			}
+    	},
+		{
+			"id": "DecZAxis",
+			"desc": "Z축으로 좌표를 -1만큼 이동합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "MoveActor",
+				"params": ["Z", false]
+			}
+    	}
+	]
+}

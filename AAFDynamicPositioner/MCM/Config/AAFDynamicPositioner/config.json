@@ -1,0 +1,138 @@
+{
+  "modName": "AAFDynamicPositioner",
+  "displayName": "AAF Dynamic Positioner",
+  "minMcmVersion": 2,
+  "content": [
+    {
+      "type": "spacer",
+      "numLines": 8
+    },
+    {
+      "text": "<p align='center'><font size='32'>AAF Dynamic Positioner</font><font size='10'> BETA</font></p>",
+      "type": "text",
+      "html": true
+    }
+  ],
+  "pages": [
+    {
+      "pageDisplayName": "설정",
+      "content": [
+        {
+          "text": "기본 설정",
+          "type": "section"
+        },
+        {
+          "id": "bAdjustPlayerSceneOnly:Settings",
+          "text": "플레이어의 씬에만 적용 여부",
+          "type": "switcher",
+          "help": "실시간 위치 조절 기능을 플레이어 캐릭터가 포함된 씬에서만 재생할지 여부를 설정합니다.",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          },
+          "action": {
+              "type": "CallExternalFunction",
+              "plugin": "AAFDynamicPositioner",
+              "function": "UpdateSettings",
+              "params": ["bAdjustPlayerSceneOnly", "{value}"]
+          }
+        },
+        {
+          "text": "위치 조절 적용 지연시간",
+          "type": "slider",
+          "help": "실시간 위치 조절 적용 지연시간을 설정합니다.(너무 작을 경우 위치 조절이 적용되지 않을 수 있음)",
+          "valueOptions": {
+            "min": 0.1,
+            "max": 1.0,
+            "step": 0.1,
+            "sourceType": "PropertyValueFloat",
+            "sourceForm": "AAFDynamicPositioner.esp|800",
+            "propertyName": "WaitDelay"
+          }
+        },
+        {
+          "id": "fMoveAxisSize:Settings",
+          "text": "좌표 이동 거리",
+          "type": "slider",
+          "help": "위치 조절시 이동 거리를 설정합니다.",
+          "valueOptions": {
+            "min": 1.0,
+            "max": 20.0,
+            "step": 0.1,
+            "sourceType": "ModSettingFloat"
+          },
+          "action": {
+              "type": "CallExternalFunction",
+              "plugin": "AAFDynamicPositioner",
+              "function": "UpdateSettings",
+              "params": ["fMoveAxisSize", "{value}"]
+          }
+        },
+        {
+          "id": "iPositionerType:Settings",
+          "text": "위치 조절 타입",
+          "type": "dropdown",
+          "help": "위치 조절 타입을 설정합니다.)",
+          "valueOptions": {
+            "options": ["스케일", "절댓값"],
+            "sourceType": "ModSettingInt"
+          },
+          "action": {
+              "type": "CallExternalFunction",
+              "plugin": "AAFDynamicPositioner",
+              "function": "UpdateSettings",
+              "params": ["iPositionerType", "{value}"]
+          }
+        }
+      ]
+    },
+    {
+      "pageDisplayName": "단축키",
+      "content": [
+        {
+          "text": "단축키 목록",
+          "type": "section"
+        },
+        {
+          "id": "TogglePositioner",
+          "text": "위치 조절 모드 On/Off",
+          "type": "hotkey"
+        },
+        {
+          "id": "ChangeActor",
+          "text": "선택된 액터 변경",
+          "type": "hotkey"
+        },
+        {
+          "id": "IncXAxis",
+          "text": "X축 증가",
+          "type": "hotkey"
+        },
+        {
+          "id": "IncYAxis",
+          "text": "Y축 증가",
+          "type": "hotkey"
+        },
+        {
+          "id": "IncZAxis",
+          "text": "Z축 증가",
+          "type": "hotkey"
+        },
+        {
+          "id": "DecXAxis",
+          "text": "X축 감소",
+          "type": "hotkey"
+        },
+        {
+          "id": "DecYAxis",
+          "text": "Y축 감소",
+          "type": "hotkey"
+        },
+        {
+          "id": "DecZAxis",
+          "text": "Z축 감소",
+          "type": "hotkey"
+        }
+      ]
+    }
+  ]
+}
