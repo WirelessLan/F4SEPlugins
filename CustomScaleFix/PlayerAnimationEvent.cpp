@@ -8,9 +8,9 @@ EventResult PlayerAnimationEvent_Hook(void* arg1, BSAnimationGraphEvent* evn, vo
 	static BSFixedString cameraOverrideStop("CameraOverrideStop");
 
 	if (evn->name == cameraOverrideStart)
-		ModifyScale(*g_player, true, 1.0f);
+		ModifyFirstPersonScale(*g_player, 1.0f);
 	else if (evn->name == cameraOverrideStop)
-		ModifyScale(*g_player, true, GetScale(*g_player));
+		ModifyFirstPersonScale(*g_player, GetScale(*g_player));
 
 	return PlayerAnimationEvent_Original(arg1, evn, dispatcher);
 }

@@ -12,10 +12,6 @@ PluginOptions			g_pluginOptions;
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
-	case F4SEMessagingInterface::kMessage_GameLoaded:
-		if (g_pluginOptions.useUnifyAAFDoppelgangerScale)
-			GetEventDispatcher<TESSceneActionEvent>()->AddEventSink(new SceneActionEventReceiver());
-		break;
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		if (g_pluginOptions.useCustomFurniturePosition && ShouldLoadFurnitureConfig()) {
@@ -69,13 +65,11 @@ extern "C" {
 		}
 
 		GetConfigValue("Options", "bUseCameraOverrideScaleFix", &g_pluginOptions.useCameraOverrideScaleFix);
-		GetConfigValue("Options", "bUseUnifyAAFDoppelgangerScale", &g_pluginOptions.useUnifyAAFDoppelgangerScale);
 		GetConfigValue("Options", "bUseCustomFurniturePosition", &g_pluginOptions.useCustomFurniturePosition);
 		GetConfigValue("Options", "bPlayerOnlyCustomFurniturePosition", &g_pluginOptions.playerOnlyCustomFurniturePosition);
 		GetConfigValue("Options", "uFurniturePositionType", &g_pluginOptions.furniturePositionType);
 		
 		_MESSAGE("bUseCameraOverrideScaleFix: %d", g_pluginOptions.useCameraOverrideScaleFix);
-		_MESSAGE("bUseUnifyAAFDoppelgangerScale: %d", g_pluginOptions.useUnifyAAFDoppelgangerScale);
 		_MESSAGE("bUseCustomFurniturePosition: %d", g_pluginOptions.useCustomFurniturePosition);
 		_MESSAGE("bPlayerOnlyCustomFurniturePosition: %d", g_pluginOptions.playerOnlyCustomFurniturePosition);
 		_MESSAGE("uFurniturePositionType: %u", g_pluginOptions.furniturePositionType);

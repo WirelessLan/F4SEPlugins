@@ -18,12 +18,10 @@
 #include "ZoomData.h"
 #include "FurniturePosition.h"
 #include "PlayerAnimationEvent.h"
-#include "SkeletonManager.h"
-#include "AAFSupport.h"
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"CustomScaleFix"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 5, 3)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(2, 6, 0)
 
 enum FurniturePositionType {
 	kFurniturePositionType_Relative = 1,

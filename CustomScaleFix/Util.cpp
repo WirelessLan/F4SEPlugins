@@ -9,53 +9,32 @@ float GetFurnitureScale(TESObjectREFR* refr) {
 
 	float actualScale = GetScale(refr);
 
-	NiAVObject* skeleton = refr->GetActorRootNode(false);
-	if (!skeleton)
+	NiAVObject* skeletonNode = refr->GetActorRootNode(false);
+	if (!skeletonNode)
 		return actualScale;
 
-	static BSFixedString rootSurgeonNodeStr("RootSurgeonInserted");
-	NiAVObject* rootSurgeonNode = skeleton->GetObjectByName(&rootSurgeonNodeStr);
-	if (rootSurgeonNode)
-		actualScale *= rootSurgeonNode->m_localTransform.scale;
-
-	static BSFixedString rootNodeStr("Root");
-	NiAVObject* rootNode = skeleton->GetObjectByName(&rootNodeStr);
-	if (!rootNode)
+	static BSFixedString comNodeStr("COM");
+	NiAVObject* comNode = skeletonNode->GetObjectByName(&comNodeStr);
+	if (!comNode)
 		return actualScale;
 
-	static BSFixedString comOverrideSurgeonNodeStr("COM_OverrideSurgeonInserted");
-	NiAVObject* comOverrideSurgeonNode = rootNode->GetObjectByName(&comOverrideSurgeonNodeStr);
-	if (comOverrideSurgeonNode)
-		actualScale *= comOverrideSurgeonNode->m_localTransform.scale;
+	actualScale *= comNode->m_localTransform.scale;
 
-	static BSFixedString comOverrideNodeStr("COM_Override");
-	NiAVObject* comOverrideNode = rootNode->GetObjectByName(&comOverrideNodeStr);
-	if (!comOverrideNode)
-		return actualScale;
-
-	actualScale *= comOverrideNode->m_localTransform.scale;
+	NiAVObject* nodePtr = comNode->m_parent;
+	while (nodePtr && nodePtr != skeletonNode) {
+		actualScale *= nodePtr->m_localTransform.scale;
+		nodePtr = nodePtr->m_parent;
+	}
 
 	return actualScale;
 }
 
-bool IsActorFemale(Actor* actor) {
-	TESNPC* actorBase = DYNAMIC_CAST(actor->baseForm, TESForm, TESNPC);
-	if (!actorBase)
-		return false;
-
-	return CALL_MEMBER_FN(actorBase, GetSex)() == 1 ? true : false;
-}
-
-void SetRefScale(Actor* actor, float scale, bool isFemale) {
-	if (!actor || !actor->race)
+void ModifyFirstPersonScale(Actor* actor, float scale) {
+	NiNode* rootNode = actor->GetActorRootNode(true);
+	if (!rootNode)
 		return;
 
-	float baseScale[2];
-	memcpy(baseScale, actor->race->unk170, sizeof(float) * 2);
-
-	float modifiedRefScale = std::round(scale * (100.0f / baseScale[isFemale]));
-	std::uint16_t refScale = static_cast<std::uint16_t>(modifiedRefScale);
-	memcpy(&actor->unk104, &refScale, sizeof std::uint16_t);
+	rootNode->m_localTransform.scale = scale;
 }
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {

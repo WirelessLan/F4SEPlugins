@@ -8,10 +8,10 @@ extern RelocAddr <_SetScale> SetScale;
 
 float GetFurnitureScale(TESObjectREFR* refr);
 
-bool IsActorFemale(Actor* actor);
-void SetRefScale(Actor* actor, float scale, bool isFemale);
+void ModifyFirstPersonScale(Actor* actor, float scale);
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr);
+
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId);
 
 bool HasKeyword(TESForm* form, BGSKeyword* keyword);

@@ -79,8 +79,6 @@ NiPoint3* GetModifiedFurniturePosition(TESObjectREFR* refr, TESObjectREFR* furni
 }
 
 void Hooks_GetFurniturePosition() {
-	static float addss = 20.0;
-	static UInt64 addssaddr = reinterpret_cast<UInt64>(&addss);
 	struct AiProcess_Code : Xbyak::CodeGenerator {
 		AiProcess_Code(void* buf, UInt64 funcAddr, UInt64 targetAddr) : Xbyak::CodeGenerator(4096, buf) {
 			Xbyak::Label funcLabel;

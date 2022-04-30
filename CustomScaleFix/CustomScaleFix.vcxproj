@@ -165,20 +165,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AAFSupport.cpp" />
     <ClCompile Include="FurniturePosition.cpp" />
     <ClCompile Include="ZoomData.cpp" />
     <ClCompile Include="ConfigReader.cpp" />
-    <ClCompile Include="SkeletonManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlayerAnimationEvent.cpp" />
     <ClCompile Include="Util.cpp" />
-    <ClInclude Include="AAFSupport.h" />
     <ClInclude Include="FurniturePosition.h" />
     <ClInclude Include="ZoomData.h" />
     <ClInclude Include="ConfigReader.h" />
     <ClInclude Include="Global.h" />
-    <ClInclude Include="SkeletonManager.h" />
     <ClInclude Include="PlayerAnimationEvent.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
