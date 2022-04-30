@@ -22,6 +22,8 @@ public:
 		if (args->numArgs == 2) {
 			if (strcmp(args->args[0].GetString(), "bAdjustPlayerSceneOnly") == 0)
 				g_pluginSettings.bAdjustPlayerSceneOnly = args->args[1].GetBool();
+			else if (strcmp(args->args[0].GetString(), "bUnifyAAFDoppelgangerScale") == 0)
+				g_pluginSettings.bUnifyAAFDoppelgangerScale = args->args[1].GetBool();
 			else if (strcmp(args->args[0].GetString(), "fMoveAxisSize") == 0)
 				g_pluginSettings.fMoveAxisSize = args->args[1].GetNumber();
 			else if (strcmp(args->args[0].GetString(), "iPositionerType") == 0)
@@ -94,10 +96,12 @@ extern "C" {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
 
 		ConfigReader::GetConfigValue("Settings", "bAdjustPlayerSceneOnly", &g_pluginSettings.bAdjustPlayerSceneOnly);
+		ConfigReader::GetConfigValue("Settings", "bUnifyAAFDoppelgangerScale", &g_pluginSettings.bUnifyAAFDoppelgangerScale);
 		ConfigReader::GetConfigValue("Settings", "fMoveAxisSize", &g_pluginSettings.fMoveAxisSize);
 		ConfigReader::GetConfigValue("Settings", "iPositionerType", &g_pluginSettings.iPositionerType);
 
 		_MESSAGE("bPlayerSceneOnly: %d", g_pluginSettings.bAdjustPlayerSceneOnly);
+		_MESSAGE("bUnifyAAFDoppelgangerScale: %d", g_pluginSettings.bUnifyAAFDoppelgangerScale);
 		_MESSAGE("fMoveAxisSize: %f", g_pluginSettings.fMoveAxisSize);
 		_MESSAGE("iPositionerType: %d", g_pluginSettings.iPositionerType);
 

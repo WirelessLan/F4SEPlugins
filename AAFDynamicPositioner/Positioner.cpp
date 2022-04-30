@@ -187,6 +187,9 @@ namespace Positioner {
 				actorPtr = doppelganger;
 				if (!actorPtr)
 					continue;
+
+				if (g_pluginSettings.bUnifyAAFDoppelgangerScale)
+					Utility::SetScale(actorPtr, Utility::GetActualScale(*g_player));
 			}
 
 			// 액터 정보 초기화
@@ -422,6 +425,7 @@ namespace Positioner {
 		sceneMap.clear();
 		sceneMapKey = 1;
 		selectedActorFormId = 0;
+		positionerEnabled = false;
 	}
 
 	void RegisterPositionerFunctions(VirtualMachine* vm) {

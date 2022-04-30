@@ -1,8 +1,8 @@
 #include "Global.h"
 
 namespace Utility {
-	typedef float (*_GetScale)(TESObjectREFR*);
 	RelocAddr <_GetScale> GetScale(0x3F8540);
+	RelocAddr <_SetScale> SetScale(0x3F85B0);
 
 	float GetActualScale(TESObjectREFR* refr) {
 		if (!refr)

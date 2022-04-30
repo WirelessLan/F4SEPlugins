@@ -37,6 +37,21 @@
           }
         },
         {
+          "id": "bUnifyAAFDoppelgangerScale:Settings",
+          "text": "플레이어 도플갱어 스케일 유지",
+          "type": "switcher",
+          "help": "AAF 재생시에 생성되는 플레이어 도플갱어의 스케일을 플레이어와 동일하게 할것인지 설정합니다.",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          },
+          "action": {
+              "type": "CallExternalFunction",
+              "plugin": "AAFDynamicPositioner",
+              "function": "UpdateSettings",
+              "params": ["bUnifyAAFDoppelgangerScale", "{value}"]
+          }
+        },
+        {
           "text": "위치 조절 적용 지연시간",
           "type": "slider",
           "help": "실시간 위치 조절 적용 지연시간을 설정합니다.(너무 작을 경우 위치 조절이 적용되지 않을 수 있음)",
