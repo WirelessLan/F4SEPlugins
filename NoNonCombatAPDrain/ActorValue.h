@@ -1,7 +1,6 @@
 #pragma once
 
-class ActorValue
-{
+class ActorValue {
 public:
 	enum ActorValueModifier {
 		kActorValueModifier_Temp,

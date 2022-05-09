@@ -6,21 +6,12 @@ namespace Hook {
 	_ModAV ModAV_Original;
 
 	void ModAV_Hook(ActorValueOwner* owner, ActorValue::ActorValueModifier modifier, ActorValueInfo* avInfo, float value) {
-		if (!*g_player || !g_actorValue || owner != &(*g_player)->actorValueOwner || avInfo != g_actorValue->actionPoints) {
-			ModAV_Original(owner, modifier, avInfo, value);
-			return;
+		if ((*g_player && owner == &(*g_player)->actorValueOwner) && (g_actorValue && avInfo == g_actorValue->actionPoints)) {
+			if (!(*g_player)->IsInCombat() && modifier == ActorValue::kActorValueModifier_Damage && value < 0.0f)
+				return;
 		}
 
-		bool drainAp = true;
-
-		// 전투중이 아님 && AP가 감소함
-		if (!(*g_player)->IsInCombat() && modifier == ActorValue::kActorValueModifier_Damage && value < 0.0f)
-			drainAp = false;
-				
-		if (drainAp)
-			ModAV_Original(owner, modifier, avInfo, value);
-		else
-			ModAV_Original(owner, modifier, avInfo, 0.0f);
+		ModAV_Original(owner, modifier, avInfo, value);
 	}
 
 	void Install_Hooks() {
