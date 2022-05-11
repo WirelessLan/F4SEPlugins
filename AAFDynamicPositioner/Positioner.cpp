@@ -13,7 +13,8 @@ enum CanMove {
 	kCanMove_YES = 0,
 	kCanMove_NO_SELECTION,
 	kCanMove_NO_SCALE,
-	kCanMove_NO_PLAYER
+	kCanMove_NO_PLAYER,
+	kCanMove_NO_DISABLED
 };
 
 namespace Positioner {
@@ -332,7 +333,7 @@ namespace Positioner {
 
 	UInt32 CanMovePosition(StaticFunctionTag*) {
 		if (!positionerEnabled)
-			return false;
+			return CanMove::kCanMove_NO_DISABLED;
 
 		ActorData* selectedActorData = GetSelectedActorData();
 		if (!selectedActorData)
@@ -352,45 +353,94 @@ namespace Positioner {
 
 	Actor* ChangeSelectedActor(StaticFunctionTag*) {
 		if (!positionerEnabled)
-			return false;
+			return nullptr;
 
 		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsPlayerInScene())
 			return nullptr;
 
 		// 현재 선택되어있는 액터를 가져옴
 		ActorData* actorData = GetSelectedActorData();
+		// 현재 선택되어있는 액터가 없을 경우
 		if (!actorData) {
-			// 현재 선택되어있는 액터가 없을 경우
 			// 플레이어로 진행중인 씬이 있는지 확인
 			actorData = GetPlayerActorData();
-
-			// 플레이어로 진행중인 씬도 없는 경우
-			// 액터맵의 첫 액터를 선택함
-			if (!actorData) {
-				if (actorMap.size() == 0)
+			if (actorData) {
+				// 플레이어로 진행중인 씬이 있을 때 씬 정보를 가져옴
+				SceneData* playerScene = GetSceneDataById(actorData->sceneId);
+				if (!playerScene || playerScene->actorList.size() == 0)
 					return nullptr;
 
-				actorData = &actorMap.begin()->second;
+				// 해당 씬의 가장 첫 액터를 선택하여 반환
+				actorData = GetActorDataByFormId(playerScene->actorList.front());
+				if (!actorData)
+					return nullptr;
+
+				selectedActorFormId = actorData->formId;
+				return actorData->actor;
 			}
+
+			// 플레이어로 진행중인 씬이 없는 경우
+			// 첫 씬의 첫 액터를 선택하여 반환함
+			if (sceneMap.size() == 0)
+				return nullptr;
+
+			const SceneData& sceneData = sceneMap.begin()->second;
+			actorData = GetActorDataByFormId(sceneData.actorList.front());
+			if (!actorData)
+				return nullptr;
 
 			selectedActorFormId = actorData->formId;
 			return actorData->actor;
 		}
 
-		auto actorIt = actorMap.find(actorData->formId);
-		if (actorIt == actorMap.end())
+		// 현재 선택되어있는 액터가 있을 경우 현재 액터가 포함된 씬을 가져옴
+		auto sceneIt = sceneMap.find(actorData->sceneId);
+		if (sceneIt == sceneMap.end())
 			return nullptr;
 
-		auto nextIt = std::next(actorIt);
-		if (nextIt == actorMap.end()) {
-			ActorData& selectedActor = actorMap.begin()->second;
-			selectedActorFormId = selectedActor.formId;
-			return selectedActor.actor;
+		const SceneData& sceneData = sceneIt->second;
+
+		// 현재 선택된 액터를 찾고 그 액터의 다음 액터를 찾아서 반환
+		auto actorIt = std::find(sceneData.actorList.begin(), sceneData.actorList.end(), actorData->formId);
+		if (actorIt == sceneData.actorList.end())
+			return nullptr;
+
+		actorIt = std::next(actorIt);
+		if (actorIt != sceneData.actorList.end()) {
+			actorData = GetActorDataByFormId(*actorIt);
+			if (!actorData)
+				return nullptr;
+
+			selectedActorFormId = actorData->formId;
+			return actorData->actor;
 		}
 
-		ActorData& selectedActor = nextIt->second;
-		selectedActorFormId = selectedActor.formId;
-		return selectedActor.actor;
+		// 선택된 액터가 해당 씬의 마지막 액터였을 경우
+		// 해당 씬의 다음 씬의 첫 액터를 찾아서 반환
+		sceneIt = std::next(sceneIt);
+		if (sceneIt != sceneMap.end()) {
+			if (sceneIt->second.actorList.size() == 0)
+				return nullptr;
+
+			actorData = GetActorDataByFormId(sceneIt->second.actorList.front());
+			if (!actorData)
+				return nullptr;
+
+			selectedActorFormId = actorData->formId;
+			return actorData->actor;
+		}
+
+		if (sceneMap.size() == 0)
+			return nullptr;
+
+		// 선택된 액터가 마지막 씬의 마지막 액터였을 경우
+		// 가장 첫 씬의 첫 액터를 찾아서 반환
+		actorData = GetActorDataByFormId(sceneMap.begin()->second.actorList.front());
+		if (!actorData)
+			return nullptr;
+
+		selectedActorFormId = actorData->formId;
+		return actorData->actor;
 	}
 
 	Actor* GetSelectedActor(StaticFunctionTag*) {
@@ -401,23 +451,14 @@ namespace Positioner {
 		return selectedActorData->actor;
 	}
 
-	SpellItem* GetHighlightSpell(StaticFunctionTag*) {
-		static SpellItem* spell = nullptr;
-		if (spell)
-			return spell;
-
-		static TESForm* spellForm = Utility::GetFormFromIdentifier("AAFDynamicPositioner.esp", 0x00001734);
-		if (!spellForm)
+	SpellItem* GetHighlightSpell(StaticFunctionTag*, bool isMovable) {
+		static TESForm* movableSpellForm = Utility::GetFormFromIdentifier("AAFDynamicPositioner.esp", 0x00000810);
+		static TESForm* immovableSpellForm = Utility::GetFormFromIdentifier("AAFDynamicPositioner.esp", 0x00000811);
+		if (!movableSpellForm || !immovableSpellForm)
 			return nullptr;
 
-		spell = DYNAMIC_CAST(spellForm, TESForm, SpellItem);
+		SpellItem* spell = DYNAMIC_CAST(isMovable ? movableSpellForm : immovableSpellForm, TESForm, SpellItem);
 		return spell;
-	}
-
-	BSFixedString IntToHex(StaticFunctionTag*, UInt32 integer) {
-		char buffer[256];
-		snprintf(buffer, sizeof buffer, "%08X", integer);
-		return BSFixedString(buffer);
 	}
 
 	void ResetPositioner() {
@@ -448,8 +489,6 @@ namespace Positioner {
 		vm->RegisterFunction(
 			new NativeFunction0<StaticFunctionTag, Actor*>("GetSelectedActor", "AAFDynamicPositioner", GetSelectedActor, vm));
 		vm->RegisterFunction(
-			new NativeFunction0<StaticFunctionTag, SpellItem*>("GetHighlightSpell", "AAFDynamicPositioner", GetHighlightSpell, vm));
-		vm->RegisterFunction(
-			new NativeFunction1<StaticFunctionTag, BSFixedString, UInt32>("IntToHex", "AAFDynamicPositioner", IntToHex, vm));
+			new NativeFunction1<StaticFunctionTag, SpellItem*, bool>("GetHighlightSpell", "AAFDynamicPositioner", GetHighlightSpell, vm));
 	}
 }

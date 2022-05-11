@@ -14,6 +14,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 #include <fstream>
 
 #include "Utility.h"
@@ -22,7 +23,7 @@
 #include "PositionData.h"
 
 #define PLUGIN_NAME	"AAFDynamicPositioner"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 1, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
 
 enum PositionerType {
 	kPositionerType_Relative = 0,

@@ -9,20 +9,28 @@ Function MoveAxis(String axis, Bool value) native global
 Int Function CanMovePosition() native global
 Actor Function ChangeSelectedActor() native global
 Actor Function GetSelectedActor() native global
-Spell Function GetHighlightSpell() native global
-String Function IntToHex(Int value) native global
+Spell Function GetHighlightSpell(Bool IsMovable) native global
 
-Function AddHighlight(Actor akTarget) global
+Function AddHighlight(Actor akTarget, Bool canMove) global
 	If akTarget == None
 		Return
 	EndIf
 
-	Spell highlightSpell = GetHighlightSpell()
-	If highlightSpell == None || akTarget.HasSpell(highlightSpell)
+	Spell movableHighlightSpell = GetHighlightSpell(True)
+	Spell immovableHighlightSpell = GetHighlightSpell(False)
+	If !movableHighlightSpell || !immovableHighlightSpell
 		Return
 	EndIf
 
-	akTarget.AddSpell(highlightSpell, false)
+	If akTarget.HasSpell(movableHighlightSpell) || akTarget.HasSpell(immovableHighlightSpell)
+		Return
+	EndIf
+
+	If canMove
+		akTarget.AddSpell(movableHighlightSpell, False)
+	Else
+		akTarget.AddSpell(immovableHighlightSpell, False)
+	EndIf
 EndFunction
 
 Function RemoveHighlight(Actor akTarget) global
@@ -30,22 +38,24 @@ Function RemoveHighlight(Actor akTarget) global
 		Return
 	EndIf
 
-	Spell highlightSpell = GetHighlightSpell()
-	If highlightSpell == None || !akTarget.HasSpell(highlightSpell)
+	Spell movableHighlightSpell = GetHighlightSpell(True)
+	Spell immovableHighlightSpell = GetHighlightSpell(False)
+	If !movableHighlightSpell || !immovableHighlightSpell
 		Return
 	EndIf
 
-	akTarget.RemoveSpell(highlightSpell)
+	akTarget.RemoveSpell(movableHighlightSpell)
+	akTarget.RemoveSpell(immovableHighlightSpell)
 EndFunction
 
 Function TogglePositioner() global
 	If IsPositionerEnabled()
 		Debug.Notification("위치 조절 모드를 종료합니다.")
 		RemoveHighlight(GetSelectedActor())
-		SetPositionerState(false);
+		SetPositionerState(False);
 	Else
 		Debug.Notification("위치 조절 모드를 시작합니다.")
-		SetPositionerState(true);
+		SetPositionerState(True);
 		ChangeActor()
 	EndIf
 EndFunction
@@ -61,6 +71,7 @@ Function MoveActor(String axis, Bool isInc) global
 	; 1: 선택된 액터가 없음
 	; 2: 스케일 1인 액터
 	; 3: 플레이어에게만 적용
+	; 4: 위치조절모드 Off
 	If canMove != 0
 		If canMove == 1
 			Debug.Notification("선택된 액터가 없습니다.")
@@ -68,6 +79,8 @@ Function MoveActor(String axis, Bool isInc) global
 			Debug.Notification("스케일이 1인 액터는 이동할 수 없습니다.")
 		ElseIf canMove == 3
 			Debug.Notification("플레이어의 씬에 포함된 액터가 아닙니다.")
+		ElseIf canMove == 4
+			Debug.Notification("위치 조절 모드가 꺼져있습니다.")
 		EndIf
 
 		Return
@@ -90,5 +103,5 @@ Function ChangeActor() global
 		Return
 	EndIf
 
-	AddHighlight(selectedActor)
+	AddHighlight(selectedActor, CanMovePosition() == 0)
 EndFunction
