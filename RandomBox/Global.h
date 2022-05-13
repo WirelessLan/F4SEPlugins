@@ -6,8 +6,12 @@
 
 #include <f4se_common/f4se_version.h>
 
+#include <fstream>
+#include <unordered_map>
+#include <vector>
+
 #include "Util.h"
 #include "RandomBox.h"
 
 #define PLUGIN_NAME	"RandomBox"
-#define PLUGIN_VERSION 0.1
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 2, 0)
