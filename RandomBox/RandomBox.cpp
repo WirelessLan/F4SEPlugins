@@ -1,14 +1,15 @@
 #include "Global.h"
 
-std::unordered_map<UInt32, std::vector<TESLeveledList::Entry>> g_randomBoxLLs;
-
-std::vector<TESLeveledList::Entry>* GetLLById(UInt32 llFormId) {
-	auto it = g_randomBoxLLs.find(llFormId);
-	if (it == g_randomBoxLLs.end())
-		return nullptr;
-
-	return &it->second;
-}
+std::vector<TESLeveledList::Entry> lle_HandGuns;
+std::vector<TESLeveledList::Entry> lle_SniperRifles;
+std::vector<TESLeveledList::Entry> lle_SMGs;
+std::vector<TESLeveledList::Entry> lle_Shotguns;
+std::vector<TESLeveledList::Entry> lle_AssaultRifles;
+std::vector<TESLeveledList::Entry> lle_DMRs;
+std::vector<TESLeveledList::Entry> lle_Specials;
+std::vector<TESLeveledList::Entry> lle_SVD;
+std::vector<TESLeveledList::Entry> lle_ASVal;
+std::vector<TESLeveledList::Entry> lle_AK74M;
 
 char GetNextChar(const std::string& line, UInt32& index) {
 	if (index < line.length())
@@ -37,22 +38,14 @@ std::string GetNextData(const std::string& line, UInt32& index, char delimeter) 
 	return retVal;
 }
 
-bool Read_SettingFile() {
-	static std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  ".txt" };
+bool ReadSettingFile() {
+	std::string settingFilePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  ".txt" };
 	std::fstream settingFile(settingFilePath);
-
-	if (g_randomBoxLLs.size() > 0) {
-		for (auto& it : g_randomBoxLLs)
-			it.second.clear();
-
-		g_randomBoxLLs.clear();
-	}
-
 	if (!settingFile.is_open())
 		return false;
 
 	std::string line;
-	std::string llFormIdStr, pluginName, formId;
+	std::string weapType, pluginName, formId;
 	while (std::getline(settingFile, line)) {
 		trim(line);
 		if (line.length() == 0 || line[0] == '#')
@@ -60,9 +53,9 @@ bool Read_SettingFile() {
 
 		UInt32 index = 0;
 
-		llFormIdStr = GetNextData(line, index, '|');
-		if (llFormIdStr.empty()) {
-			_MESSAGE("Can't read llFormId!!!");
+		weapType = GetNextData(line, index, '|');
+		if (weapType.empty()) {
+			_MESSAGE("Can't read weapType!!!");
 			continue;
 		}
 
@@ -84,17 +77,30 @@ bool Read_SettingFile() {
 			continue;
 		}
 
-		_MESSAGE("llFormId[%s] pluginName[%s] formId[%s][0x%08X]", llFormIdStr.c_str(), pluginName.c_str(), formId.c_str(), weapForm->formID);
+		_MESSAGE("weapType[%s] pluginName[%s] formId[%s][0x%08X]", weapType.c_str(), pluginName.c_str(), formId.c_str(), weapForm->formID);
 
-		UInt32 llFormId = std::stoul(llFormIdStr, nullptr, 16) & 0xFFFFFF;
-		auto ll_vec = GetLLById(llFormId);
-		if (!ll_vec) {
-			std::vector<TESLeveledList::Entry> ll_items = { { weapForm, nullptr, 1, 1, 0 } };
-			g_randomBoxLLs.insert(std::make_pair(llFormId, ll_items));
-		}
-		else {
-			ll_vec->push_back({ weapForm, nullptr, 1, 1, 0 });
-		}
+		if (_stricmp(weapType.c_str(), "HandGun") == 0)
+			lle_HandGuns.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "SniperRifle") == 0)
+			lle_SniperRifles.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "SMG") == 0)
+			lle_SMGs.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "Shotgun") == 0)
+			lle_Shotguns.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "AssaultRifle") == 0)
+			lle_AssaultRifles.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "DMR") == 0)
+			lle_DMRs.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "Special") == 0)
+			lle_Specials.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "SVD") == 0)
+			lle_SVD.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "ASVal") == 0)
+			lle_ASVal.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else if (_stricmp(weapType.c_str(), "AK74M") == 0)
+			lle_AK74M.push_back({ weapForm, nullptr, 1, 1, 0 });
+		else
+			_MESSAGE("Unknown weapType: %s", weapType.c_str());
 	}
 
 	settingFile.close();
@@ -102,35 +108,37 @@ bool Read_SettingFile() {
 	return true;
 }
 
-void SetLeveledList(const UInt32 formId, const std::vector<TESLeveledList::Entry>& lle) {
-	TESForm* ll_form = GetFormFromIdentifier("RandomBox.esp", formId);
-	if (!ll_form) {
-		_MESSAGE("Cannot find Leveled List![0x%s]", formId);
+void SetLeveledList(const std::string& pluginName, const std::string& formId, const std::vector<TESLeveledList::Entry>& lle) {
+	TESForm* ll_form = GetFormFromIdentifier(pluginName, formId);
+	if (!ll_form)
 		return;
-	}
 
 	TESLevItem* ll_randBox = DYNAMIC_CAST(ll_form, TESForm, TESLevItem);
-	if (!ll_randBox) {
-		_MESSAGE("Cannot find Leveled List![0x%s]", formId);
+	if (!ll_randBox)
 		return;
-	}
-
-	if (ll_randBox->leveledList.entries)
-		Heap_Free(ll_randBox->leveledList.entries);
 
 	ll_randBox->leveledList.entries = (TESLeveledList::Entry*)lle.data();
 	ll_randBox->leveledList.length = lle.size();
 }
 
 void Install_RandomBox() {
-	if (!Read_SettingFile()) {
+	if (!ReadSettingFile()) {
 		_MESSAGE("Can't read RandomBox setting file!");
 		_MESSAGE("RandomBox will not work");
 		return;
 	}
 
-	for each (auto& ll_elem in g_randomBoxLLs)
-		SetLeveledList(ll_elem.first, ll_elem.second);
+	SetLeveledList("RandomBox.esp", "814", lle_HandGuns);
+	SetLeveledList("RandomBox.esp", "81C", lle_SniperRifles);
+	SetLeveledList("RandomBox.esp", "81D", lle_SMGs);
+	SetLeveledList("RandomBox.esp", "81E", lle_Shotguns);
+	SetLeveledList("RandomBox.esp", "81F", lle_AssaultRifles);
+	SetLeveledList("RandomBox.esp", "83D", lle_DMRs);
+	SetLeveledList("RandomBox.esp", "83E", lle_Specials);
+	SetLeveledList("RandomBox.esp", "861", lle_SVD);
+	SetLeveledList("RandomBox.esp", "862", lle_ASVal);
+	SetLeveledList("RandomBox.esp", "863", lle_AK74M);
+
 
 	_MESSAGE("RandomBox Installed!");
 }
