@@ -14,4 +14,4 @@
 #include "RandomBox.h"
 
 #define PLUGIN_NAME	"RandomBox"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 2, 0)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 3, 0)

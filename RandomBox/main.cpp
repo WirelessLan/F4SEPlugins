@@ -11,7 +11,8 @@ F4SEMessagingInterface*	g_messaging;
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
-	case F4SEMessagingInterface::kMessage_GameLoaded:
+	case F4SEMessagingInterface::kMessage_NewGame:
+	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		Install_RandomBox();
 		break;
 	}
