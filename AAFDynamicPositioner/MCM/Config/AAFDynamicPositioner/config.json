@@ -86,7 +86,7 @@
           "id": "iPositionerType:Settings",
           "text": "위치 조절 타입",
           "type": "dropdown",
-          "help": "위치 조절 타입을 설정합니다.)",
+          "help": "위치 조절 타입을 설정합니다.",
           "valueOptions": {
             "options": ["스케일", "절댓값"],
             "sourceType": "ModSettingInt"
@@ -145,6 +145,16 @@
         {
           "id": "DecZAxis",
           "text": "Z축 감소",
+          "type": "hotkey"
+        },
+        {
+          "id": "ClearOffset",
+          "text": "위치 초기화",
+          "type": "hotkey"
+        },
+        {
+          "id": "ShowOffset",
+          "text": "선택된 씬의 오프셋 정보 표시",
           "type": "hotkey"
         }
       ]

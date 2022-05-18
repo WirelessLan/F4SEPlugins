@@ -7,6 +7,7 @@
 #include <f4se/NiNodes.h>
 #include <f4se/PapyrusVM.h>
 #include <f4se/PapyrusNativeFunctions.h>
+#include <f4se/PapyrusEvents.h>
 #include <f4se/ScaleformCallbacks.h>
 #include <f4se/ScaleformValue.h>
 
@@ -23,7 +24,7 @@
 #include "PositionData.h"
 
 #define PLUGIN_NAME	"AAFDynamicPositioner"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 3, 0)
 
 enum PositionerType {
 	kPositionerType_Relative = 0,

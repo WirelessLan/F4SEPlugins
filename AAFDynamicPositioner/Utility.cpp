@@ -62,4 +62,8 @@ namespace Utility {
 			return !std::isspace(ch);
 			}).base(), s.end());
 	}
+
+	void ShowMessagebox(std::string asText) {
+		CallGlobalFunctionNoWait1<BSFixedString>("Debug", "Messagebox", BSFixedString(asText.c_str()));
+	}
 }

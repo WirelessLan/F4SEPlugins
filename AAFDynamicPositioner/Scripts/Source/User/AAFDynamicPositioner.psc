@@ -10,6 +10,8 @@ Int Function CanMovePosition() native global
 Actor Function ChangeSelectedActor() native global
 Actor Function GetSelectedActor() native global
 Spell Function GetHighlightSpell(Bool IsMovable) native global
+Function ClearSelectedActorOffset() native global
+Function ShowSelectedSceneOffset() native global
 
 Function AddHighlight(Actor akTarget, Bool canMove) global
 	If akTarget == None

@@ -78,6 +78,24 @@
 				"function": "MoveActor",
 				"params": ["Z", false]
 			}
-    	}
+    	},
+		{
+			"id": "ClearOffset",
+			"desc": "선택된 액터의 위치를 초기화합니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "ClearSelectedActorOffset"
+			}
+		},
+		{
+			"id": "ShowOffset",
+			"desc": "선택된 액터가 포함된 씬의 오프셋 정보를 보여줍니다",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "AAFDynamicPositioner",
+				"function": "ShowSelectedSceneOffset"
+			}
+		}
 	]
 }

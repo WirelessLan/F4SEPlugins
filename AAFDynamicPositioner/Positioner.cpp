@@ -90,12 +90,12 @@ namespace Positioner {
 		return true;
 	}
 
-	bool IsActorInPlayerScene(UInt32 sceneId) {
+	bool IsActorInPlayerScene(ActorData* actorData) {
 		ActorData* playerActorData = GetPlayerActorData();
 		if (!playerActorData)
 			return false;
 
-		if (sceneId != playerActorData->sceneId)
+		if (actorData->sceneId != playerActorData->sceneId)
 			return false;
 
 		return true;
@@ -112,7 +112,7 @@ namespace Positioner {
 
 	void ApplyOffset(ActorData* actorData) {
 		// 플레이어 씬만 위치 조절이고 현재 액터가 플레이어 씬에 들어있지 않은 경우
-		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsActorInPlayerScene(actorData->sceneId))
+		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsActorInPlayerScene(actorData))
 			return;
 
 		// 스케일 기반 위치 조절일 경우 스케일이 1인 액터는 위치 조절을 적용하지 않음
@@ -461,6 +461,51 @@ namespace Positioner {
 		return spell;
 	}
 
+	void ClearSelectedActorOffset(StaticFunctionTag*) {
+		if (!positionerEnabled)
+			return;
+
+		ActorData* selectedActorData = GetSelectedActorData();
+		if (!selectedActorData)
+			return;
+
+		selectedActorData->offset = NiPoint3();
+
+		ApplyOffset(selectedActorData);
+		SavePosition(selectedActorData);
+	}
+
+	void ShowSelectedSceneOffset(StaticFunctionTag*) {
+		if (!positionerEnabled)
+			return;
+
+		ActorData* selectedActorData = GetSelectedActorData();
+		if (!selectedActorData)
+			return;
+
+		SceneData* selectedSceneData = GetSceneDataById(selectedActorData->sceneId);
+		if (!selectedSceneData)
+			return;
+
+		std::string msg = selectedSceneData->position + "\n";
+		for (UInt32 ii = 0; ii < selectedSceneData->actorList.size(); ii++) {
+			for (UInt32& actorId : selectedSceneData->actorList) {
+				ActorData* pActorData = GetActorDataByFormId(actorId);
+				if (!pActorData)
+					continue;
+
+				if (ii == pActorData->posIndex) {
+					if (pActorData == selectedActorData)
+						msg += "[*]";
+					else
+						msg += "[" + std::to_string(ii) + "]";
+					msg += std::to_string(pActorData->offset.x) + ", " + std::to_string(pActorData->offset.y) + ", " + std::to_string(pActorData->offset.z) + "\n";
+				}
+			}
+		}
+		Utility::ShowMessagebox(msg);
+	}
+
 	void ResetPositioner() {
 		actorMap.clear();
 		sceneMap.clear();
@@ -490,5 +535,9 @@ namespace Positioner {
 			new NativeFunction0<StaticFunctionTag, Actor*>("GetSelectedActor", "AAFDynamicPositioner", GetSelectedActor, vm));
 		vm->RegisterFunction(
 			new NativeFunction1<StaticFunctionTag, SpellItem*, bool>("GetHighlightSpell", "AAFDynamicPositioner", GetHighlightSpell, vm));
+		vm->RegisterFunction(
+			new NativeFunction0<StaticFunctionTag, void>("ClearSelectedActorOffset", "AAFDynamicPositioner", ClearSelectedActorOffset, vm));
+		vm->RegisterFunction(
+			new NativeFunction0<StaticFunctionTag, void>("ShowSelectedSceneOffset", "AAFDynamicPositioner", ShowSelectedSceneOffset, vm));
 	}
 }
