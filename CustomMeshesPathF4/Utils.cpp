@@ -30,6 +30,9 @@ bool IsFileExists(const std::string& path) {
 RelocAddr <_GetExtraLeveledCreature> GetExtraLeveledCreature_Internal(0x000436A0);
 
 TESForm* GetActorBaseForm(Actor* actor) {
+	if (!actor || !actor->extraDataList)
+		return nullptr;
+
 	ExtraLeveledCreature* extraLeveledCreature = GetExtraLeveledCreature_Internal(actor->extraDataList, 0x2D);
 	return extraLeveledCreature ? extraLeveledCreature->baseForm : nullptr;
 }
