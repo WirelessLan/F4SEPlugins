@@ -15,10 +15,19 @@ void ActorChangeMeshes_Hook(void* arg1, Actor* arg2) {
 	bool isTarget = false;
 	std::thread::id threadId = std::this_thread::get_id();
 
-	if (CheckCACSRule(arg2->race->formID, arg2->baseForm->formID)) {
+	UInt32 raceFormId = 0;
+	if (arg2->race)
+		raceFormId = arg2->race->formID;
+
+	UInt32 baseFormId = arg2->baseForm ? arg2->baseForm->formID : 0;
+	TESForm* baseForm = GetActorBaseForm(arg2);
+	if (baseForm)
+		baseFormId = baseForm->formID;
+
+	if (raceFormId && baseFormId && CheckCACSRule(raceFormId, baseFormId)) {
 		isTarget = true;
-		std::string racePath = GetCACSPath(RuleType::kRuleType_Race, arg2->race->formID);
-		std::string actorPath = GetCACSPath(RuleType::kRuleType_Actor, arg2->baseForm->formID);
+		std::string racePath = GetCACSPath(RuleType::kRuleType_Race, raceFormId);
+		std::string actorPath = GetCACSPath(RuleType::kRuleType_Actor, baseFormId);
 		g_acThreadMap.insert(std::pair<std::thread::id, std::pair<std::string, std::string>>(threadId, std::pair<std::string, std::string>(racePath, actorPath)));
 	}
 

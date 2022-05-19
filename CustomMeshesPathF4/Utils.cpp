@@ -27,6 +27,13 @@ bool IsFileExists(const std::string& path) {
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+RelocAddr <_GetExtraLeveledCreature> GetExtraLeveledCreature_Internal(0x000436A0);
+
+TESForm* GetActorBaseForm(Actor* actor) {
+	ExtraLeveledCreature* extraLeveledCreature = GetExtraLeveledCreature_Internal(actor->extraDataList, 0x2D);
+	return extraLeveledCreature ? extraLeveledCreature->baseForm : nullptr;
+}
+
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
 	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
 	return GetFormFromIdentifier(pluginName, formID);

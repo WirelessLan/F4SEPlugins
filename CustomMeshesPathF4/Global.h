@@ -3,6 +3,7 @@
 #include <f4se/GameReferences.h>
 #include <f4se/GameData.h>
 #include <f4se/GameRTTI.h>
+#include <f4se/GameExtraData.h>
 #include <f4se/NiExtraData.h>
 #include <f4se/xbyak/xbyak.h>
 
@@ -21,4 +22,4 @@
 #include "Utils.h"
 
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 1)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 2)
