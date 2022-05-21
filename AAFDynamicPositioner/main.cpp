@@ -20,14 +20,16 @@ public:
 			return;
 
 		if (args->numArgs == 2) {
-			if (strcmp(args->args[0].GetString(), "bAdjustPlayerSceneOnly") == 0)
-				g_pluginSettings.bAdjustPlayerSceneOnly = args->args[1].GetBool();
+			if (strcmp(args->args[0].GetString(), "bSeparatePlayerOffset") == 0)
+				g_pluginSettings.bSeparatePlayerOffset = args->args[1].GetBool();
 			else if (strcmp(args->args[0].GetString(), "bUnifyAAFDoppelgangerScale") == 0)
 				g_pluginSettings.bUnifyAAFDoppelgangerScale = args->args[1].GetBool();
 			else if (strcmp(args->args[0].GetString(), "fMoveAxisSize") == 0)
 				g_pluginSettings.fMoveAxisSize = args->args[1].GetNumber();
-			else if (strcmp(args->args[0].GetString(), "iPositionerType") == 0)
-				g_pluginSettings.iPositionerType = args->args[1].GetInt();
+			else if (strcmp(args->args[0].GetString(), "iPlayerPositionerType") == 0)
+				g_pluginSettings.iPlayerPositionerType = (PositionerType)args->args[1].GetInt();
+			else if (strcmp(args->args[0].GetString(), "iNPCPositionerType") == 0)
+				g_pluginSettings.iNPCPositionerType = (PositionerType)args->args[1].GetInt();
 		}
 	}
 };
@@ -95,15 +97,17 @@ extern "C" {
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
 
-		ConfigReader::GetConfigValue("Settings", "bAdjustPlayerSceneOnly", &g_pluginSettings.bAdjustPlayerSceneOnly);
+		ConfigReader::GetConfigValue("Settings", "bSeparatePlayerOffset", &g_pluginSettings.bSeparatePlayerOffset);
 		ConfigReader::GetConfigValue("Settings", "bUnifyAAFDoppelgangerScale", &g_pluginSettings.bUnifyAAFDoppelgangerScale);
 		ConfigReader::GetConfigValue("Settings", "fMoveAxisSize", &g_pluginSettings.fMoveAxisSize);
-		ConfigReader::GetConfigValue("Settings", "iPositionerType", &g_pluginSettings.iPositionerType);
-
-		_MESSAGE("bPlayerSceneOnly: %d", g_pluginSettings.bAdjustPlayerSceneOnly);
+		ConfigReader::GetConfigValue("Settings", "iPlayerPositionerType", (SInt32*)&g_pluginSettings.iPlayerPositionerType);
+		ConfigReader::GetConfigValue("Settings", "iNPCPositionerType", (SInt32*)&g_pluginSettings.iNPCPositionerType);
+		
+		_MESSAGE("bSeparatePlayerOffset: %d", g_pluginSettings.bSeparatePlayerOffset);
 		_MESSAGE("bUnifyAAFDoppelgangerScale: %d", g_pluginSettings.bUnifyAAFDoppelgangerScale);
 		_MESSAGE("fMoveAxisSize: %f", g_pluginSettings.fMoveAxisSize);
-		_MESSAGE("iPositionerType: %d", g_pluginSettings.iPositionerType);
+		_MESSAGE("iPlayerPositionerType: %d", g_pluginSettings.iPlayerPositionerType);
+		_MESSAGE("iNPCPositionerType: %d", g_pluginSettings.iNPCPositionerType);
 
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);

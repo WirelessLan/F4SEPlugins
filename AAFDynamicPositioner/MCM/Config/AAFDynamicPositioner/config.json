@@ -22,10 +22,10 @@
           "type": "section"
         },
         {
-          "id": "bAdjustPlayerSceneOnly:Settings",
-          "text": "플레이어의 씬에만 적용 여부",
+          "id": "bSeparatePlayerOffset:Settings",
+          "text": "플레이어/NPC 별도 적용 여부",
           "type": "switcher",
-          "help": "실시간 위치 조절 기능을 플레이어 캐릭터가 포함된 씬에서만 재생할지 여부를 설정합니다.",
+          "help": "위치 조절시 플레이어 캐릭터가 포함된 씬과 그 외의 씬을 따로 적용할지 여부를 설정합니다.",
           "valueOptions": {
             "sourceType": "ModSettingBool"
           },
@@ -33,7 +33,7 @@
               "type": "CallExternalFunction",
               "plugin": "AAFDynamicPositioner",
               "function": "UpdateSettings",
-              "params": ["bAdjustPlayerSceneOnly", "{value}"]
+              "params": ["bSeparatePlayerOffset", "{value}"]
           }
         },
         {
@@ -83,10 +83,10 @@
           }
         },
         {
-          "id": "iPositionerType:Settings",
-          "text": "위치 조절 타입",
+          "id": "iPlayerPositionerType:Settings",
+          "text": "플레이어 위치 조절 타입",
           "type": "dropdown",
-          "help": "위치 조절 타입을 설정합니다.",
+          "help": "플레이어가 포함된 씬의 위치 조절 타입을 설정합니다.",
           "valueOptions": {
             "options": ["스케일", "절댓값"],
             "sourceType": "ModSettingInt"
@@ -95,7 +95,23 @@
               "type": "CallExternalFunction",
               "plugin": "AAFDynamicPositioner",
               "function": "UpdateSettings",
-              "params": ["iPositionerType", "{value}"]
+              "params": ["iPlayerPositionerType", "{value}"]
+          }
+        },
+        {
+          "id": "iNPCPositionerType:Settings",
+          "text": "NPC 위치 조절 타입",
+          "type": "dropdown",
+          "help": "플레이어가 포함되지 않은 씬의 위치 조절 타입을 설정합니다.",
+          "valueOptions": {
+            "options": ["스케일", "절댓값"],
+            "sourceType": "ModSettingInt"
+          },
+          "action": {
+              "type": "CallExternalFunction",
+              "plugin": "AAFDynamicPositioner",
+              "function": "UpdateSettings",
+              "params": ["iNPCPositionerType", "{value}"]
           }
         }
       ]

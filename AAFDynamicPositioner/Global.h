@@ -24,7 +24,7 @@
 #include "PositionData.h"
 
 #define PLUGIN_NAME	"AAFDynamicPositioner"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 3, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 4, 0)
 
 enum PositionerType {
 	kPositionerType_Relative = 0,
@@ -32,10 +32,11 @@ enum PositionerType {
 };
 
 struct PluginSettings {
-	bool bAdjustPlayerSceneOnly = false;
+	bool bSeparatePlayerOffset = false;
 	bool bUnifyAAFDoppelgangerScale = true;
 	float fMoveAxisSize = 1.0f;
-	SInt32 iPositionerType = PositionerType::kPositionerType_Relative;
+	PositionerType iPlayerPositionerType = PositionerType::kPositionerType_Relative;
+	PositionerType iNPCPositionerType = PositionerType::kPositionerType_Relative;
 };
 
 extern PluginSettings g_pluginSettings;

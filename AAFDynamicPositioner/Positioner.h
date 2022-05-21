@@ -30,7 +30,6 @@ struct SceneData {
 
 namespace Positioner {
 	ActorData* GetActorDataByFormId(UInt32 formId);
-	SceneData* GetSceneDataById(UInt64 sceneId);
 	void ResetPositioner();
 	void RegisterPositionerFunctions(VirtualMachine* vm);
 }

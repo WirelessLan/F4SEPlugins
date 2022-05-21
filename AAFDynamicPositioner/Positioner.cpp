@@ -13,7 +13,6 @@ enum CanMove {
 	kCanMove_YES = 0,
 	kCanMove_NO_SELECTION,
 	kCanMove_NO_SCALE,
-	kCanMove_NO_PLAYER,
 	kCanMove_NO_DISABLED
 };
 
@@ -27,6 +26,9 @@ namespace Positioner {
 	}
 
 	ActorData* GetPlayerActorData() {
+		if (!*g_player)
+			return nullptr;
+
 		return GetActorDataByFormId((*g_player)->formID);
 	}
 
@@ -45,34 +47,105 @@ namespace Positioner {
 		return &sceneIt->second;
 	}
 
+	UInt64 GetSceneIdFromActorList(VMArray<Actor*>& actorList) {
+		for (UInt32 ii = 0; ii < actorList.Length(); ii++) {
+			Actor* actorPtr = nullptr;
+			actorList.Get(&actorPtr, ii);
+
+			ActorData* actorData = GetActorDataByFormId(actorPtr->formID);
+			if (!actorData)
+				continue;
+
+			// 액터를 이용하여 씬의 ID를 가져옴
+			return actorData->sceneId;
+		}
+
+		return 0;
+	}
+
+	bool IsSceneHasPlayer(SceneData* sceneData) {
+		if (!sceneData)
+			return false;
+
+		ActorData* playerActorData = GetPlayerActorData();
+		if (!playerActorData)
+			return false;
+
+		for (UInt32 formId : sceneData->actorList)
+			if (formId == playerActorData->formId)
+				return true;
+
+		return false;
+	}
+
+	bool IsActorInPlayerScene(ActorData* actorData) {
+		if (!actorData)
+			return false;
+
+		ActorData* playerActorData = GetPlayerActorData();
+		if (!playerActorData)
+			return false;
+
+		if (actorData->sceneId == playerActorData->sceneId)
+			return true;
+
+		return false;
+	}
+
+	bool IsActorScale1(Actor* actor) {
+		if (!actor)
+			return false;
+
+		float actorScale = Utility::GetActualScale(actor);
+		UInt32 intScale = static_cast<UInt32>(std::round(actorScale * 100));
+		if (intScale == 100)
+			return true;
+		return false;
+	}
+
+	std::vector<PositionData::Data> LoadPosition(SceneData* sceneData) {
+		if (!sceneData)
+			return std::vector<PositionData::Data>();
+
+		if (g_pluginSettings.bSeparatePlayerOffset)
+			return PositionData::LoadPositionData(sceneData->position, IsSceneHasPlayer(sceneData));
+		else
+			return PositionData::LoadPositionData(sceneData->position, false);
+	}
+
+	void SavePosition(SceneData* sceneData) {
+		if (!sceneData)
+			return;
+
+		if (g_pluginSettings.bSeparatePlayerOffset)
+			PositionData::SavePositionData(sceneData->position, sceneData->actorList, IsSceneHasPlayer(sceneData));
+		else
+			PositionData::SavePositionData(sceneData->position, sceneData->actorList, false);
+	}
+
 	void SavePosition(ActorData* actorData) {
 		if (!actorData)
 			return;
 
-		SceneData* sceneData = GetSceneDataById(actorData->sceneId);
-		if (!sceneData)
-			return;
-
-		PositionData::SavePositionData(sceneData);
+		SavePosition(GetSceneDataById(actorData->sceneId));
 	}
 
 	bool GetPositionData(PositionData::Data& o_data, const std::vector<PositionData::Data> posVec, UInt32 index) {
-		for (PositionData::Data data: posVec) {
+		for (PositionData::Data data : posVec)
 			if (data.index == index) {
 				o_data = data;
 				return true;
 			}
-		}
 
 		return false;
 	}
 
 	void SetOffset(NiPoint3& offset, const std::vector<PositionData::Data> posVec, UInt32 posIdx) {
-		offset = NiPoint3();
-
 		PositionData::Data data;
 		if (GetPositionData(data, posVec, posIdx))
 			offset = data.offset;
+		else
+			offset = NiPoint3();
 	}
 
 	NiPoint3 GetRotatedOffset(const NiPoint3& offset, float rot) {
@@ -82,54 +155,22 @@ namespace Positioner {
 		return NiPoint3(rotatedOffsetX, rotatedOffsetY, rotatedOffsetZ);
 	}
 
-	bool IsPlayerInScene() {
-		ActorData* playerActorData = GetPlayerActorData();
-		if (!playerActorData)
-			return false;
-
-		return true;
-	}
-
-	bool IsActorInPlayerScene(ActorData* actorData) {
-		ActorData* playerActorData = GetPlayerActorData();
-		if (!playerActorData)
-			return false;
-
-		if (actorData->sceneId != playerActorData->sceneId)
-			return false;
-
-		return true;
-	}
-
-	bool IsActorScale1(Actor* actor) {
-		float actorScale = Utility::GetActualScale(actor);
-		UInt32 intScale = static_cast<UInt32>(std::round(actorScale * 100));
-		if (intScale == 100)
-			return true;
-
-		return false;
-	}
-
 	void ApplyOffset(ActorData* actorData) {
-		// 플레이어 씬만 위치 조절이고 현재 액터가 플레이어 씬에 들어있지 않은 경우
-		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsActorInPlayerScene(actorData))
-			return;
-
-		// 스케일 기반 위치 조절일 경우 스케일이 1인 액터는 위치 조절을 적용하지 않음
-		if (g_pluginSettings.iPositionerType == PositionerType::kPositionerType_Relative && IsActorScale1(actorData->actor))
+		PositionerType positionerType = IsActorInPlayerScene(actorData) ? g_pluginSettings.iPlayerPositionerType : g_pluginSettings.iNPCPositionerType;
+		if (positionerType == PositionerType::kPositionerType_Relative && IsActorScale1(actorData->actor))
 			return;
 
 		NiPoint3 rotatedOffset = GetRotatedOffset(actorData->offset, actorData->actor->rot.z);
 
 		if (actorData->extraRefPath) {
-			if (g_pluginSettings.iPositionerType == PositionerType::kPositionerType_Relative) {
+			if (positionerType == PositionerType::kPositionerType_Relative) {
 				float scale = Utility::GetActualScale(actorData->actor);
 				float scaleDiff = 1.0f - scale;
 				actorData->extraRefPath->x = actorData->originPos.x + rotatedOffset.x * scaleDiff;
 				actorData->extraRefPath->y = actorData->originPos.y + rotatedOffset.y * scaleDiff;
 				actorData->extraRefPath->z = actorData->originPos.z + rotatedOffset.z * scaleDiff;
 			}
-			else if (g_pluginSettings.iPositionerType == PositionerType::kPositionerType_Absolute) {
+			else if (positionerType == PositionerType::kPositionerType_Absolute) {
 				actorData->extraRefPath->x = actorData->originPos.x + rotatedOffset.x;
 				actorData->extraRefPath->y = actorData->originPos.y + rotatedOffset.y;
 				actorData->extraRefPath->z = actorData->originPos.z + rotatedOffset.z;
@@ -138,6 +179,9 @@ namespace Positioner {
 	}
 
 	bool IsValidExtraRefrPath(BSExtraData* extraData) {
+		if (!extraData)
+			return false;
+
 		uintptr_t* vtablePtr = reinterpret_cast<uintptr_t*>(extraData);
 		if (*vtablePtr == ExtraRefrPath_VTable.GetUIntPtr())
 			return true;
@@ -145,6 +189,9 @@ namespace Positioner {
 	}
 
 	ExtraRefrPath* GetExtraRefrPath(Actor* actor) {
+		if (!actor)
+			return nullptr;
+
 		BSExtraData* extraData = actor->extraDataList->m_data;
 		while (extraData) {
 			if (IsValidExtraRefrPath(extraData))
@@ -182,7 +229,7 @@ namespace Positioner {
 
 			bool isPlayerActor = false;
 
-			// 현재 액터가 플레이어인 경우 플레이어의 도플갱어를 불러옴
+			// 현재 액터가 플레이어인 경우 인자의 도플갱어를 사용
 			if (actorPtr == *g_player) {
 				isPlayerActor = true;
 				actorPtr = doppelganger;
@@ -214,9 +261,20 @@ namespace Positioner {
 	}
 
 	void AnimationChange(StaticFunctionTag*, BSFixedString position, VMArray<Actor*> actors) {
-		UInt64 sceneId = 0;
+		UInt64 sceneId = GetSceneIdFromActorList(actors);
+		if (!sceneId)
+			return;
 
-		std::vector<PositionData::Data> posDataVec = PositionData::LoadPositionData(std::string(position));
+		// 씬 ID를 이용하여 씬 맵에서 씬을 찾는다
+		SceneData* sceneData = GetSceneDataById(sceneId);
+		if (!sceneData)
+			return;
+
+		sceneData->position = position;
+
+		// 씬 정보를 이용하여 위치 정보를 읽어옴
+		std::vector<PositionData::Data> posDataVec = LoadPosition(sceneData);
+
 		for (UInt32 ii = 0; ii < actors.Length(); ii++) {
 			Actor* actorPtr = nullptr;
 			actors.Get(&actorPtr, ii);
@@ -225,22 +283,17 @@ namespace Positioner {
 			if (!actorData)
 				continue;
 
-			// 액터를 이용하여 씬의 ID를 가져옴
-			if (sceneId == 0)
-				sceneId = actorData->sceneId;
+			actorData->posIndex = ii;
+			SetOffset(actorData->offset, posDataVec, ii);
 
 			// 액터의 실제 위치를 저장하는 ExtraRefrPath를 불러옴
 			ExtraRefrPath* extraRefPath = GetExtraRefrPath(actorData->actor);
-
-			actorData->posIndex = ii;
-			SetOffset(actorData->offset, posDataVec, ii);	// 오프셋 불러옴
-
 			if (!actorData->extraRefPath && !extraRefPath)
 				continue;
 
 			// ExtraRefPath는 변하지 않은 경우
 			if (actorData->extraRefPath && actorData->extraRefPath == extraRefPath) {
-				// 좌표로 원복
+				// 위치 조절 전 좌표로 원복
 				actorData->extraRefPath->x = actorData->originPos.x;
 				actorData->extraRefPath->y = actorData->originPos.y;
 				actorData->extraRefPath->z = actorData->originPos.z;
@@ -255,17 +308,12 @@ namespace Positioner {
 			// 액터 오프셋 적용
 			ApplyOffset(actorData);
 		}
-
-		// 씬 ID를 이용하여 씬 맵에서 씬을 찾는다
-		SceneData* sceneData = GetSceneDataById(sceneId);
-		if (!sceneData)
-			return;
-
-		sceneData->position = position;
 	}
 
 	void SceneEnd(StaticFunctionTag*, VMArray<Actor*> actors) {
-		UInt64 sceneId = 0;
+		UInt64 sceneId = GetSceneIdFromActorList(actors);
+		if (!sceneId)
+			return;
 
 		for (UInt32 ii = 0; ii < actors.Length(); ii++) {
 			Actor* actorPtr = nullptr;
@@ -274,10 +322,6 @@ namespace Positioner {
 			ActorData* actorData = GetActorDataByFormId(actorPtr->formID);
 			if (!actorData)
 				continue;
-
-			// 액터를 이용하여 씬의 ID를 가져옴
-			if (sceneId == 0)
-				sceneId = actorData->sceneId;
 
 			// 선택한 액터가 종료되는 씬에 포함되어있을 경우 선택한 액터를 초기화
 			if (selectedActorFormId == actorData->formId)
@@ -327,7 +371,6 @@ namespace Positioner {
 		}
 
 		ApplyOffset(actorData);
-
 		SavePosition(actorData);
 	}
 
@@ -339,14 +382,11 @@ namespace Positioner {
 		if (!selectedActorData)
 			return CanMove::kCanMove_NO_SELECTION;
 
-		// 스케일이 1이면 이동 불가
-		if (IsActorScale1(selectedActorData->actor)) {
-			if (g_pluginSettings.iPositionerType == PositionerType::kPositionerType_Relative)
-				return CanMove::kCanMove_NO_SCALE;
-		}
+		PositionerType positionerType = IsActorInPlayerScene(selectedActorData) ? g_pluginSettings.iPlayerPositionerType : g_pluginSettings.iNPCPositionerType;
 
-		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsPlayerInScene())
-			return CanMove::kCanMove_NO_PLAYER;
+		// 위치 조절 타입이 스케일이고 액터 스케일이 1이면 이동 불가
+		if (positionerType == PositionerType::kPositionerType_Relative && IsActorScale1(selectedActorData->actor))
+			return CanMove::kCanMove_NO_SCALE;
 
 		return CanMove::kCanMove_YES;
 	}
@@ -355,11 +395,11 @@ namespace Positioner {
 		if (!positionerEnabled)
 			return nullptr;
 
-		if (g_pluginSettings.bAdjustPlayerSceneOnly && !IsPlayerInScene())
-			return nullptr;
+		ActorData* actorData;
+		SceneData* sceneData;
 
 		// 현재 선택되어있는 액터를 가져옴
-		ActorData* actorData = GetSelectedActorData();
+		actorData = GetSelectedActorData();
 		// 현재 선택되어있는 액터가 없을 경우
 		if (!actorData) {
 			// 플레이어로 진행중인 씬이 있는지 확인
@@ -384,8 +424,11 @@ namespace Positioner {
 			if (sceneMap.size() == 0)
 				return nullptr;
 
-			const SceneData& sceneData = sceneMap.begin()->second;
-			actorData = GetActorDataByFormId(sceneData.actorList.front());
+			sceneData = &sceneMap.begin()->second;
+			if (sceneData->actorList.size() == 0)
+				return nullptr;
+
+			actorData = GetActorDataByFormId(sceneData->actorList.front());
 			if (!actorData)
 				return nullptr;
 
@@ -398,15 +441,15 @@ namespace Positioner {
 		if (sceneIt == sceneMap.end())
 			return nullptr;
 
-		const SceneData& sceneData = sceneIt->second;
+		sceneData = &sceneIt->second;
 
 		// 현재 선택된 액터를 찾고 그 액터의 다음 액터를 찾아서 반환
-		auto actorIt = std::find(sceneData.actorList.begin(), sceneData.actorList.end(), actorData->formId);
-		if (actorIt == sceneData.actorList.end())
+		auto actorIt = std::find(sceneData->actorList.begin(), sceneData->actorList.end(), actorData->formId);
+		if (actorIt == sceneData->actorList.end())
 			return nullptr;
 
 		actorIt = std::next(actorIt);
-		if (actorIt != sceneData.actorList.end()) {
+		if (actorIt != sceneData->actorList.end()) {
 			actorData = GetActorDataByFormId(*actorIt);
 			if (!actorData)
 				return nullptr;
@@ -419,10 +462,11 @@ namespace Positioner {
 		// 해당 씬의 다음 씬의 첫 액터를 찾아서 반환
 		sceneIt = std::next(sceneIt);
 		if (sceneIt != sceneMap.end()) {
-			if (sceneIt->second.actorList.size() == 0)
+			sceneData = &sceneIt->second;
+			if (sceneData->actorList.size() == 0)
 				return nullptr;
 
-			actorData = GetActorDataByFormId(sceneIt->second.actorList.front());
+			actorData = GetActorDataByFormId(sceneData->actorList.front());
 			if (!actorData)
 				return nullptr;
 
@@ -430,12 +474,13 @@ namespace Positioner {
 			return actorData->actor;
 		}
 
-		if (sceneMap.size() == 0)
-			return nullptr;
-
 		// 선택된 액터가 마지막 씬의 마지막 액터였을 경우
 		// 가장 첫 씬의 첫 액터를 찾아서 반환
-		actorData = GetActorDataByFormId(sceneMap.begin()->second.actorList.front());
+		sceneData = &sceneMap.begin()->second;
+		if (sceneData->actorList.size() == 0)
+			return nullptr;
+
+		actorData = GetActorDataByFormId(sceneData->actorList.front());
 		if (!actorData)
 			return nullptr;
 

@@ -72,16 +72,13 @@ Function MoveActor(String axis, Bool isInc) global
 
 	; 1: 선택된 액터가 없음
 	; 2: 스케일 1인 액터
-	; 3: 플레이어에게만 적용
-	; 4: 위치조절모드 Off
+	; 3: 위치조절모드 Off
 	If canMove != 0
 		If canMove == 1
 			Debug.Notification("선택된 액터가 없습니다.")
 		ElseIf canMove == 2
 			Debug.Notification("스케일이 1인 액터는 이동할 수 없습니다.")
 		ElseIf canMove == 3
-			Debug.Notification("플레이어의 씬에 포함된 액터가 아닙니다.")
-		ElseIf canMove == 4
 			Debug.Notification("위치 조절 모드가 꺼져있습니다.")
 		EndIf
 

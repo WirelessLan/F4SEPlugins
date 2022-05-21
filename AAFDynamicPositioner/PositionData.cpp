@@ -28,8 +28,9 @@ namespace PositionData {
 		return retVal;
 	}
 
-	std::vector<Data> LoadPositionData(const std::string& position) {
-		std::string posPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + position + ".txt";
+	std::vector<Data> LoadPositionData(const std::string& position, bool isPlayerScene) {
+		std::string posPath = isPlayerScene ?
+			"Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Player\\" + position + ".txt" : "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + position + ".txt";
 		std::ifstream posFile(posPath);
 
 		std::vector<Data> result;
@@ -76,14 +77,15 @@ namespace PositionData {
 		return result;
 	}
 
-	bool SavePositionData(const SceneData* scene) {
-		std::string posPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + scene->position + ".txt";
+	bool SavePositionData(const std::string& position, const std::vector<UInt32>& actorList, bool isPlayerScene) {
+		std::string posPath = isPlayerScene ?
+			"Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Player\\" + position + ".txt" : "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + position + ".txt";
 		std::ofstream posFile(posPath);
 
 		if (!posFile.is_open())
 			return false;
 
-		for (UInt32 formId : scene->actorList) {
+		for (UInt32 formId : actorList) {
 			ActorData* actorData = Positioner::GetActorDataByFormId(formId);
 			if (!actorData)
 				return false;
