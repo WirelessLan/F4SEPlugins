@@ -200,5 +200,5 @@ void SavePosition() {
 
 	WriteWeaponPositionFile(modInfo->name, formId, *weapPos);
 
-	ShowNotification("Weapon Position Saved...");
+	ShowNotification("Weapon Position Saved!");
 }

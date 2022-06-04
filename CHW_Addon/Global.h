@@ -7,7 +7,7 @@
 
 #include <f4se_common/f4se_version.h>
 #include <f4se_common/Relocation.h>
-#include <f4se_common/BranchTrampoline.h>
+#include <f4se_common/SafeWrite.h>
 
 #include <unordered_map>
 #include <fstream>
@@ -17,4 +17,4 @@
 #include "Utility.h"
 
 #define PLUGIN_NAME	"CHW_Addon"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 1, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
