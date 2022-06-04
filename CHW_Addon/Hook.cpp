@@ -3,8 +3,13 @@
 const uintptr_t cloningWeapon_Offset = 0x332B4;
 const uintptr_t handleButtonEvent_Offset = 0x30C32;
 
-uintptr_t cloningWeapon_Target;
-uintptr_t handleButtonEvent_Target;
+uintptr_t cloningWeapon_JmpTarget;
+uintptr_t handleButtonEvent_JmpTarget;
+
+extern "C" {
+	void Hook_CloningWeapon();
+	void Hook_HandleButtonEvent();
+}
 
 uintptr_t CHWAddress() {
 	static uintptr_t chwBaseAddr = (uintptr_t)GetModuleHandle("ClassicHolsteredWeapons.dll");
@@ -16,7 +21,8 @@ uintptr_t CHWAddress(uintptr_t offset) {
 }
 
 void Install_CloningWeaponHook() {
-	cloningWeapon_Target = CHWAddress(cloningWeapon_Offset);
+	uintptr_t cloningWeapon_Target = CHWAddress(cloningWeapon_Offset);
+	cloningWeapon_JmpTarget = cloningWeapon_Target + 0x06;
 
 	uintptr_t	nextInstr = cloningWeapon_Target + 5;
 	ptrdiff_t	trampolineDispl = (uintptr_t)Hook_CloningWeapon - nextInstr;
@@ -29,7 +35,8 @@ void Install_CloningWeaponHook() {
 }
 
 void Install_HandleButtonEventHook() {
-	handleButtonEvent_Target = CHWAddress(handleButtonEvent_Offset);
+	uintptr_t handleButtonEvent_Target = CHWAddress(handleButtonEvent_Offset);
+	handleButtonEvent_JmpTarget = handleButtonEvent_Target + 0x05;
 
 	uintptr_t	nextInstr = handleButtonEvent_Target + 5;
 	ptrdiff_t	trampolineDispl = (uintptr_t)Hook_HandleButtonEvent - nextInstr;
