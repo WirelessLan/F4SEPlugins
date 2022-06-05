@@ -3,8 +3,8 @@
 const uintptr_t cloningWeapon_Offset = 0x332B4;
 const uintptr_t handleButtonEvent_Offset = 0x30C32;
 
-uintptr_t cloningWeapon_JmpTarget;
-uintptr_t handleButtonEvent_JmpTarget;
+uintptr_t cloningWeapon_Target;
+uintptr_t handleButtonEvent_Target;
 
 extern "C" {
 	void Hook_CloningWeapon();
@@ -21,29 +21,27 @@ uintptr_t CHWAddress(uintptr_t offset) {
 }
 
 void Install_CloningWeaponHook() {
-	uintptr_t cloningWeapon_Target = CHWAddress(cloningWeapon_Offset);
-	cloningWeapon_JmpTarget = cloningWeapon_Target + 0x06;
+	cloningWeapon_Target = CHWAddress(cloningWeapon_Offset);
 
-	uintptr_t	nextInstr = cloningWeapon_Target + 5;
-	ptrdiff_t	trampolineDispl = (uintptr_t)Hook_CloningWeapon - nextInstr;
-
-	UInt8	code[5];
-	code[0] = 0xE9;
-	*((SInt32*)&code[1]) = (SInt32)trampolineDispl;
+	UInt8	code[12];
+	code[0] = 0x48;
+	code[1] = 0xb8;
+	*((uintptr_t*)&code[2]) = (uintptr_t)Hook_CloningWeapon;
+	code[10] = 0xff;
+	code[11] = 0xe0;
 
 	SafeWriteBuf(cloningWeapon_Target, code, sizeof(code));
 }
 
 void Install_HandleButtonEventHook() {
-	uintptr_t handleButtonEvent_Target = CHWAddress(handleButtonEvent_Offset);
-	handleButtonEvent_JmpTarget = handleButtonEvent_Target + 0x05;
+	handleButtonEvent_Target = CHWAddress(handleButtonEvent_Offset);
 
-	uintptr_t	nextInstr = handleButtonEvent_Target + 5;
-	ptrdiff_t	trampolineDispl = (uintptr_t)Hook_HandleButtonEvent - nextInstr;
-
-	UInt8	code[5];
-	code[0] = 0xE9;
-	*((SInt32*)&code[1]) = (SInt32)trampolineDispl;
+	UInt8	code[12];
+	code[0] = 0x48;
+	code[1] = 0xb8;
+	*((uintptr_t*)&code[2]) = (uintptr_t)Hook_HandleButtonEvent;
+	code[10] = 0xff;
+	code[11] = 0xe0;
 
 	SafeWriteBuf(handleButtonEvent_Target, code, sizeof(code));
 }

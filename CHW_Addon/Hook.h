@@ -4,8 +4,8 @@
 extern "C" {
 	void AdjustPosition(TESForm* weapForm, NiNode* attachNode);
 	void SavePosition();
-	extern uintptr_t cloningWeapon_JmpTarget;
-	extern uintptr_t handleButtonEvent_JmpTarget;
+	extern uintptr_t cloningWeapon_Target;
+	extern uintptr_t handleButtonEvent_Target;
 }
 
 uintptr_t CHWAddress();

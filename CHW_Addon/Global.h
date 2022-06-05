@@ -17,4 +17,4 @@
 #include "Utility.h"
 
 #define PLUGIN_NAME	"CHW_Addon"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 3, 0)
