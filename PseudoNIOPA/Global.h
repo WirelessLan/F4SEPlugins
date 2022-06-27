@@ -9,6 +9,7 @@
 #include <f4se/PapyrusNativeFunctions.h>
 
 #include <f4se_common/f4se_version.h>
+#include <f4se_common/SafeWrite.h>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -17,6 +18,7 @@
 #include "PapyrusFuncs.h"
 #include "Nodes.h"
 #include "Inputs.h"
+#include "Hooks.h"
 #include "Utility.h"
 #include "ConfigReader.h"
 

@@ -170,6 +170,8 @@ extern "C" {
 
 		ReadINIFile();
 
+		Hooks::Install_PipboyHandlerHook();
+
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 

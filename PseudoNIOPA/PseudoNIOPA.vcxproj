@@ -166,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigReader.cpp" />
+    <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="Inputs.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Nodes.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="ConfigReader.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="Hooks.h" />
     <ClInclude Include="Inputs.h" />
     <ClInclude Include="Nodes.h" />
     <ClInclude Include="PapyrusFuncs.h" />
