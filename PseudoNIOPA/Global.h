@@ -14,16 +14,16 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <fstream>
 
 #include "PapyrusFuncs.h"
 #include "Nodes.h"
 #include "Inputs.h"
-#include "Hooks.h"
 #include "Utility.h"
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 2)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 3)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;

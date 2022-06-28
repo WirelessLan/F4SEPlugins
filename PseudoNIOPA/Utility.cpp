@@ -28,4 +28,13 @@ namespace Utility {
 
 		actor->uiFlags |= 1 << 8;
 	}
+
+	void Trim(std::string& s) {
+		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+			return !std::isspace(ch);
+			}));
+		s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+			return !std::isspace(ch);
+			}).base(), s.end());
+	}
 };

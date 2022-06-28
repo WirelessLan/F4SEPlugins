@@ -20,7 +20,6 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
-	case F4SEMessagingInterface::kMessage_PreSaveGame:
 		Nodes::ClearAll();
 		break;
 	}
@@ -48,84 +47,84 @@ void ReadINIFile() {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.ShowMenuKey = value;
-			_MESSAGE("ShowMenuKey: [0x%02X]", g_pluginSettings.ShowMenuKey);
+			_MESSAGE("ShowMenuKey: 0x%02X", g_pluginSettings.ShowMenuKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "ClearSelectKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.ClearSelectKey = value;
-			_MESSAGE("ClearSelectKey: [0x%02X]", g_pluginSettings.ClearSelectKey);
+			_MESSAGE("ClearSelectKey: 0x%02X", g_pluginSettings.ClearSelectKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "ResetSelectedNodeKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.ResetSelectedNodeKey = value;
-			_MESSAGE("ResetSelectedNodeKey: [0x%02X]", g_pluginSettings.ResetSelectedNodeKey);
+			_MESSAGE("ResetSelectedNodeKey: 0x%02X", g_pluginSettings.ResetSelectedNodeKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DirXKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DirXKey = value;
-			_MESSAGE("DirXKey: [0x%02X]", g_pluginSettings.DirXKey);
+			_MESSAGE("DirXKey: 0x%02X", g_pluginSettings.DirXKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DirYKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DirYKey = value;
-			_MESSAGE("DirYKey: [0x%02X]", g_pluginSettings.DirYKey);
+			_MESSAGE("DirYKey: 0x%02X", g_pluginSettings.DirYKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DirZKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DirZKey = value;
-			_MESSAGE("DirZKey: [0x%02X]", g_pluginSettings.DirZKey);
+			_MESSAGE("DirZKey: 0x%02X", g_pluginSettings.DirZKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "IncTransKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.IncTransKey = value;
-			_MESSAGE("IncTransKey: [0x%02X]", g_pluginSettings.IncTransKey);
+			_MESSAGE("IncTransKey: 0x%02X", g_pluginSettings.IncTransKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DecTransKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DecTransKey = value;
-			_MESSAGE("DecTransKey: [0x%02X]", g_pluginSettings.DecTransKey);
+			_MESSAGE("DecTransKey: 0x%02X", g_pluginSettings.DecTransKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "IncRotKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.IncRotKey = value;
-			_MESSAGE("IncRotKey: [0x%02X]", g_pluginSettings.IncRotKey);
+			_MESSAGE("IncRotKey: 0x%02X", g_pluginSettings.IncRotKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DecRotKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DecRotKey = value;
-			_MESSAGE("DecRotKey: [0x%02X]", g_pluginSettings.DecRotKey);
+			_MESSAGE("DecRotKey: 0x%02X", g_pluginSettings.DecRotKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "IncScaleKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.IncScaleKey = value;
-			_MESSAGE("IncScaleKey: [0x%02X]", g_pluginSettings.IncScaleKey);
+			_MESSAGE("IncScaleKey: 0x%02X", g_pluginSettings.IncScaleKey);
 		}
 	}
 	if (ConfigReader::GetConfigValue("Keys", "DecScaleKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
 			g_pluginSettings.DecScaleKey = value;
-			_MESSAGE("DecScaleKey: [0x%02X]", g_pluginSettings.DecScaleKey);
+			_MESSAGE("DecScaleKey: 0x%02X", g_pluginSettings.DecScaleKey);
 		}
 	}
 }
@@ -169,8 +168,6 @@ extern "C" {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
 
 		ReadINIFile();
-
-		Hooks::Install_PipboyHandlerHook();
 
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
