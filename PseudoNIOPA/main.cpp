@@ -16,6 +16,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
 		Inputs::RegisterInputHandler();
+		Events::Attach_Events();
 		break;
 
 	case F4SEMessagingInterface::kMessage_NewGame:

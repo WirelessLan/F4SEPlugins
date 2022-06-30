@@ -19,11 +19,12 @@
 #include "PapyrusFuncs.h"
 #include "Nodes.h"
 #include "Inputs.h"
+#include "Events.h"
 #include "Utility.h"
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 3)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 4)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;
