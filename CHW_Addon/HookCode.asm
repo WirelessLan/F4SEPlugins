@@ -1,13 +1,13 @@
-extrn AdjustPosition:proc, SavePosition:proc, cloningWeapon_Target:near, handleButtonEvent_Target:near
+extrn AdjustPosition:proc, SavePosition:proc, cloningWeapon_Target:near, handleButtonEvent_Target:near, SavePositionKey:near
 
 .code
 	Hook_CloningWeapon proc
-		mov rcx, [rsp + 040h]
+		mov rcx, [rsp + 048h]
 		mov rdx, [rsp + 0B0h]
 		call AdjustPosition
 
 		mov rax, qword ptr [cloningWeapon_Target]
-		cmp qword ptr [rsp + 030h], 00h
+		cmp qword ptr [rsp + 038h], 00h
 		je JMP_EQUAL
 
 		add rax, 0Ch
@@ -19,22 +19,26 @@ extrn AdjustPosition:proc, SavePosition:proc, cloningWeapon_Target:near, handleB
 	Hook_CloningWeapon endp
 	
 	Hook_HandleButtonEvent proc
-		cmp dword ptr[rsp + 020h], 065h
+		mov eax, dword ptr [SavePositionKey]
+		cmp dword ptr[rsp + 020h], eax
 		jne DEFAULT
 		call SavePosition
 
 	DEFAULT:
-		cmp dword ptr[rsp + 020h], 06Bh
+		mov rax, qword ptr [handleButtonEvent_Target]
+		add rax, 062C49h
+		mov eax, dword ptr [rax]
+		cmp dword ptr[rsp + 020h], eax
 		jne JMP_NOT_EQUAL
 
 		mov cl, 01h
 		mov rax, qword ptr [handleButtonEvent_Target]
-		sub rax, 01DE2h
+		sub rax, 01B17h
 		call rax
 
 	JMP_NOT_EQUAL:
 		mov rax, qword ptr [handleButtonEvent_Target]
-		add rax, 0Eh
+		add rax, 013h
 		jmp rax
 	Hook_HandleButtonEvent endp
 end

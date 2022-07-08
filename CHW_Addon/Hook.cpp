@@ -1,7 +1,7 @@
 #include "Global.h"
 
-const uintptr_t cloningWeapon_Offset = 0x332B4;
-const uintptr_t handleButtonEvent_Offset = 0x30C32;
+const uintptr_t cloningWeapon_Offset = 0x34C5A;
+const uintptr_t handleButtonEvent_Offset = 0x32527;
 
 uintptr_t cloningWeapon_Target;
 uintptr_t handleButtonEvent_Target;
@@ -24,11 +24,13 @@ void Install_CloningWeaponHook() {
 	cloningWeapon_Target = CHWAddress(cloningWeapon_Offset);
 
 	UInt8	code[12];
+	// mov rax, Hook_CloningWeapon (10 bytes)
 	code[0] = 0x48;
-	code[1] = 0xb8;
+	code[1] = 0xB8;
 	*((uintptr_t*)&code[2]) = (uintptr_t)Hook_CloningWeapon;
-	code[10] = 0xff;
-	code[11] = 0xe0;
+	// jmp rax (2 bytes)
+	code[10] = 0xFF;
+	code[11] = 0xE0;
 
 	SafeWriteBuf(cloningWeapon_Target, code, sizeof(code));
 }
@@ -37,11 +39,13 @@ void Install_HandleButtonEventHook() {
 	handleButtonEvent_Target = CHWAddress(handleButtonEvent_Offset);
 
 	UInt8	code[12];
+	// mov rax, Hook_HandleButtonEvent (10 bytes)
 	code[0] = 0x48;
-	code[1] = 0xb8;
+	code[1] = 0xB8;
 	*((uintptr_t*)&code[2]) = (uintptr_t)Hook_HandleButtonEvent;
-	code[10] = 0xff;
-	code[11] = 0xe0;
+	// jmp rax (2 bytes)
+	code[10] = 0xFF;
+	code[11] = 0xE0;
 
 	SafeWriteBuf(handleButtonEvent_Target, code, sizeof(code));
 }

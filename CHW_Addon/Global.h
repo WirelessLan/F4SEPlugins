@@ -14,7 +14,10 @@
 
 #include "Hook.h"
 #include "Addon.h"
+#include "ConfigReader.h"
 #include "Utility.h"
 
 #define PLUGIN_NAME	"CHW_Addon"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 3, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 4, 0)
+
+extern unsigned char SavePositionKey;

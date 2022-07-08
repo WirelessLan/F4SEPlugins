@@ -167,12 +167,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Addon.cpp" />
+    <ClCompile Include="ConfigReader.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Addon.h" />
+    <ClInclude Include="ConfigReader.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="Utility.h" />

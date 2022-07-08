@@ -172,8 +172,8 @@ void AdjustPosition(TESForm* weapForm, NiNode* attachNode) {
 }
 
 void SavePosition() {
-	TESForm** weapForm = reinterpret_cast<TESForm**>(CHWAddress(0x91FD8));
-	NiNode** attachNode = reinterpret_cast<NiNode**>(CHWAddress(0x92390));
+	TESForm** weapForm = reinterpret_cast<TESForm**>(CHWAddress(0x97058));
+	NiNode** attachNode = reinterpret_cast<NiNode**>(CHWAddress(0x97410));
 
 	if (!weapForm || !*weapForm)
 		return;

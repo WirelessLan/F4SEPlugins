@@ -6,6 +6,7 @@ extern "C" {
 	void SavePosition();
 	extern uintptr_t cloningWeapon_Target;
 	extern uintptr_t handleButtonEvent_Target;
+	extern unsigned char SavePositionKey;
 }
 
 uintptr_t CHWAddress();
