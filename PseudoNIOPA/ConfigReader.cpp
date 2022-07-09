@@ -45,16 +45,16 @@ namespace ConfigReader {
 		return retVal;
 	}
 
-	std::string GetNodeNameFromFile(std::string& groupName, UInt32 selection) {
+	std::vector<std::string> GetNodeListFromFile(std::string& groupName) {
 		std::string configPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + groupName + ".txt";
 		std::ifstream configFile(configPath);
+		std::vector<std::string> retVec;
 
 		if (!configFile.is_open()) {
 			_MESSAGE("Cannot open a config file! [%s]", configPath.c_str());
-			return "";
+			return retVec;
 		}
 
-		UInt32 configIndex = 1;
 		std::string line;
 		std::string nodeName;
 		while (std::getline(configFile, line)) {
@@ -70,12 +70,9 @@ namespace ConfigReader {
 				continue;
 			}
 
-			if (selection == configIndex)
-				return nodeName;
-
-			configIndex++;
+			retVec.push_back(nodeName);
 		}
 
-		return "";
+		return retVec;
 	}
 }

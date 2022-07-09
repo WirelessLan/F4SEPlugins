@@ -8,12 +8,8 @@ namespace PapyrusFuncs {
 		return Utility::IsActorFrozen(actor);
 	}
 
-	void SelectNode(StaticFunctionTag*, Actor* actor, BSFixedString groupName, UInt32 selection) {
-		if (!actor || groupName == BSFixedString() || !selection)
-			return;
-
-		std::string nodeName = ConfigReader::GetNodeNameFromFile(std::string(groupName), selection);
-		if (nodeName.empty())
+	void SelectNode(StaticFunctionTag*, Actor* actor, BSFixedString nodeName) {
+		if (!actor || nodeName == "")
 			return;
 
 		g_selectedNode = Nodes::GetNode(actor, nodeName);
@@ -51,6 +47,46 @@ namespace PapyrusFuncs {
 		return g_pluginSettings.ShowMenuKey;
 	}
 
+	void ClearButtons(StaticFunctionTag*, BGSMessage* msg) {
+		if (!msg)
+			return;
+
+		MESSAGEBOX_BUTTON* ptr;
+		while ((ptr = msg->buttonList.Pop())) {
+			ptr->text.Release();
+			Heap_Free(ptr);
+		}
+	}
+
+	VMArray<BSFixedString> LoadNodes(StaticFunctionTag*, BSFixedString groupName) {
+		VMArray<BSFixedString> retArr;
+		std::vector<std::string> nodeList = ConfigReader::GetNodeListFromFile(std::string(groupName));
+
+		for (std::string elem : nodeList) {
+			BSFixedString nodeName(elem.c_str());
+			retArr.Push(&nodeName);
+			nodeName.Release();
+		}
+
+		return retArr;
+	}
+
+	bool AddButton(StaticFunctionTag*, BGSMessage* msg, BSFixedString btnStr) {
+		if (!msg)
+			return false;
+
+		MESSAGEBOX_BUTTON* btn = (MESSAGEBOX_BUTTON*)Heap_Allocate(sizeof(MESSAGEBOX_BUTTON));
+		if (!btn)
+			return false;
+
+		btn->text = btnStr;
+		btn->conditions = 0;
+
+		msg->buttonList.Insert(btn);
+
+		return true;
+	}
+
 	void Register(VirtualMachine* vm) {
 		vm->RegisterFunction(
 			new NativeFunction1<StaticFunctionTag, bool, Actor*>("IsActorFrozen", "PNIOPA_F4SE", IsActorFrozen, vm));
@@ -59,8 +95,14 @@ namespace PapyrusFuncs {
 		vm->RegisterFunction(
 			new NativeFunction1<StaticFunctionTag, void, Actor*>("ResetActor", "PNIOPA_F4SE", ResetActor, vm));
 		vm->RegisterFunction(
-			new NativeFunction3<StaticFunctionTag, void, Actor*, BSFixedString, UInt32>("SelectNode", "PNIOPA_F4SE", SelectNode, vm));
+			new NativeFunction2<StaticFunctionTag, void, Actor*, BSFixedString>("SelectNode", "PNIOPA_F4SE", SelectNode, vm));
 		vm->RegisterFunction(
 			new NativeFunction0<StaticFunctionTag, UInt32>("GetMenuKey", "PNIOPA_F4SE", GetMenuKey, vm));
+		vm->RegisterFunction(
+			new NativeFunction1<StaticFunctionTag, void, BGSMessage*>("ClearButtons", "PNIOPA_F4SE", ClearButtons, vm));
+		vm->RegisterFunction(
+			new NativeFunction1<StaticFunctionTag, VMArray<BSFixedString>, BSFixedString>("LoadNodes", "PNIOPA_F4SE", LoadNodes, vm));
+		vm->RegisterFunction(
+			new NativeFunction2<StaticFunctionTag, bool, BGSMessage*, BSFixedString>("AddButton", "PNIOPA_F4SE", AddButton, vm));
 	}
 };

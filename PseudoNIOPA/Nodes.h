@@ -35,9 +35,8 @@ namespace Nodes {
 		float scale;
 	};
 
-	NiNode* GetNode(Actor* actor, std::string& nodeName);
+	NiNode* GetNode(Actor* actor, const std::string& nodeName);
 	NiNode* GetNode(Actor* actor, BSFixedString& nodeName);
-	NiNode* GetNode(BSFixedString& formIdStr, BSFixedString& nodeName);
 
 	void ModNode(ModType modType, ModDirection modDir, bool isPositive);
 

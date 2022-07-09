@@ -5,7 +5,7 @@ Actor* g_selectedActor;
 NiNode* g_selectedNode;
 
 namespace Nodes {
-	NiNode* GetNode(Actor* actor, std::string& nodeName) {
+	NiNode* GetNode(Actor* actor, const std::string& nodeName) {
 		if (nodeName.empty()) {
 			Console_Print("Node Name Required!");
 			return nullptr;
@@ -35,14 +35,6 @@ namespace Nodes {
 	NiNode* GetNode(Actor* actor, BSFixedString& nodeName) {
 		std::string tNodeName = nodeName;
 		return GetNode(actor, tNodeName);
-	}
-
-	NiNode* GetNode(BSFixedString& formIdStr, BSFixedString& nodeName) {
-		Actor* actor = GetActor(formIdStr);
-		if (!actor)
-			return nullptr;
-
-		return GetNode(actor, nodeName);
 	}
 
 	void ModNode(ModType modType, ModDirection modDir, bool isPositive) {
@@ -130,7 +122,7 @@ namespace Nodes {
 	}
 
 	void ResetNode(Actor* actor, const std::string& nodeName, NodeData* originData) {
-		NiNode* node = GetNode(actor, BSFixedString(nodeName.c_str()));
+		NiNode* node = GetNode(actor, nodeName);
 		if (!node)
 			return;
 

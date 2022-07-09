@@ -24,7 +24,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 0, 4)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 1, 0)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;
