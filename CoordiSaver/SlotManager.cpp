@@ -28,39 +28,42 @@ namespace SlotManager {
 		return retVal;
 	}
 
-	VMArray<TESForm*> LoadSlot(BSFixedString slot) {
-		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\slot_" + std::string(slot.c_str()) + ".codss";
+	VMArray<TESForm*> LoadSlot(BSFixedString& slot) {
+		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\" + std::string(slot.c_str()) + ".codss";
+		_MESSAGE("LoadSlot: %s", slotPath.c_str());
 		std::ifstream slotFile(slotPath);
 
 		VMArray<TESForm*> result;
 
-		if (!slotFile.is_open())
+		if (!slotFile.is_open()) {
+			_MESSAGE("Cannot read Slot - %s", slotPath.c_str());
 			return result;
+		}
 
 		std::string line;
 		std::string pluginName, formId;
 		while (std::getline(slotFile, line)) {
 			Util::trim(line);
-			if (line.length() == 0 || line[0] == '#')
+			if (line.empty() || line[0] == '#')
 				continue;
 
 			UInt32 index = 0;
 
 			pluginName = GetNextData(line, index, '|');
-			if (pluginName.length() == 0) {
-				_MESSAGE("Cannot read Plugin Name[%s]", line.c_str());
+			if (pluginName.empty()) {
+				_MESSAGE("Cannot read Plugin Name - %s", line.c_str());
 				continue;
 			}
 
 			formId = GetNextData(line, index, 0);
-			if (formId.length() == 0) {
-				_MESSAGE("Cannot read Form ID[%s]", line.c_str());
+			if (formId.empty()) {
+				_MESSAGE("Cannot read Form ID - %s", line.c_str());
 				continue;
 			}
 
 			TESForm* form = Util::GetFormFromIdentifier(pluginName, formId);
 			if (!form) {
-				_MESSAGE("Cannot find Form[%s]", line.c_str());
+				_MESSAGE("Cannot find Form - %s", line.c_str());
 				continue;
 			}
 
@@ -72,11 +75,20 @@ namespace SlotManager {
 		return result;
 	}
 
-	bool SaveSlot(BSFixedString slot) {
-		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\slot_" + std::string(slot.c_str()) + ".codss";
+	bool SaveSlot(BSFixedString& slot) {
+		return SaveSlot(std::string(slot));
+	}
+
+	bool SaveSlot(std::string & slot) {
+		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\" + slot + ".codss";
+		_MESSAGE("SaveSlot: %s", slotPath.c_str());
 		std::ofstream slotFile(slotPath);
 
-		std::vector<TESForm*> currentEquippedItemList = Util::GetCurrentEquippedItemList(*g_player);
+		Actor* actor = Util::GetCurrentConsoleActor();
+		if (!actor)
+			actor = *g_player;
+
+		std::vector<TESForm*> currentEquippedItemList = Util::GetCurrentEquippedItemList(actor);
 		if (currentEquippedItemList.size() == 0)
 			return false;
 
@@ -93,5 +105,11 @@ namespace SlotManager {
 		slotFile.close();
 
 		return true;
+	}
+
+	bool DeleteSlot(std::string& slot) {
+		std::string slotPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_Slots\\" + slot + ".codss";
+		_MESSAGE("DeleteSlot: %s", slotPath.c_str());
+		return remove(slotPath.c_str()) == 0;
 	}
 }

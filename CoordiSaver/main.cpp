@@ -6,13 +6,16 @@
 // User Defined Header
 #include "Global.h"
 
-F4SEPapyrusInterface* g_papyrus;
+PluginHandle			g_pluginHandle = kPluginHandle_Invalid;
+F4SEMessagingInterface*	g_messaging = nullptr;
+F4SEScaleformInterface*	g_scaleform = nullptr;
+F4SEPapyrusInterface*	g_papyrus = nullptr;
 
-VMArray<TESForm*> LoadCoordiFromFile(StaticFunctionTag*, BSFixedString slot) {
+VMArray<TESForm*> LoadSlotFromFile(StaticFunctionTag*, BSFixedString slot) {
 	return SlotManager::LoadSlot(slot);
 }
 
-bool SaveCoordiToFile(StaticFunctionTag*, BSFixedString slot) {
+bool SaveSlotToFile(StaticFunctionTag*, BSFixedString slot) {
 	return SlotManager::SaveSlot(slot);
 }
 
@@ -20,13 +23,37 @@ UInt32 HexToInt(StaticFunctionTag*, BSFixedString hex) {
 	return std::stoul(hex.c_str(), nullptr, 16);
 }
 
+void ShowMenu(StaticFunctionTag*) {
+	ScaleformManager::CoordiSaverMenu::OpenMenu();
+}
+
 bool RegisterFuncs(VirtualMachine* vm) {
 	vm->RegisterFunction(
-		new NativeFunction1<StaticFunctionTag, VMArray<TESForm*>, BSFixedString>("LoadCoordiFromFile", "CoordiSaver", LoadCoordiFromFile, vm));
+		new NativeFunction1<StaticFunctionTag, VMArray<TESForm*>, BSFixedString>("LoadSlotFromFile", "CoordiSaver", LoadSlotFromFile, vm));
 	vm->RegisterFunction(
-		new NativeFunction1<StaticFunctionTag, bool, BSFixedString>("SaveCoordiToFile", "CoordiSaver", SaveCoordiToFile, vm));
+		new NativeFunction1<StaticFunctionTag, bool, BSFixedString>("SaveSlotToFile", "CoordiSaver", SaveSlotToFile, vm));
 	vm->RegisterFunction(
-		new NativeFunction1<StaticFunctionTag, UInt32, BSFixedString>("HexToInt", "CoordiSaver", HexToInt, vm));
+		new NativeFunction0<StaticFunctionTag, void>("ShowMenu", "CoordiSaver", ShowMenu, vm));
+	return true;
+}
+
+void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
+	switch (msg->type) {
+	case F4SEMessagingInterface::kMessage_GameLoaded:
+		ScaleformManager::CoordiSaverMenu::RegisterMenu();
+		break;
+	}
+}
+
+bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
+	RegisterFunction<ScaleformManager::MenuInitializeHandler>(f4se_root, view->movieRoot, "Initialize");
+	RegisterFunction<ScaleformManager::GetSlotListHandler>(f4se_root, view->movieRoot, "GetSlotList");
+	RegisterFunction<ScaleformManager::LoadSlotHandler>(f4se_root, view->movieRoot, "LoadSlot");
+	RegisterFunction<ScaleformManager::AddSlotHandler>(f4se_root, view->movieRoot, "AddSlot");
+	RegisterFunction<ScaleformManager::DeleteSlotHandler>(f4se_root, view->movieRoot, "DeleteSlot");
+	RegisterFunction<ScaleformManager::MenuCloseHandler>(f4se_root, view->movieRoot, "Close");
+	RegisterFunction<ScaleformManager::AllowTextInputHandler>(f4se_root, view->movieRoot, "AllowTextInput");
+
 	return true;
 }
 
@@ -47,9 +74,24 @@ extern "C" {
 			return false;
 		}
 
+		g_pluginHandle = f4se->GetPluginHandle();
+
 		g_papyrus = (F4SEPapyrusInterface*)f4se->QueryInterface(kInterface_Papyrus);
-		if (!g_papyrus)	{
+		if (!g_papyrus) {
 			_FATALERROR("couldn't get papyrus interface");
+			return false;
+		}
+
+		// Get the messaging interface
+		g_messaging = (F4SEMessagingInterface*)f4se->QueryInterface(kInterface_Messaging);
+		if (!g_messaging) {
+			_FATALERROR("couldn't get messaging interface");
+			return false;
+		}
+
+		g_scaleform = (F4SEScaleformInterface*)f4se->QueryInterface(kInterface_Scaleform);
+		if (!g_scaleform) {
+			_FATALERROR("couldn't get scaleform interface");
 			return false;
 		}
 
@@ -61,6 +103,12 @@ extern "C" {
 
 		if (g_papyrus)
 			g_papyrus->Register(RegisterFuncs);
+
+		if (g_messaging)
+			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
+
+		if (g_scaleform)
+			g_scaleform->Register(PLUGIN_NAME, RegisterScaleform);
 
 		return true;
 	}

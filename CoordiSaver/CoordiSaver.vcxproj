@@ -166,11 +166,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ScaleformManager.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="SlotManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Global.h" />
+    <ClInclude Include="ScaleformManager.h" />
     <ClInclude Include="SlotManager.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>

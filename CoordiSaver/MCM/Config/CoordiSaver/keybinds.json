@@ -1,0 +1,14 @@
+{
+	"modName": "CoordiSaver",
+	"keybinds": [
+		{
+			"id": "ShowMenuKey",
+			"desc": "Coordi Saver 메뉴 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "CoordiSaver",
+				"function": "ShowMenu"
+			}
+    	}
+	]
+}

@@ -1,0 +1,28 @@
+{
+    "modName": "CoordiSaver",
+    "displayName": "Coordi Saver",
+    "minMcmVersion": 2,
+    "content": [
+      {
+        "type": "spacer",
+        "numLines": 8
+      },
+      {
+        "text": "<p align='center'><font size='32'>Coordi Saver</font><font size='10'> v0.5</font></p>",
+        "type": "text",
+        "html": true
+      }
+    ],
+    "pages": [
+      {
+        "pageDisplayName": "단축키",
+        "content": [
+          {
+            "id": "ShowMenuKey",
+            "text": "Coordi Saver 메뉴 단축키",
+            "type": "hotkey"
+          }
+        ]
+      }
+    ]
+}

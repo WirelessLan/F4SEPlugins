@@ -5,4 +5,6 @@ namespace Util {
 	TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr);
 	TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId);
 	void trim(std::string& s);
+	Actor* GetCurrentConsoleActor();
+	void LoadSlot(std::string& slotName);
 }

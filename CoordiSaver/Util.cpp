@@ -21,7 +21,7 @@ namespace Util {
 				break;
 			}
 		}
-		inventory->inventoryLock.Unlock();
+		inventory->inventoryLock.UnlockRead();
 
 		return totalItemCount > 0;
 	}
@@ -79,5 +79,20 @@ namespace Util {
 	void trim(std::string& s) {
 		ltrim(s);
 		rtrim(s);
+	}
+
+	Actor* GetCurrentConsoleActor() {
+		UInt32 handle = (*g_consoleHandle);
+		NiPointer<TESObjectREFR> refr;
+		if (handle != 0 && handle != (*g_invalidRefHandle)) {
+			LookupREFRByHandle(handle, refr);
+			return DYNAMIC_CAST(refr, TESObjectREFR, Actor);
+		}
+
+		return nullptr;
+	}
+
+	void LoadSlot(std::string& slotName) {
+		CallGlobalFunctionNoWait1<BSFixedString>("CoordiSaver", "LoadSlot", BSFixedString(slotName.c_str()));
 	}
 }
