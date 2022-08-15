@@ -1,4 +1,5 @@
 #include "Global.h"
+#include "MathUtils.h"
 
 std::unordered_map<UInt32, std::unordered_map<std::string, Nodes::NodeData>> g_modifiedMap;
 Actor* g_selectedActor;
@@ -105,15 +106,26 @@ namespace Nodes {
 		else if (modType == ModType::kModType_Rotation) {
 			float value = isPositive ? 0.01 : -0.01;
 
-			float y_org, p_org, r_org;
-			g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
+			using RE::NiMatrix3;
+			nodeData = GetNodeData(g_selectedActor, nodeName);
+			NiMatrix3 rot = *(NiMatrix3 *)&g_selectedNode->m_localTransform.rot;
+
+			if (modDir == ModDirection::kModDirection_X)
+				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 0, 1), value);
+			else if (modDir == ModDirection::kModDirection_Y)
+				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 1, 0), value);
+			else if (modDir == ModDirection::kModDirection_Z)
+				rot = rot * GetRotationMatrix33(NiPoint3CLib(1, 0, 0), value);
+
+			g_selectedNode->m_localTransform.rot = *(NiMatrix43*)&rot;
+			/*g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
 
 			if (modDir == ModDirection::kModDirection_X)
 				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org + value, p_org, r_org);
 			else if (modDir == ModDirection::kModDirection_Y)
 				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org, p_org + value, r_org);
 			else if (modDir == ModDirection::kModDirection_Z)
-				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org, p_org, r_org + value);
+				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org, p_org, r_org + value);*/
 		}
 		else if (modType == ModType::kModType_Scale) {
 			float value = isPositive ? 0.01 : -0.01;
