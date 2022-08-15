@@ -110,14 +110,28 @@ namespace Nodes {
 			nodeData = GetNodeData(g_selectedActor, nodeName);
 			NiMatrix3 rot = *(NiMatrix3 *)&g_selectedNode->m_localTransform.rot;
 
-			if (modDir == ModDirection::kModDirection_X)
+			//고정축 회전
+			/*if (modDir == ModDirection::kModDirection_X)
 				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 0, 1), value);
 			else if (modDir == ModDirection::kModDirection_Y)
 				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 1, 0), value);
 			else if (modDir == ModDirection::kModDirection_Z)
-				rot = rot * GetRotationMatrix33(NiPoint3CLib(1, 0, 0), value);
+				rot = rot * GetRotationMatrix33(NiPoint3CLib(1, 0, 0), value);*/
+
+			//동적축 회전(이게 원 의도인듯?)
+			NiPoint3CLib rollAxis = ToDirectionVector(rot);
+			NiPoint3CLib yawAxis = ToUpVector(rot);
+			NiPoint3CLib pitchAxis = CrossProduct(rollAxis, yawAxis);
+			if (modDir == ModDirection::kModDirection_X)
+				rot = rot * GetRotationMatrix33(yawAxis, value);
+			else if (modDir == ModDirection::kModDirection_Y)
+				rot = rot * GetRotationMatrix33(pitchAxis, value);
+			else if (modDir == ModDirection::kModDirection_Z)
+				rot = rot * GetRotationMatrix33(rollAxis, value);
 
 			g_selectedNode->m_localTransform.rot = *(NiMatrix43*)&rot;
+
+			//이전 코드
 			/*g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
 
 			if (modDir == ModDirection::kModDirection_X)
