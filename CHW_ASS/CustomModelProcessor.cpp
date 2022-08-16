@@ -1,7 +1,6 @@
 #include "Globals.h"
 
-std::vector<WeaponPosition> DefaultAttachPosVec = 
-{
+std::vector<WeaponPosition> DefaultAttachPosVec = {
 	{
 		"WeaponRifleBone",
 		-1.467466,
@@ -48,7 +47,7 @@ void SetDataOnNode(NiNode* srcNode, const WeaponPosition& weapPos) {
 	if (!srcNode)
 		return;
 
-	NiNode* clone = CreateNiNode(0);
+	NiNode* clone = NiNode::Create(0);
 	if (!clone)
 		return;
 
@@ -69,7 +68,7 @@ void AttachCustomNodeOnRootNode(NiAVObject* rootNode) {
 		return;
 
 	for each (WeaponPosition var in DefaultAttachPosVec) {
-		NiAVObject* par = rootNode->GetObjectByName(&BSFixedString(var.potentialParentNode));
+		NiAVObject* par = rootNode->GetObjectByName(&BSFixedString(var.potentialParentNode.c_str()));
 		if (par)
 			SetDataOnNode(par->GetAsNiNode(), var);
 	}

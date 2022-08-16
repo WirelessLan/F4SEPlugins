@@ -1,3 +1,3 @@
 #pragma once
 
-NiNode* CreateNiNode(UInt16 children);
+void trim(std::string& s);

@@ -1,6 +1,4 @@
 #pragma once
-#include <f4se/GameAPI.h>
-#include <f4se/BSModelDB.h>
 
 struct WeaponPosition {
 	const char* name;
@@ -10,7 +8,7 @@ struct WeaponPosition {
 	double posX;
 	double posY;
 	double posZ;
-	const char* potentialParentNode;
+	std::string potentialParentNode;
 };
 
 class CustomModelProcessor : public BSModelDB::BSModelProcessor {

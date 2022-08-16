@@ -9,7 +9,6 @@ F4SEMessagingInterface*		g_messaging = nullptr;
 void F4SEMessageHandler(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
-		HandleSkeletonPaths();
 		SetModelProcessor();
 		break;
 	}
@@ -45,6 +44,10 @@ extern "C" {
 
 	bool F4SEPlugin_Load(const F4SEInterface *f4se)	{
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
+
+		HandleSkeletonPaths();
+		for (WeaponPosition& posVec : DefaultAttachPosVec)
+			LoadPosVec(posVec);
 
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", F4SEMessageHandler);

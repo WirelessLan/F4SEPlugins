@@ -1,7 +1,10 @@
 #include "Globals.h"
 
-NiNode* CreateNiNode(UInt16 children) {
-	NiNode* node = (NiNode*)CALL_MEMBER_FN(g_mainHeap, Allocate)(sizeof(NiNode), 0x10, true);
-	CALL_MEMBER_FN(node, ctor)(children);
-	return node;
+void trim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+	}));
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+	}).base(), s.end());
 }
