@@ -29,9 +29,9 @@ namespace Nodes {
 		std::string nodeName;
 		bool posModified = false;
 		Position pos;
-		bool rotMoodified = false;
+		bool rotModified = false;
 		Rotation rot;
-		bool scaleMoodified = false;
+		bool scaleModified = false;
 		float scale;
 	};
 

@@ -55,7 +55,7 @@ Function ShowMainMenu()
 			If akTarget == PlayerRef
 				If !PNIOPA_F4SE.IsActorFrozen(akTarget)
 					mLayer = InputEnableLayer.Create()
-					mLayer.DisablePlayerControls(false, true, true, false, true, true, true, true, true, true, true)
+					mLayer.DisablePlayerControls(false, false, true, false, true, true, true, true, true, true, true)
 				ElseIf mLayer != None
 					mLayer.Delete()
 					mLayer = None

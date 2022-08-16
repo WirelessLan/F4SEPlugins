@@ -178,6 +178,7 @@
     <ClInclude Include="Events.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Inputs.h" />
+    <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Nodes.h" />
     <ClInclude Include="PapyrusFuncs.h" />
     <ClInclude Include="Utility.h" />

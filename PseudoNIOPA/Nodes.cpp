@@ -59,13 +59,13 @@ namespace Nodes {
 				float y_org, p_org, r_org;
 				g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
 
-				nNodeData.rotMoodified = true;
+				nNodeData.rotModified = true;
 				nNodeData.rot.y = y_org;
 				nNodeData.rot.p = p_org;
 				nNodeData.rot.r = r_org;
 			}
 			else if (modType == ModType::kModType_Scale) {
-				nNodeData.scaleMoodified = true;
+				nNodeData.scaleModified = true;
 				nNodeData.scale = g_selectedNode->m_localTransform.scale;
 			}
 
@@ -78,17 +78,17 @@ namespace Nodes {
 				nodeData->pos.y = g_selectedNode->m_localTransform.pos.y;
 				nodeData->pos.z = g_selectedNode->m_localTransform.pos.z;
 			}
-			else if (modType == ModType::kModType_Rotation && !nodeData->rotMoodified) {
+			else if (modType == ModType::kModType_Rotation && !nodeData->rotModified) {
 				float y_org, p_org, r_org;
 				g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
 
-				nodeData->rotMoodified = true;
+				nodeData->rotModified = true;
 				nodeData->rot.y = y_org;
 				nodeData->rot.p = p_org;
 				nodeData->rot.r = r_org;
 			}
-			else if (modType == ModType::kModType_Scale && !nodeData->scaleMoodified) {
-				nodeData->scaleMoodified = true;
+			else if (modType == ModType::kModType_Scale && !nodeData->scaleModified) {
+				nodeData->scaleModified = true;
 				nodeData->scale = g_selectedNode->m_localTransform.scale;
 			}
 		}
@@ -110,15 +110,6 @@ namespace Nodes {
 			nodeData = GetNodeData(g_selectedActor, nodeName);
 			NiMatrix3 rot = *(NiMatrix3 *)&g_selectedNode->m_localTransform.rot;
 
-			//고정축 회전
-			/*if (modDir == ModDirection::kModDirection_X)
-				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 0, 1), value);
-			else if (modDir == ModDirection::kModDirection_Y)
-				rot = rot * GetRotationMatrix33(NiPoint3CLib(0, 1, 0), value);
-			else if (modDir == ModDirection::kModDirection_Z)
-				rot = rot * GetRotationMatrix33(NiPoint3CLib(1, 0, 0), value);*/
-
-			//동적축 회전(이게 원 의도인듯?)
 			NiPoint3CLib rollAxis = ToDirectionVector(rot);
 			NiPoint3CLib yawAxis = ToUpVector(rot);
 			NiPoint3CLib pitchAxis = CrossProduct(rollAxis, yawAxis);
@@ -130,16 +121,6 @@ namespace Nodes {
 				rot = rot * GetRotationMatrix33(rollAxis, value);
 
 			g_selectedNode->m_localTransform.rot = *(NiMatrix43*)&rot;
-
-			//이전 코드
-			/*g_selectedNode->m_localTransform.rot.GetEulerAngles(&y_org, &p_org, &r_org);
-
-			if (modDir == ModDirection::kModDirection_X)
-				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org + value, p_org, r_org);
-			else if (modDir == ModDirection::kModDirection_Y)
-				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org, p_org + value, r_org);
-			else if (modDir == ModDirection::kModDirection_Z)
-				g_selectedNode->m_localTransform.rot.SetEulerAngles(y_org, p_org, r_org + value);*/
 		}
 		else if (modType == ModType::kModType_Scale) {
 			float value = isPositive ? 0.01 : -0.01;
@@ -157,10 +138,10 @@ namespace Nodes {
 			node->m_localTransform.pos.y = originData->pos.y;
 			node->m_localTransform.pos.z = originData->pos.z;
 		}
-		if (originData->rotMoodified) {
+		if (originData->rotModified) {
 			node->m_localTransform.rot.SetEulerAngles(originData->rot.y, originData->rot.p, originData->rot.r);
 		}
-		if (originData->scaleMoodified) {
+		if (originData->scaleModified) {
 			node->m_localTransform.scale = originData->scale;
 		}
 
