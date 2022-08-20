@@ -11,22 +11,37 @@ F4SEMessagingInterface* g_messaging = nullptr;
 F4SEScaleformInterface* g_scaleform = nullptr;
 F4SEPapyrusInterface*	g_papyrus = nullptr;
 
+RelocPtr <uintptr_t> TESIdleForm_VTable(0x02CB8FA8);
 RelocPtr <TESIdleForm**> g_IdleArr(0x58D2ED0);
 
 std::vector<std::string> g_pluginVec;
 CaseInsensitiveMap<CaseInsensitiveMap<TESIdleForm*>> g_idleAnimMap;
 CaseInsensitiveMap<std::vector<std::string>> g_customPoseMap;
 
+bool IsValidIdleForm(void* ptr) {
+	if (!ptr)
+		return false;
+
+	uintptr_t* vtablePtr = reinterpret_cast<uintptr_t*>(ptr);
+	if (*vtablePtr == TESIdleForm_VTable.GetUIntPtr())
+		return true;
+	return false;
+}
+
 void InitializeIdleMap() {
-	for (UInt32 ii = 0; (*g_IdleArr)[ii]; ii++) {
-		if (!(*g_IdleArr)[ii]->unk08)
+	for (UInt32 ii = 0; ; ii++) {
+		TESIdleForm* idleForm = (*g_IdleArr)[ii];
+		if (!idleForm || !IsValidIdleForm(idleForm))
+			break;
+
+		if (!idleForm->unk08)
 			continue;
 
-		ModInfo* modInfo = (*g_IdleArr)[ii]->unk08->entries[0];
+		ModInfo* modInfo = idleForm->unk08->entries[0];
 		if (!modInfo)
 			continue;
 
-		if (!(*g_IdleArr)[ii]->formEditorID)
+		if (!idleForm->formEditorID)
 			continue;
 
 		auto it = g_idleAnimMap.find(modInfo->name);
@@ -35,7 +50,7 @@ void InitializeIdleMap() {
 			it = in_res.first;
 		}
 
-		it->second.insert(std::make_pair((*g_IdleArr)[ii]->formEditorID, (*g_IdleArr)[ii]));
+		it->second.insert(std::make_pair(idleForm->formEditorID, idleForm));
 	}
 }
 
