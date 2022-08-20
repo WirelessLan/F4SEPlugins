@@ -1,0 +1,23 @@
+{
+	"modName": "TullPoserHotKey",
+	"keybinds": [
+		{
+			"id": "ShowMenuKey",
+			"desc": "메뉴 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "TullPoserHotKey",
+				"function": "ShowMenu"
+			}
+    	},
+		{
+			"id": "StopIdleKey",
+			"desc": "포즈 중지키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "TullPoserHotKey",
+				"function": "StopIdle"
+			}
+    	}
+	]
+}

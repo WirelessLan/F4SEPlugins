@@ -106,6 +106,7 @@ bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
 
 bool RegisterFuncs(VirtualMachine* vm) {
 	vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ShowMenu", "TullPoserHotKey", PapyrusManager::ShowMenu, vm));
+	vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("StopIdle", "TullPoserHotKey", PapyrusManager::StopIdle, vm));
 	return true;
 }
 

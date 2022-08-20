@@ -21,12 +21,13 @@ namespace Utility {
 		if (!actor || !actor->middleProcess || !idle)
 			return false;
 
-#if 0
+		return PlayIdle_Internal(actor->middleProcess, actor, 0x35, idle, 0, 0);
+	}
+
+	void StopIdle(Actor* actor) {
 		static TESIdleForm* idleStop = DYNAMIC_CAST(LookupFormByID(0x000E9855), TESForm, TESIdleForm);
 		if (idleStop)
 			PlayIdle_Internal(actor->middleProcess, actor, 0x35, idleStop, 1, 0);
-#endif
-		return PlayIdle_Internal(actor->middleProcess, actor, 0x35, idle, 0, 0);
 	}
 
 	Actor* GetCurrentConsoleActor() {
