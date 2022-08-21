@@ -11,48 +11,9 @@ F4SEMessagingInterface* g_messaging = nullptr;
 F4SEScaleformInterface* g_scaleform = nullptr;
 F4SEPapyrusInterface*	g_papyrus = nullptr;
 
-RelocPtr <uintptr_t> TESIdleForm_VTable(0x02CB8FA8);
-RelocPtr <TESIdleForm**> g_IdleArr(0x58D2ED0);
-
 std::vector<std::string> g_pluginVec;
 CaseInsensitiveMap<CaseInsensitiveMap<TESIdleForm*>> g_idleAnimMap;
 CaseInsensitiveMap<std::vector<std::string>> g_customPoseMap;
-
-bool IsValidIdleForm(void* ptr) {
-	if (!ptr)
-		return false;
-
-	uintptr_t* vtablePtr = reinterpret_cast<uintptr_t*>(ptr);
-	if (*vtablePtr == TESIdleForm_VTable.GetUIntPtr())
-		return true;
-	return false;
-}
-
-void InitializeIdleMap() {
-	for (UInt32 ii = 0; ; ii++) {
-		TESIdleForm* idleForm = (*g_IdleArr)[ii];
-		if (!idleForm || !IsValidIdleForm(idleForm))
-			break;
-
-		if (!idleForm->unk08)
-			continue;
-
-		ModInfo* modInfo = idleForm->unk08->entries[0];
-		if (!modInfo)
-			continue;
-
-		if (!idleForm->formEditorID)
-			continue;
-
-		auto it = g_idleAnimMap.find(modInfo->name);
-		if (it == g_idleAnimMap.end()) {
-			auto in_res = g_idleAnimMap.insert(std::make_pair(modInfo->name, CaseInsensitiveMap<TESIdleForm*>()));
-			it = in_res.first;
-		}
-
-		it->second.insert(std::make_pair(idleForm->formEditorID, idleForm));
-	}
-}
 
 void InitializeConfig() {
 	if (ConfigReader::ShouldReadConfig())
@@ -78,11 +39,7 @@ void InitializeConfig() {
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
-	case F4SEMessagingInterface::kMessage_GameDataReady:
-		break;
-
 	case F4SEMessagingInterface::kMessage_GameLoaded:
-		InitializeIdleMap();
 		ScaleformManager::TullPoserHotKeyMenu::RegisterMenu();
 		break;
 
@@ -153,6 +110,18 @@ extern "C" {
 
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
+
+		if (!g_branchTrampoline.Create(1024 * 64)) {
+			_ERROR("couldn't create branch trampoline. this is fatal. skipping remainder of init process.");
+			return false;
+		}
+		if (!g_localTrampoline.Create(1024 * 64, nullptr))
+		{
+			_ERROR("couldn't create codegen buffer. this is fatal. skipping remainder of init process.");
+			return false;
+		}
+
+		Hook::Hooks_IdleReady();
 
 		InitializeConfig();
 

@@ -7,9 +7,11 @@
 #include <f4se/ScaleformLoader.h>
 #include <f4se/PapyrusArgs.h>
 #include <f4se/PapyrusNativeFunctions.h>
+#include <f4se/xbyak/xbyak.h>
 
 #include <f4se_common/f4se_version.h>
 #include <f4se_common/Relocation.h>
+#include <f4se_common/BranchTrampoline.h>
 
 #include <fstream>
 #include <vector>
@@ -19,9 +21,10 @@
 #include "PapyrusManager.h"
 #include "ConfigReader.h"
 #include "Utility.h"
+#include "Hook.h"
 
 #define PLUGIN_NAME	"TullPoserHotKey"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 1, 2)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
 
 struct CaseInsensitiveComparator {
 	bool operator()(const std::string& a, const std::string& b) const noexcept {
