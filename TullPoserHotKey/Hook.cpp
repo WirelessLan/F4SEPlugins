@@ -1,7 +1,7 @@
 #include "Global.h"
 
 namespace Hook {
-	typedef void (*_IdleReady)(void*);
+	typedef void (*_IdleReady)(IdleCollection*);
 	RelocAddr <_IdleReady> IdleReady_HookTarget(0x5AA3B0);
 	_IdleReady IdleReady_Original;
 
