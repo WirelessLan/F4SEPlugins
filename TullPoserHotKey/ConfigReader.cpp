@@ -3,7 +3,6 @@
 namespace ConfigReader {
 	std::string configPath = { "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".cfg" };
 	time_t configLoadedTime = 0;
-	CaseInsensitiveMap<time_t> pluginPoseConfigLoadedTime;
 
 	char GetNextChar(const std::string& line, UInt32& index) {
 		if (index < line.length())
@@ -99,27 +98,6 @@ namespace ConfigReader {
 
 		if (configLoadedTime == 0 || configLoadedTime != stat.st_mtime) {
 			configLoadedTime = stat.st_mtime;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool ShouldReadPluginPoseConfig(const std::string& pluginName) {
-		std::string poseConfigPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + pluginName + ".cfg";
-		struct _stat64 stat;
-		if (_stat64(poseConfigPath.c_str(), &stat) != 0) {
-			pluginPoseConfigLoadedTime.erase(pluginName);
-			return false;
-		}
-
-		auto it = pluginPoseConfigLoadedTime.find(pluginName);
-		if (it == pluginPoseConfigLoadedTime.end()) {
-			pluginPoseConfigLoadedTime.insert(std::make_pair(pluginName, stat.st_mtime));
-			return true;
-		}
-		else if (it->second != stat.st_mtime) {
-			pluginPoseConfigLoadedTime[pluginName] = stat.st_mtime;
 			return true;
 		}
 

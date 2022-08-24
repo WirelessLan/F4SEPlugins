@@ -1,33 +1,26 @@
 {
-    "modName": "TullPoserHotKey",
-    "displayName": "Tull Poser HotKey",
-    "minMcmVersion": 2,
-    "content": [
-      {
-        "type": "spacer",
-        "numLines": 8
-      },
-      {
-        "text": "<p align='center'><font size='32'>Tull Poser HotKey</font><font size='10'> v0.1.1</font></p>",
-        "type": "text",
-        "html": true
-      }
-    ],
-    "pages": [
-      {
-        "pageDisplayName": "단축키",
-        "content": [
-          {
-            "id": "ShowMenuKey",
-            "text": "메뉴 단축키",
-            "type": "hotkey"
-          },
-          {
-            "id": "StopIdleKey",
-            "text": "포즈 중지키",
-            "type": "hotkey"
-          }
-        ]
-      }
-    ]
+  "modName": "TullPoserHotKey",
+  "displayName": "Tull Poser HotKey",
+  "minMcmVersion": 2,
+  "content": [
+    {
+      "text": "<p align='center'><font size='32'>Tull Poser HotKey</font><font size='10'> v0.5</font></p>",
+      "type": "text",
+      "html": true
+    },
+    {
+      "text": "단축키",
+      "type": "section"
+    },
+    {
+      "id": "ShowMenuKey",
+      "text": "메뉴 단축키",
+      "type": "hotkey"
+    },
+    {
+      "id": "StopIdleKey",
+      "text": "포즈 중지키",
+      "type": "hotkey"
+    }
+  ]
 }

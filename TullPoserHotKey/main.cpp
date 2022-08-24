@@ -13,28 +13,10 @@ F4SEPapyrusInterface*	g_papyrus = nullptr;
 
 std::vector<std::string> g_pluginVec;
 CaseInsensitiveMap<CaseInsensitiveMap<TESIdleForm*>> g_idleAnimMap;
-CaseInsensitiveMap<std::vector<std::string>> g_customPoseMap;
 
 void InitializeConfig() {
 	if (ConfigReader::ShouldReadConfig())
 		g_pluginVec = ConfigReader::ReadConfig();
-
-	for (std::string& plugin : g_pluginVec) {
-		if (!ConfigReader::ShouldReadPluginPoseConfig(plugin))
-			continue;
-
-		std::vector<std::string> poses = ConfigReader::ReadPluginPoseConfig(plugin);
-		if (poses.empty()) {
-			g_customPoseMap.erase(plugin);
-			continue;
-		}
-
-		auto it = g_customPoseMap.find(plugin);
-		if (it == g_customPoseMap.end())
-			g_customPoseMap.insert(std::make_pair(plugin, poses));
-		else
-			g_customPoseMap[plugin] = poses;
-	}
 }
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {

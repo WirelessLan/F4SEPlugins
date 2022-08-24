@@ -1,84 +1,31 @@
 ﻿package  {
-	import flash.display.Sprite;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
-	import flash.text.TextFieldType;
-	import flash.events.MouseEvent;
+	import UIComponent.View;
+	import UIComponent.Button;
+	import UIComponent.UIEvent;
 	
-	public class MessageBox extends Sprite {		
+	public class MessageBox extends View {		
 		private var menuWidth:uint = 400;
 		private var menuHeight:uint = 160;
 		
 		private var message:String;
 		
 		private var titleText:TextField;
-		private var confirmBtn:TextField;
       	private var messageBox:TextField;
+		private var confirmBtn:Button;
 
 		public function MessageBox(msg:String) {
-        	super();
 			this.message = msg;
-			InitializeView();
+        	super(menuWidth, menuHeight, "메시지");
 		}
 		
-		private function onItemMouseOver(evn:MouseEvent) : * {
-			var txtBox:TextField = evn.target as TextField;
-			txtBox.background = true;
-			txtBox.backgroundColor = 0xFFFFFF;
-			
-			var txtBox_tf:TextFormat = txtBox.getTextFormat();
-			txtBox_tf.color = 0x000000;
-			
-			txtBox.setTextFormat(txtBox_tf);
-		}
-		
-		private function onItemMouseOut(evn:MouseEvent) : * {
-			var txtBox:TextField = evn.target as TextField;
-			txtBox.background = false;
-			txtBox.backgroundColor = 0x000000;
-			
-			var txtBox_tf:TextFormat = txtBox.getTextFormat();
-			txtBox_tf.color = 0xFFFFFF;
-			
-			txtBox.setTextFormat(txtBox_tf);
-		}
-		
-		private function confirmBtn_Clicked(evn:MouseEvent) : * {
+		private function confirmBtn_Activated(evn:UIEvent) : * {
 			Shared.CloseMenu(1);
 		}
 		
-		public function InitializeView() : void {
-			this.x = (Shared.UIWidth - menuWidth) / 2;
-			this.y = (Shared.UIHeight - menuHeight) / 2;
-			
-			this.graphics.beginFill(0, 0.85);
-			this.graphics.drawRect(0, 0, menuWidth, menuHeight);
-			this.graphics.endFill();
-			
-			var unlineWidth:uint = 180;
-			this.graphics.lineStyle(2, 0xFFFFFF);
-			this.graphics.moveTo((menuWidth - unlineWidth) / 2, 45);
-			this.graphics.lineTo((menuWidth - unlineWidth) / 2 + unlineWidth, 45);
-			
-			titleText = new TextField();
-			titleText.selectable = false;
-			titleText.embedFonts = true;
-			titleText.text = "Message";
-			titleText.x = 0;
-			titleText.y = 10;
-			titleText.width = menuWidth;
-			titleText.height = 32;
-			
-			var titleText_tf:TextFormat = titleText.getTextFormat();
-			titleText_tf.color = 0xFFFFFF;
-			titleText_tf.font = Shared.MainFont.fontName;
-			titleText_tf.size = 24;
-			titleText_tf.kerning = true;
-			titleText_tf.align = "center";
-			
-			titleText.setTextFormat(titleText_tf);
-			
-			this.addChild(titleText);
+		protected override function InitializeView() : void {
+			super.InitializeView();
 			
 			messageBox = new TextField();
 			messageBox.selectable = false;
@@ -98,32 +45,15 @@
 			
 			messageBox.setTextFormat(messageBox_tf);
 			
-			this.addChild(messageBox);
+			this.AddComponent(messageBox);
 			
-			confirmBtn = new TextField();
+			confirmBtn = new Button(menuWidth - 20, 32);
+			confirmBtn.text = "OK";
 			confirmBtn.y = menuHeight - 42;
 			confirmBtn.x = 10;
-			confirmBtn.width = menuWidth - 20;
-			confirmBtn.height = 32;
-			confirmBtn.text = "OK";
-			confirmBtn.selectable = false;
-			confirmBtn.embedFonts = true;
-			confirmBtn.border = true;
-			confirmBtn.borderColor = 0xFFFFFF;
-			confirmBtn.addEventListener(MouseEvent.MOUSE_OUT,this.onItemMouseOut);
-			confirmBtn.addEventListener(MouseEvent.MOUSE_OVER,this.onItemMouseOver);
-			confirmBtn.addEventListener(MouseEvent.CLICK,this.confirmBtn_Clicked);
+			confirmBtn.addEventListener(UIEvent.ACTIVATE, confirmBtn_Activated);
 			
-			var confirmBtn_Text:TextFormat = confirmBtn.getTextFormat();
-			confirmBtn_Text.color = 0xFFFFFF;
-			confirmBtn_Text.font = Shared.MainFont.fontName;
-			confirmBtn_Text.size = 24;
-			confirmBtn_Text.kerning = true;
-			confirmBtn_Text.align = "center";
-			
-			confirmBtn.setTextFormat(confirmBtn_Text);
-			
-			this.addChild(confirmBtn);
+			this.AddComponent(confirmBtn);
 		}
 	}
 }

@@ -5,6 +5,7 @@
     import flash.net.URLRequest;
 	import flash.events.Event;
 	import flash.text.Font;
+	import flash.events.KeyboardEvent;
 	
 	public class TullPoserHotKeyMenu extends MovieClip implements ICodeObject {
       	private var f4seCodeObject;
@@ -38,19 +39,21 @@
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.Initialize();
 			else
-				ShowMainMenu(null);
+				ShowMainMenu(null, null);
 		}
 		
-		public function ShowMainMenu(selectedPlugin:String) : void {
-			Shared.ShowPluginListView(selectedPlugin);
+		public function ProcessKeyEvent(ctrlName:String) : void {
+			if (ctrlName == "Pipboy") {
+				Shared.CloseMenu(1);
+			}
+			else {
+				if (Shared.CurrentView)
+					Shared.CurrentView.ProcessKeyEvent(ctrlName);
+			}
 		}
 		
-		public function ShowPoseMenu(plugin:String, pose:String) : void {
-			Shared.ShowPoseListView(plugin, pose);
-		}
-		
-		public function CloseMenu() : void {
-			Shared.CloseMenu(1);
+		public function ShowMainMenu(selectedPlugin:String, selectedPose:String) : void {
+			Shared.ShowPluginListView(selectedPlugin, selectedPose);
 		}
 	}
 }
