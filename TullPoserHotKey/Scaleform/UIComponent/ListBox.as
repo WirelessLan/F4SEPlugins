@@ -33,8 +33,11 @@
 		}
 		
 		public function CanChangeFocus(dir:int) : Boolean {
-			if (!this._focusedItem)
+			if (this._items.length == 0)
 				return true;
+
+			if (!this._focusedItem)
+				return false;
 			
 			if (dir == FocusDirection.Previous && this.itemsContainer.getChildIndex(this._focusedItem) == 0)
 				return true;
@@ -62,15 +65,16 @@
 			if (!this._focusedItem) {
 				if (this.itemsContainer.numChildren == 0)
 					return;
-					
 				var targetIdx:uint = dir == FocusDirection.Next ? 0 : this.itemsContainer.numChildren - 1;
 				focusItem(this.itemsContainer.getChildAt(targetIdx) as TextField, true);
 			}
 			else {
 				var focusedIndex = this.itemsContainer.getChildIndex(this._focusedItem);
 				focusedIndex += dir;
-				if (focusedIndex < 0 || focusedIndex >= this.itemsContainer.numChildren)
-					return;
+				if (focusedIndex < 0)
+					focusedIndex = 0;
+				else if (focusedIndex >= this.itemsContainer.numChildren)
+					focusedIndex = this.itemsContainer.numChildren - 1;
 				focusItem(this._focusedItem, false);
 				focusItem(this.itemsContainer.getChildAt(focusedIndex) as TextField, true);
 			}
