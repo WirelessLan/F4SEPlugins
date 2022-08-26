@@ -1,11 +1,16 @@
 #pragma once
 
 namespace ScaleformManager {
+	void RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root);
+
+	void ClearSelectedVars();
+
 	class MenuInputHandler : public BSInputEventUser {
 	public:
 		MenuInputHandler() : BSInputEventUser(true) { }
 
 		virtual void OnButtonEvent(ButtonEvent* inputEvent);
+		virtual void OnThumbstickEvent(ThumbstickEvent* inputEvent);
 	};
 
 	class TullPoserHotKeyMenu : public GameMenuBase {
@@ -22,8 +27,6 @@ namespace ScaleformManager {
 
 		static void CloseMenu();
 	};
-
-	void ClearSelectedVars();
 
 	class InitializeHandler : public GFxFunctionHandler {
 	public:

@@ -1,14 +1,29 @@
 #include "Global.h"
 
+std::string g_selectedPlugin;
+std::string g_selectedPose;
+
 namespace ScaleformManager {
 	const std::string TullPoserHotKeyMenuName = "TullPoserHotKeyMenu";
 	TullPoserHotKeyMenu* g_poserMenu;
 	bool g_menuAllowTextInput = false;
 
-	std::string g_selectedPlugin;
-	std::string g_selectedPose;
-
 	MenuInputHandler g_poserMenuInputHandler;
+	std::map<UInt32, UInt64> g_dirKeyDelayMap;
+
+	void RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
+		RegisterFunction<ScaleformManager::InitializeHandler>(f4se_root, view->movieRoot, "Initialize");
+		RegisterFunction<ScaleformManager::CloseHandler>(f4se_root, view->movieRoot, "Close");
+		RegisterFunction<ScaleformManager::GetPluginListHandler>(f4se_root, view->movieRoot, "GetPluginList");
+		RegisterFunction<ScaleformManager::SelectPluginHandler>(f4se_root, view->movieRoot, "SelectPlugin");
+		RegisterFunction<ScaleformManager::GetPoseListHandler>(f4se_root, view->movieRoot, "GetPoseList");
+		RegisterFunction<ScaleformManager::SelectPoseHandler>(f4se_root, view->movieRoot, "SelectPose");
+	}
+
+	void ClearSelectedVars() {
+		g_selectedPlugin.clear();
+		g_selectedPose.clear();
+	}
 
 	void RegisterMenuInputHandler(bool bReg) {
 		if (bReg) {
@@ -26,7 +41,7 @@ namespace ScaleformManager {
 		}
 	}
 
-	std::string KeyCodeToString(UInt32 keyCode) {
+	std::string KeyCodeToControlID(UInt32 keyCode) {
 		switch (keyCode) {
 		case InputMap::kGamepadButtonOffset_DPAD_UP:
 		case 0x26:	// Up Arrow
@@ -48,12 +63,61 @@ namespace ScaleformManager {
 			return "StrafeRight";
 			break;
 
+		case InputMap::kGamepadButtonOffset_A:
 		case 0x0D:	// Enter
 			return "Activate";
+			break;
+
+		case InputMap::kGamepadButtonOffset_B:
+			return "Pipboy";
 			break;
 		}
 
 		return std::string();
+	}
+
+	std::string DirectionToControlID(UInt32 dir) {
+		switch (dir) {
+		case 1:	// Up
+			return "Forward";
+			break;
+
+		case 3:	// Down
+			return "Back";
+			break;
+
+		case 4:	// Left
+			return "StrafeLeft";
+			break;
+
+		case 2:	// Right
+			return "StrafeRight";
+			break;
+		}
+
+		return std::string();
+	}
+
+	bool IsControlIDDirection(std::string ctrlId) {
+		if (ctrlId == "Forward" || ctrlId == "Back" ||
+			ctrlId == "StrafeLeft" || ctrlId == "StrafeRight")
+			return true;
+		return false;
+	}
+
+	void SendKeyEvent(std::string ctrlId) {
+		GFxMovieRoot* movieRoot = g_poserMenu->movie->movieRoot;
+		GFxValue root;
+
+		if (!movieRoot->GetVariable(&root, "root")) {
+			_ERROR("Couldn't get a root");
+			return;
+		}
+
+		GFxValue ctrlName;
+		ctrlName.SetString(ctrlId.c_str());
+
+		root.Invoke("ProcessKeyEvent", nullptr, &ctrlName, 1);
 	}
 
 	void MenuInputHandler::OnButtonEvent(ButtonEvent* inputEvent) {
@@ -83,28 +147,91 @@ namespace ScaleformManager {
 		std::string ctrlStr = control->c_str();
 
 		if (ctrlStr == "Unmapped") {
-			std::string nCtrlStr = KeyCodeToString(keyCode);
-			ctrlStr = nCtrlStr.empty() ? ctrlStr : nCtrlStr;
-			if (ctrlStr == "Unmapped")
+			std::string nCtrlStr = KeyCodeToControlID(keyCode);
+			if (nCtrlStr.empty())
 				return;
+			ctrlStr = nCtrlStr;
+		}
+		else if (inputEvent->deviceType == InputEvent::kDeviceType_Gamepad) {
+			std::string nCtrlStr = KeyCodeToControlID(keyCode);
+			if (nCtrlStr.empty())
+				return;
+			ctrlStr = nCtrlStr;
 		}
 
-		bool isDown = inputEvent->isDown == 1.0f && inputEvent->timer == 0.0f;
+		bool isDown = inputEvent->isDown == 1.0f;
+		bool isUp = inputEvent->isDown == 0.0f;
 
 		if (isDown) {
-			GFxMovieRoot* movieRoot = g_poserMenu->movie->movieRoot;
-			GFxValue root;
-
-			if (!movieRoot->GetVariable(&root, "root")) {
-				_ERROR("Couldn't get a root");
-				return;
-			}
-
-			GFxValue ctrlName;
-			ctrlName.SetString(ctrlStr.c_str());
-
-			root.Invoke("ProcessKeyEvent", nullptr, &ctrlName, 1);
+			if (g_dirKeyDelayMap.find(keyCode) == g_dirKeyDelayMap.end())
+				g_dirKeyDelayMap.insert(std::make_pair(keyCode, 0));
 		}
+		else {
+			if (g_dirKeyDelayMap.find(keyCode) != g_dirKeyDelayMap.end())
+				g_dirKeyDelayMap.erase(keyCode);
+		}
+
+		if (IsControlIDDirection(ctrlStr)) {
+			if (isDown) {
+				auto it = g_dirKeyDelayMap.find(keyCode);
+				if (it != g_dirKeyDelayMap.end()) {
+					if (it->second != 0) {
+						it->second--;
+						return;
+					}
+					else {
+						if (inputEvent->timer == 0.0f)
+							it->second = 25;
+						else
+							it->second = 3;
+					}
+				}
+
+				SendKeyEvent(ctrlStr);
+			}
+		}
+		else {
+			if (isUp)
+				SendKeyEvent(ctrlStr);
+		}
+	}
+
+	void MenuInputHandler::OnThumbstickEvent(ThumbstickEvent * inputEvent) {
+		static bool firstMove = false;
+		static UInt64 delay = 0;
+		
+		if (inputEvent->deviceType != InputEvent::kDeviceType_Gamepad)
+			return;
+
+		BSFixedString* control = inputEvent->GetControlID();
+		if (strcmp(control->c_str(), "Move") != 0)
+			return;
+
+		if (inputEvent->unk20[5] == 0) {
+			firstMove = false;
+			delay = 0;
+			return;
+		}
+
+		if (delay != 0) {
+			delay--;
+			return;
+		}
+		else {
+			if (!firstMove) {
+				firstMove = true;
+				delay = 25;
+			}
+			else {
+				delay = 3;
+			}
+		}
+
+		std::string ctrlStr = DirectionToControlID(inputEvent->unk20[5]);
+		if (ctrlStr.empty())
+			return;
+
+		SendKeyEvent(ctrlStr);
 	}
 
 	TullPoserHotKeyMenu::TullPoserHotKeyMenu() {
@@ -125,6 +252,7 @@ namespace ScaleformManager {
 	}
 
 	void TullPoserHotKeyMenu::OpenMenu() {
+		g_dirKeyDelayMap.clear();
 		static BSFixedString menuName(TullPoserHotKeyMenuName.c_str());
 		CALL_MEMBER_FN((*g_uiMessageManager), SendUIMessage)(menuName, kMessage_Open);
 	}
@@ -132,11 +260,6 @@ namespace ScaleformManager {
 	void TullPoserHotKeyMenu::CloseMenu() {
 		static BSFixedString menuName(TullPoserHotKeyMenuName.c_str());
 		CALL_MEMBER_FN((*g_uiMessageManager), SendUIMessage)(menuName, kMessage_Close);
-	}
-
-	void ClearSelectedVars() {
-		g_selectedPlugin.clear();
-		g_selectedPose.clear();
 	}
 
 	void InitializeHandler::Invoke(Args* args) {
@@ -165,12 +288,6 @@ namespace ScaleformManager {
 	}
 
 	void CloseHandler::Invoke(Args* args) {
-		if (args->numArgs == 1) {
-			bool isCloseAll = args->args[0].GetBool();
-			if (!isCloseAll)
-				ClearSelectedVars();
-		}
-
 		RegisterMenuInputHandler(false);
 		TullPoserHotKeyMenu::CloseMenu();
 	}
@@ -235,22 +352,14 @@ namespace ScaleformManager {
 			g_selectedPlugin = pluginName;
 			g_selectedPose = poseName;
 
-			auto plugin_it = g_idleAnimMap.find(pluginName);
-			if (plugin_it == g_idleAnimMap.end()) {
-				_MESSAGE("Cannot find a plugin: %s", pluginName.c_str());
-				return;
-			}
-
-			auto pose_it = plugin_it->second.find(poseName);
-			if (pose_it == plugin_it->second.end()) {
-				_MESSAGE("Cannot find a Pose: %s", poseName.c_str());
-				return;
-			}
-			
 			Actor* actor = Utility::GetCurrentConsoleActor();
 			if (!actor) actor = *g_player;
 
-			Utility::PlayIdle(actor, pose_it->second);
+			TESIdleForm* idle = Utility::GetIdleForm(g_selectedPlugin, g_selectedPose);
+			if (!idle)
+				return;
+
+			Utility::PlayIdle(actor, idle);
 		}
 	}
 }

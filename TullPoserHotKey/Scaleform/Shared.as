@@ -29,7 +29,7 @@
 		}
 		
 		public static function ShowPluginListView(selectedPlugin:String, selectedPose:String) : void {
-			var pluginListView:PluginListView = new PluginListView(selectedPlugin);
+			var pluginListView:PluginListView = new PluginListView(selectedPlugin, selectedPose);
 			ShowView(pluginListView);
 			
 			if (selectedPlugin != null && selectedPose != null) {

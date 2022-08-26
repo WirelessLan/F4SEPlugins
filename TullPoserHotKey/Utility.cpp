@@ -17,6 +17,18 @@ namespace Utility {
 	typedef bool (*_PlayIdle)(Actor::MiddleProcess* aiProc, Actor* actor, uint32_t flag, TESIdleForm* idle, bool unk01, uint64_t unk02);
 	RelocAddr <_PlayIdle> PlayIdle_Internal(0x0E35510);
 
+	TESIdleForm* GetIdleForm(const std::string& pluginName, const std::string& poseName) {
+		auto plugin_it = g_idleAnimMap.find(pluginName);
+		if (plugin_it == g_idleAnimMap.end())
+			return nullptr;
+
+		auto pose_it = plugin_it->second.find(poseName);
+		if (pose_it == plugin_it->second.end())
+			return nullptr;
+
+		return pose_it->second;
+	}
+
 	bool PlayIdle(Actor* actor, TESIdleForm* idle) {
 		if (!actor || !actor->middleProcess || !idle)
 			return false;
@@ -27,7 +39,7 @@ namespace Utility {
 	void StopIdle(Actor* actor) {
 		static TESIdleForm* idleStop = DYNAMIC_CAST(LookupFormByID(0x000E9855), TESForm, TESIdleForm);
 		if (idleStop)
-			PlayIdle_Internal(actor->middleProcess, actor, 0x35, idleStop, 1, 0);
+			PlayIdle_Internal(actor->middleProcess, actor, 0x35, idleStop, 0, 0);
 	}
 
 	Actor* GetCurrentConsoleActor() {

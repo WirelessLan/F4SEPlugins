@@ -34,18 +34,12 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 }
 
 bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
-	RegisterFunction<ScaleformManager::InitializeHandler>(f4se_root, view->movieRoot, "Initialize");
-	RegisterFunction<ScaleformManager::CloseHandler>(f4se_root, view->movieRoot, "Close");
-	RegisterFunction<ScaleformManager::GetPluginListHandler>(f4se_root, view->movieRoot, "GetPluginList");
-	RegisterFunction<ScaleformManager::SelectPluginHandler>(f4se_root, view->movieRoot, "SelectPlugin");
-	RegisterFunction<ScaleformManager::GetPoseListHandler>(f4se_root, view->movieRoot, "GetPoseList");
-	RegisterFunction<ScaleformManager::SelectPoseHandler>(f4se_root, view->movieRoot, "SelectPose");
+	ScaleformManager::RegisterScaleform(view, f4se_root);
 	return true;
 }
 
-bool RegisterFuncs(VirtualMachine* vm) {
-	vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ShowMenu", "TullPoserHotKey", PapyrusManager::ShowMenu, vm));
-	vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("StopIdle", "TullPoserHotKey", PapyrusManager::StopIdle, vm));
+bool RegisterPapyrusFuncs(VirtualMachine* vm) {
+	PapyrusManager::RegisterPapyrusFuncs(vm);
 	return true;
 }
 
@@ -114,7 +108,7 @@ extern "C" {
 			g_scaleform->Register(PLUGIN_NAME, RegisterScaleform);
 
 		if (g_papyrus)
-			g_papyrus->Register(RegisterFuncs);
+			g_papyrus->Register(RegisterPapyrusFuncs);
 
 		return true;
 	}

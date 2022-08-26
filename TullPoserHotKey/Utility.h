@@ -15,6 +15,7 @@ public:
 
 namespace Utility {
 	void Trim(std::string& s);
+	TESIdleForm* GetIdleForm(const std::string& pluginName, const std::string& poseName);
 	bool PlayIdle(Actor* actor, TESIdleForm* idle);
 	void StopIdle(Actor* actor);
 	Actor* GetCurrentConsoleActor();

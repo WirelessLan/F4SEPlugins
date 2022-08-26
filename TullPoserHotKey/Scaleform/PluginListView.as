@@ -8,13 +8,19 @@
 		private var menuHeight:uint = 620;
 		
 		private var pluginList:ListBox;
+		
+		private var selectedPlugin:String = null;
+		private var selectedPose:String = null;
 
-		public function PluginListView(selectedPlugin:String) {
+		public function PluginListView(selectedPlugin:String, selectedPose:String) {
         	super(menuWidth, menuHeight, "플러그인 선택");
+			
+			this.selectedPlugin = selectedPlugin;
+			this.selectedPose = selectedPose;
 			
 			GetPluginList();
 			
-			if (selectedPlugin) {
+			if (this.selectedPlugin) {
 				this.pluginList.Highlight(selectedPlugin);
 				this.focusedComponent = this.pluginList;
 			}
@@ -46,7 +52,10 @@
 				Shared.F4SEPlugin.SelectPlugin(this.pluginList.SelectedItem);
 
 			this.pluginList.Highlight(this.pluginList.SelectedItem);
-			Shared.ShowPoseListView(this.pluginList.SelectedItem, null);
+			if (this.pluginList.SelectedItem == this.selectedPlugin)
+				Shared.ShowPoseListView(this.pluginList.SelectedItem, this.selectedPose);
+			else
+				Shared.ShowPoseListView(this.pluginList.SelectedItem, null);
 		}
 	}
 }
