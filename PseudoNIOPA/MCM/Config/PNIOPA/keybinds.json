@@ -1,0 +1,32 @@
+{
+	"modName": "PNIOPA",
+	"keybinds": [
+		{
+			"id": "ShowMenuKey",
+			"desc": "메뉴 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "PNIOPA_MainQuest",
+				"function": "ShowMenu"
+			}
+    	},
+		{
+			"id": "ClearNodeKey",
+			"desc": "노드 선택 초기화 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "PNIOPA_F4SE",
+				"function": "ClearNodeSelection"
+			}
+    	},
+		{
+			"id": "ResetNodeKey",
+			"desc": "노드 조정 초기화 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "PNIOPA_F4SE",
+				"function": "ResetNode"
+			}
+    	}
+	]
+}

@@ -85,12 +85,5 @@ namespace Inputs {
 		else if (keyCode == g_pluginSettings.DecScaleKey && isDown) {
 			Nodes::ModNode(Nodes::ModType::kModType_Scale, Nodes::ModDirection::kModDirection_X, false);
 		}
-		// Clear Node Selection
-		else if (keyCode == g_pluginSettings.ClearSelectKey && !isDown) {
-			Nodes::ClearSelect();
-		}
-		else if (keyCode == g_pluginSettings.ResetSelectedNodeKey && !isDown) {
-			Nodes::ResetSelectedNode();
-		}
 	}
 }

@@ -46,7 +46,7 @@ namespace ConfigReader {
 	}
 
 	std::vector<std::string> GetNodeListFromFile(std::string& groupName) {
-		std::string configPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\" + groupName + ".txt";
+		std::string configPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Groups\\" + groupName + ".txt";
 		std::ifstream configFile(configPath);
 		std::vector<std::string> retVec;
 
@@ -74,5 +74,148 @@ namespace ConfigReader {
 		}
 
 		return retVec;
+	}
+
+	bool SaveNodeData(const std::string& saveName, Actor* actor, const std::unordered_map<std::string, Nodes::NodeData>& nodeDataMap) {
+		std::string savePath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\" + saveName + ".pnop";
+		std::ofstream saveFile(savePath);
+
+		if (!saveFile.is_open())
+			return false;
+
+		for (auto& iter : nodeDataMap) {
+			NiNode* node = Nodes::GetNode(actor, iter.first);
+			if (!node)
+				continue;
+
+			if (iter.second.posModified) {
+				saveFile << iter.second.nodeName << "|" << "Position" << "|" << node->m_localTransform.pos.x << "," << node->m_localTransform.pos.y << "," << node->m_localTransform.pos.z << std::endl;
+			}
+			if (iter.second.rotModified) {
+				float y, p, r;
+				node->m_localTransform.rot.GetEulerAngles(&y, &p, &r);
+				saveFile << iter.second.nodeName << "|" << "Rotation" << "|" << y << "," << p << "," << r << std::endl;
+			}
+			if (iter.second.scaleModified) {
+				saveFile << iter.second.nodeName << "|" << "Scale" << "|" << node->m_localTransform.scale << std::endl;
+			}
+		}
+
+		return true;
+	}
+
+	std::unordered_map<std::string, Nodes::NodeData> LoadNodeData(const std::string& saveName) {
+		std::string savePath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\" + saveName + ".pnop";
+		std::ifstream saveFile(savePath);
+		std::unordered_map<std::string, Nodes::NodeData> retMap;
+
+		if (!saveFile.is_open())
+			return retMap;
+
+		std::string line;
+		std::string nodeName, propertyName, xValue, yValue, zValue;
+		while (std::getline(saveFile, line)) {
+			Utility::Trim(line);
+			if (line.empty() || line[0] == '#')
+				continue;
+
+			UInt32 index = 0;
+
+			nodeName = GetNextData(line, index, '|');
+			if (nodeName.empty()) {
+				_MESSAGE("Cannot read a Node Name: %s", line.c_str());
+				continue;
+			}
+
+			propertyName = GetNextData(line, index, '|');
+			if (propertyName.empty()) {
+				_MESSAGE("Cannot read a Property Name: %s", line.c_str());
+				continue;
+			}
+
+			if (propertyName == "Position" || propertyName == "Rotation") {
+				xValue = GetNextData(line, index, ',');
+				if (xValue.empty()) {
+					_MESSAGE("Cannot read a X(Y) Value: %s", line.c_str());
+					continue;
+				}
+
+				yValue = GetNextData(line, index, ',');
+				if (xValue.empty()) {
+					_MESSAGE("Cannot read a Y(P) Value: %s", line.c_str());
+					continue;
+				}
+
+				zValue = GetNextData(line, index, 0);
+				if (xValue.empty()) {
+					_MESSAGE("Cannot read a Z(R) Value: %s", line.c_str());
+					continue;
+				}
+
+				auto it = retMap.find(nodeName);
+				if (it == retMap.end()) {
+					Nodes::NodeData newNode = {};
+					newNode.nodeName = nodeName;
+					if (propertyName == "Position") {
+						newNode.posModified = true;
+						newNode.pos.x = stof(xValue);
+						newNode.pos.y = stof(yValue);
+						newNode.pos.z = stof(zValue);
+					}
+					else {
+						newNode.rotModified = true;
+						newNode.rot.y = stof(xValue);
+						newNode.rot.p = stof(yValue);
+						newNode.rot.r = stof(zValue);
+					}
+					retMap.insert(std::make_pair(nodeName, newNode));
+				}
+				else {
+					if (propertyName == "Position") {
+						it->second.posModified = true;
+						it->second.pos.x = stof(xValue);
+						it->second.pos.y = stof(yValue);
+						it->second.pos.z = stof(zValue);
+					}
+					else {
+						it->second.rotModified = true;
+						it->second.rot.y = stof(xValue);
+						it->second.rot.p = stof(yValue);
+						it->second.rot.r = stof(zValue);
+					}
+				}
+			}
+			else if (propertyName == "Scale") {
+				xValue = GetNextData(line, index, 0);
+				if (xValue.empty()) {
+					_MESSAGE("Cannot read a Scale Value: %s", line.c_str());
+					continue;
+				}
+
+				auto it = retMap.find(nodeName);
+				if (it == retMap.end()) {
+					Nodes::NodeData newNode = {};
+					newNode.nodeName = nodeName;
+					newNode.scaleModified = true;
+					newNode.scale = stof(xValue);
+					retMap.insert(std::make_pair(nodeName, newNode));
+				}
+				else {
+					it->second.scaleModified = true;
+					it->second.scale = stof(xValue);
+				}
+			}
+			else {
+				_MESSAGE("Invalid Property Name: %s", line.c_str());
+				continue;
+			}
+		}
+
+		return retMap;
+	}
+
+	bool DeleteNodeData(const std::string& saveName) {
+		std::string savePath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\" + saveName + ".pnop";
+		return remove(savePath.c_str()) == 0;
 	}
 }

@@ -171,6 +171,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Nodes.cpp" />
     <ClCompile Include="PapyrusFuncs.cpp" />
+    <ClCompile Include="ScaleformManager.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +182,7 @@
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Nodes.h" />
     <ClInclude Include="PapyrusFuncs.h" />
+    <ClInclude Include="ScaleformManager.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

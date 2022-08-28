@@ -29,6 +29,17 @@ namespace Utility {
 		actor->uiFlags |= 1 << 8;
 	}
 
+	Actor* GetCurrentConsoleActor() {
+		UInt32 handle = (*g_consoleHandle);
+		NiPointer<TESObjectREFR> refr;
+		if (handle != 0 && handle != (*g_invalidRefHandle)) {
+			LookupREFRByHandle(handle, refr);
+			return DYNAMIC_CAST(refr, TESObjectREFR, Actor);
+		}
+
+		return nullptr;
+	}
+
 	void Trim(std::string& s) {
 		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
 			return !std::isspace(ch);

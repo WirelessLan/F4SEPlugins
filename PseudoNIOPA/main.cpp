@@ -9,25 +9,35 @@
 PluginHandle			g_pluginHandle;
 F4SEMessagingInterface*	g_messaging;
 F4SEPapyrusInterface*	g_papyrus;
+F4SEScaleformInterface* g_scaleform;
 
 PluginSettings			g_pluginSettings;
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
+		ScaleformManager::PNIOPAMenu::RegisterMenu();
 		Inputs::RegisterInputHandler();
 		Events::Attach_Events();
 		break;
 
 	case F4SEMessagingInterface::kMessage_NewGame:
-	case F4SEMessagingInterface::kMessage_PreLoadGame:
+	case F4SEMessagingInterface::kMessage_PostLoadGame:
+		ScaleformManager::ClearMenuSelection();
 		Nodes::ClearAll();
+		if (Utility::IsActorFrozen(*g_player))
+			Utility::UnfreezeActor(*g_player);
 		break;
 	}
 }
 
 bool RegisterFuncs(VirtualMachine* vm) {
 	PapyrusFuncs::Register(vm);
+	return true;
+}
+
+bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
+	ScaleformManager::RegisterScaleform(view, f4se_root);
 	return true;
 }
 
@@ -44,27 +54,6 @@ void ReadINIFile() {
 	UInt32 value;
 	std::string data;
 
-	if (ConfigReader::GetConfigValue("Keys", "ShowMenuKey", &data)) {
-		value = ReadKey(data);
-		if (value) {
-			g_pluginSettings.ShowMenuKey = value;
-			_MESSAGE("ShowMenuKey: 0x%02X", g_pluginSettings.ShowMenuKey);
-		}
-	}
-	if (ConfigReader::GetConfigValue("Keys", "ClearSelectKey", &data)) {
-		value = ReadKey(data);
-		if (value) {
-			g_pluginSettings.ClearSelectKey = value;
-			_MESSAGE("ClearSelectKey: 0x%02X", g_pluginSettings.ClearSelectKey);
-		}
-	}
-	if (ConfigReader::GetConfigValue("Keys", "ResetSelectedNodeKey", &data)) {
-		value = ReadKey(data);
-		if (value) {
-			g_pluginSettings.ResetSelectedNodeKey = value;
-			_MESSAGE("ResetSelectedNodeKey: 0x%02X", g_pluginSettings.ResetSelectedNodeKey);
-		}
-	}
 	if (ConfigReader::GetConfigValue("Keys", "DirXKey", &data)) {
 		value = ReadKey(data);
 		if (value) {
@@ -162,6 +151,12 @@ extern "C" {
 			return false;
 		}
 
+		g_scaleform = (F4SEScaleformInterface*)f4se->QueryInterface(kInterface_Scaleform);
+		if (!g_scaleform) {
+			_FATALERROR("couldn't get scaleform interface");
+			return false;
+		}
+
 		return true;
 	}
 
@@ -175,6 +170,9 @@ extern "C" {
 
 		if (g_papyrus)
 			g_papyrus->Register(RegisterFuncs);
+
+		if (g_scaleform)
+			g_scaleform->Register(PLUGIN_NAME, RegisterScaleform);
 
 		return true;
 	}

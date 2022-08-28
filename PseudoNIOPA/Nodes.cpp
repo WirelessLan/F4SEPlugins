@@ -7,35 +7,22 @@ NiNode* g_selectedNode;
 
 namespace Nodes {
 	NiNode* GetNode(Actor* actor, const std::string& nodeName) {
-		if (nodeName.empty()) {
-			Console_Print("Node Name Required!");
+		if (nodeName.empty())
 			return nullptr;
-		}
 
 		NiNode* rootNode = actor->GetActorRootNode(false);
-		if (!rootNode) {
-			Console_Print("Failed to get Root Node!");
+		if (!rootNode) 
 			return nullptr;
-		}
 
 		NiAVObject* avObject = rootNode->GetObjectByName(&BSFixedString(nodeName.c_str()));
-		if (!avObject) {
-			Console_Print("Invalid Node Name!");
+		if (!avObject)
 			return nullptr;
-		}
 
 		NiNode* node = avObject->GetAsNiNode();
-		if (!node) {
-			Console_Print("Invalid Node!");
+		if (!node)
 			return nullptr;
-		}
 
 		return node;
-	}
-
-	NiNode* GetNode(Actor* actor, BSFixedString& nodeName) {
-		std::string tNodeName = nodeName;
-		return GetNode(actor, tNodeName);
 	}
 
 	void ModNode(ModType modType, ModDirection modDir, bool isPositive) {
@@ -46,7 +33,7 @@ namespace Nodes {
 
 		NodeData* nodeData = GetNodeData(g_selectedActor, nodeName);
 		if (!nodeData) {
-			Nodes::NodeData nNodeData;
+			Nodes::NodeData nNodeData = {};
 			nNodeData.nodeName = nodeName;
 
 			if (modType == ModType::kModType_Transition) {
@@ -159,11 +146,6 @@ namespace Nodes {
 			g_modifiedMap.erase(actor->formID);
 	}
 
-	void ResetNode(Actor* actor, BSFixedString& nodeName, NodeData* originData) {
-		std::string tNodeName = nodeName;
-		ResetNode(actor, tNodeName, originData);
-	}
-
 	void ResetSelectedNode() {
 		if (!g_selectedActor || !g_selectedNode)
 			return;
@@ -188,11 +170,6 @@ namespace Nodes {
 		return &node_it->second;
 	}
 
-	NodeData* GetNodeData(Actor* actor, BSFixedString& nodeName) {
-		std::string tNodeName = nodeName;
-		return GetNodeData(actor, tNodeName);
-	}
-
 	void InsertNodeData(Actor* actor, const std::string& nodeName, NodeData& nodeData) {
 		auto map_it = g_modifiedMap.find(actor->formID);
 		if (map_it == g_modifiedMap.end()) {
@@ -207,8 +184,7 @@ namespace Nodes {
 	}
 
 	void InsertNodeData(Actor* actor, BSFixedString& nodeName, NodeData& nodeData) {
-		std::string tNodeName = nodeName;
-		return InsertNodeData(actor, tNodeName, nodeData);
+		return InsertNodeData(actor, std::string(nodeName.c_str()), nodeData);
 	}
 
 	void InsertModMap(Actor* actor) {
@@ -222,28 +198,89 @@ namespace Nodes {
 
 	Actor* GetActor(UInt32 formId) {
 		TESForm* form = LookupFormByID(formId);
-		if (!form) {
-			Console_Print("Invalid FormId!");
+		if (!form)
 			return nullptr;
-		}
 
 		Actor* actor = DYNAMIC_CAST(form, TESForm, Actor);
-		if (!actor) {
-			Console_Print("Invalid Actor!");
+		if (!actor)
 			return nullptr;
-		}
 
 		return actor;
 	}
 
-	Actor* GetActor(BSFixedString& formIdStr) {
-		if (!strlen(formIdStr.c_str())) {
-			Console_Print("FormId Required!");
-			return nullptr;
-		}
+	void SetNodes(Actor* actor, const std::unordered_map<std::string, Nodes::NodeData>& nodeDataMap) {
+		if (!actor)
+			return;
 
-		UInt32 formId = std::stoul(formIdStr.c_str(), nullptr, 16) & 0xFFFFFF;
-		return GetActor(formId);
+		for (auto iter : nodeDataMap) {
+			if (!iter.second.posModified && !iter.second.rotModified && !iter.second.scaleModified)
+				continue;
+
+			NiNode* node = GetNode(actor, iter.second.nodeName);
+			if (!node)
+				continue;
+
+			NodeData* nodeData = GetNodeData(actor, iter.second.nodeName);
+			if (!nodeData) {
+				NodeData newNode = {};
+				newNode.nodeName = iter.second.nodeName;
+
+				if (iter.second.posModified) {
+					newNode.posModified = true;
+					newNode.pos.x = node->m_localTransform.pos.x;
+					newNode.pos.y = node->m_localTransform.pos.y;
+					newNode.pos.z = node->m_localTransform.pos.z;
+				}
+				if (iter.second.rotModified) {
+					float y, p, r;
+
+					newNode.rotModified = true;
+					node->m_localTransform.rot.GetEulerAngles(&y, &p, &r);
+					newNode.rot.y = y;
+					newNode.rot.p = p;
+					newNode.rot.r = r;
+				}
+				if (iter.second.scaleModified) {
+					newNode.scaleModified = true;
+					newNode.scale = node->m_localTransform.scale;
+				}
+
+				InsertNodeData(actor, iter.second.nodeName, newNode);
+			}
+			else {
+				if (iter.second.posModified) {
+					nodeData->posModified = true;
+					nodeData->pos.x = node->m_localTransform.pos.x;
+					nodeData->pos.y = node->m_localTransform.pos.y;
+					nodeData->pos.z = node->m_localTransform.pos.z;
+				}
+				if (iter.second.rotModified) {
+					float y, p, r;
+
+					nodeData->rotModified = true;
+					node->m_localTransform.rot.GetEulerAngles(&y, &p, &r);
+					nodeData->rot.y = y;
+					nodeData->rot.p = p;
+					nodeData->rot.r = r;
+				}
+				if (iter.second.scaleModified) {
+					nodeData->scaleModified = true;
+					nodeData->scale = node->m_localTransform.scale;
+				}
+			}
+
+			if (iter.second.posModified) {
+				node->m_localTransform.pos.x = iter.second.pos.x;
+				node->m_localTransform.pos.y = iter.second.pos.y;
+				node->m_localTransform.pos.z = iter.second.pos.z;
+			}
+			if (iter.second.rotModified) {
+				node->m_localTransform.rot.SetEulerAngles(iter.second.rot.y, iter.second.rot.p, iter.second.rot.r);
+			}
+			if (iter.second.scaleModified) {
+				node->m_localTransform.scale = iter.second.scale;
+			}
+		}
 	}
 
 	void ClearAll() {

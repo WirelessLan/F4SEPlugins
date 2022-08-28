@@ -5,11 +5,17 @@
 #include <f4se/GameExtraData.h>
 #include <f4se/GameRTTI.h>
 #include <f4se/GameInput.h>
+#include <f4se/GameMenus.h>
+#include <f4se/InputMap.h>
 #include <f4se/NiNodes.h>
 #include <f4se/PapyrusNativeFunctions.h>
+#include <f4se/ScaleformLoader.h>
+#include <f4se/ScaleformCallbacks.h>
 
 #include <f4se_common/f4se_version.h>
 #include <f4se_common/SafeWrite.h>
+
+#include <common/IDirectoryIterator.h>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -17,6 +23,7 @@
 #include <fstream>
 
 #include "PapyrusFuncs.h"
+#include "ScaleformManager.h"
 #include "Nodes.h"
 #include "Inputs.h"
 #include "Events.h"
@@ -24,7 +31,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 2, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 0, 0)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;
@@ -36,9 +43,6 @@ struct PluginSettings {
 	UInt32 DecRotKey = 0x25;
 	UInt32 IncScaleKey = 0x21;
 	UInt32 DecScaleKey = 0x22;
-	UInt32 ShowMenuKey = 0x61;
-	UInt32 ClearSelectKey = 0x62;
-	UInt32 ResetSelectedNodeKey = 0x63;
 };
 
 extern PluginSettings g_pluginSettings;
