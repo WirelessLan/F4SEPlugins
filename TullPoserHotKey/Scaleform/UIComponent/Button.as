@@ -64,6 +64,10 @@
 			this.setTextFormat(this_tf);
 		}
 		
+		private function onButtonClick(evn:MouseEvent) : * {
+			this.Activate();
+		}
+		
 		private function initializeComponent() {
 			this.selectable = false;
 			this.embedFonts = true;
@@ -80,6 +84,7 @@
 			this_tf.align = "center";
 			
 			this.setTextFormat(this_tf);
+			this.addEventListener(MouseEvent.CLICK, onButtonClick);
 		}
 	}
 }

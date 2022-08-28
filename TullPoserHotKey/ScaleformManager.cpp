@@ -69,6 +69,7 @@ namespace ScaleformManager {
 			break;
 
 		case InputMap::kGamepadButtonOffset_B:
+		case 0x09:	// Tab
 			return "Pipboy";
 			break;
 		}
@@ -146,7 +147,7 @@ namespace ScaleformManager {
 		BSFixedString* control = inputEvent->GetControlID();
 		std::string ctrlStr = control->c_str();
 
-		if (ctrlStr == "Unmapped") {
+		if (ctrlStr == "Unmapped" || ctrlStr == "DISABLED") {
 			std::string nCtrlStr = KeyCodeToControlID(keyCode);
 			if (nCtrlStr.empty())
 				return;
