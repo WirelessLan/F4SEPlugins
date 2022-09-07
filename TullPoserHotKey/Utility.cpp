@@ -10,10 +10,33 @@ namespace Utility {
 			}).base(), s.end());
 	}
 
-	//typedef void(*_ExecuteCommand)(const char* str);
-	//RelocAddr <_ExecuteCommand> ExecuteCommand_Internal(0x125B4A0);
+	char GetNextChar(const std::string& line, UInt32& index) {
+		if (index < line.length())
+			return line[index++];
 
-	// AIProcess::PlayIdle(Actor* a, uint32_t flag, TESIdleForm* idle, bool unk01 = true, uint64_t unk02 = 0)
+		return -1;
+	}
+
+	std::string GetNextData(const std::string& line, UInt32& index, char delimeter) {
+		char ch;
+		std::string retVal = "";
+
+		while ((ch = GetNextChar(line, index)) > 0) {
+			if (ch == '#') {
+				if (index > 0) index--;
+				break;
+			}
+
+			if (delimeter != 0 && ch == delimeter)
+				break;
+
+			retVal += ch;
+		}
+
+		Trim(retVal);
+		return retVal;
+	}
+
 	typedef bool (*_PlayIdle)(Actor::MiddleProcess* aiProc, Actor* actor, uint32_t flag, TESIdleForm* idle, bool unk01, uint64_t unk02);
 	RelocAddr <_PlayIdle> PlayIdle_Internal(0x0E35510);
 

@@ -1,46 +1,37 @@
 ﻿package {
 	import flash.text.Font;
+	import flash.display.MovieClip;
 	import UIComponent.View;
 	
 	public class Shared {
 		public static var F4SEPlugin;
 		public static var MainFont:Font
-		public static var Root:TullPoserHotKeyMenu;
+		public static var Root:MovieClip;
 		
 		public static var CurrentView:View = null;
 		
 		public static const UIWidth:uint = 1280;
 		public static const UIHeight:uint = 720;
 		
+		public static const Color_Primary:Number = 0xFFFFFF;
+		public static const Color_Secondary:Number = 0x000000;
+		public static const Color_Background:Number = 0x000000;
+		public static const Color_DefaultBackground:Number = 0xFFFFFF;
+		
 		private static function HideAllChild() : void {
 			for (var ii:uint = 0; ii < Root.numChildren; ii++)
 				Root.getChildAt(ii).visible = false;
 		}
 		
-		private static function ShowView(view:View) : void {
+		public static function ShowView(view:View) : void {
 			Shared.CurrentView = view;
 			HideAllChild();
 			Root.addChild(Shared.CurrentView);			
 		}
 		
-		public static function ShowMessageBox(msg:String) : void {
-			var messageBox:MessageBox = new MessageBox(msg);
+		public static function ShowMessageBox(title:String, msg:String) : void {
+			var messageBox:MessageBox = new MessageBox(title, msg);
 			ShowView(messageBox);
-		}
-		
-		public static function ShowPluginListView(selectedPlugin:String, selectedPose:String) : void {
-			var pluginListView:PluginListView = new PluginListView(selectedPlugin, selectedPose);
-			ShowView(pluginListView);
-			
-			if (selectedPlugin != null && selectedPose != null) {
-				var poseListView:PoseListView = new PoseListView(selectedPlugin, selectedPose);
-				ShowView(poseListView);
-			}
-		}
-		
-		public static function ShowPoseListView(selectedPlugin:String, selectedPose:String) : void {
-			var poseListView:PoseListView = new PoseListView(selectedPlugin, selectedPose);
-			ShowView(poseListView);
 		}
 		
 		public static function CloseMenu(closeCnt:uint) : void {

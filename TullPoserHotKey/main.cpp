@@ -28,6 +28,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		InitializeConfig();
 		ScaleformManager::ClearSelectedVars();
+		InputEnableManager::ResetInputEnableLayer();
 
 		break;
 	}

@@ -15,7 +15,7 @@ namespace ScaleformManager {
 
 	class TullPoserHotKeyMenu : public GameMenuBase {
 	public:
-		TullPoserHotKeyMenu();
+		TullPoserHotKeyMenu(UInt32 _flags);
 
 		virtual ~TullPoserHotKeyMenu() {}
 
@@ -23,9 +23,11 @@ namespace ScaleformManager {
 
 		static void RegisterMenu();
 
-		static void OpenMenu();
+		static void OpenMenu(const std::string& menuType);
 
 		static void CloseMenu();
+
+		static std::string MenuType;
 	};
 
 	class InitializeHandler : public GFxFunctionHandler {
@@ -34,6 +36,11 @@ namespace ScaleformManager {
 	};
 
 	class CloseHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class AllowTextInputHandler : public GFxFunctionHandler {
 	public:
 		virtual void Invoke(Args* args) override;
 	};
@@ -54,6 +61,36 @@ namespace ScaleformManager {
 	};
 
 	class SelectPoseHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class SetExpressionHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class ResetExpressionHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class SaveExpressionHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class GetExpressionsHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class LoadExpressionHandler : public GFxFunctionHandler {
+	public:
+		virtual void Invoke(Args* args) override;
+	};
+
+	class DeleteExpressionHandler : public GFxFunctionHandler {
 	public:
 		virtual void Invoke(Args* args) override;
 	};

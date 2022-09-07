@@ -4,6 +4,7 @@
 #include <f4se/GameReferences.h>
 #include <f4se/GameMenus.h>
 #include <f4se/GameRTTI.h>
+#include <f4se/NiExtraData.h>
 #include <f4se/InputMap.h>
 #include <f4se/ScaleformLoader.h>
 #include <f4se/PapyrusArgs.h>
@@ -14,18 +15,22 @@
 #include <f4se_common/Relocation.h>
 #include <f4se_common/BranchTrampoline.h>
 
+#include <common/IDirectoryIterator.h>
+
 #include <fstream>
 #include <vector>
 #include <map>
 
 #include "ScaleformManager.h"
 #include "PapyrusManager.h"
+#include "ExpressionManager.h"
+#include "InputEnableManager.h"
 #include "ConfigReader.h"
 #include "Utility.h"
 #include "Hook.h"
 
 #define PLUGIN_NAME	"TullPoserHotKey"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 0, 2)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 0)
 
 struct CaseInsensitiveComparator {
 	bool operator()(const std::string& a, const std::string& b) const noexcept {
@@ -38,6 +43,3 @@ using CaseInsensitiveMap = std::map<std::string, T, CaseInsensitiveComparator>;
 
 extern std::vector<std::string> g_pluginVec;
 extern CaseInsensitiveMap<CaseInsensitiveMap<TESIdleForm*>> g_idleAnimMap;
-
-extern std::string g_selectedPlugin;
-extern std::string g_selectedPose;

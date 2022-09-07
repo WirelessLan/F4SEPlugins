@@ -4,7 +4,7 @@
   "minMcmVersion": 2,
   "content": [
     {
-      "text": "<p align='center'><font size='32'>Tull Poser HotKey</font><font size='10'> v0.5</font></p>",
+      "text": "<p align='center'><font size='32'>Tull Poser HotKey</font><font size='10'> v1.1</font></p>",
       "type": "text",
       "html": true
     },
@@ -13,8 +13,13 @@
       "type": "section"
     },
     {
-      "id": "ShowMenuKey",
-      "text": "메뉴 단축키",
+      "id": "ShowPoseMenuKey",
+      "text": "포즈 메뉴 단축키",
+      "type": "hotkey"
+    },
+    {
+      "id": "ShowExpressionMenuKey",
+      "text": "표정 메뉴 단축키",
       "type": "hotkey"
     },
     {

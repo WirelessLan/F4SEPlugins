@@ -166,7 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigReader.cpp" />
+    <ClCompile Include="ExpressionManager.cpp" />
     <ClCompile Include="Hook.cpp" />
+    <ClCompile Include="InputEnableManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PapyrusManager.cpp" />
     <ClCompile Include="ScaleformManager.cpp" />
@@ -174,8 +176,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConfigReader.h" />
+    <ClInclude Include="ExpressionManager.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Hook.h" />
+    <ClInclude Include="InputEnableManager.h" />
     <ClInclude Include="PapyrusManager.h" />
     <ClInclude Include="ScaleformManager.h" />
     <ClInclude Include="Utility.h" />

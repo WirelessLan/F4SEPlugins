@@ -3,8 +3,9 @@
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.filters.DropShadowFilter;
 	import flash.events.MouseEvent;
-	import UIComponent.FocusDirection;
+	import flash.ui.Keyboard;
 
 	public class ListBox extends Sprite implements IComponent {
 		private var itemsContainer:Sprite;
@@ -12,6 +13,8 @@
 		
 		private var _width:Number;
 		private var _height:Number;
+				
+		private var highlightColor:Number = 0x00FF00;
 		
 		private var _items:Array = null;
 		private var _itemHeight:uint = 28;
@@ -52,31 +55,45 @@
 			return true;
 		}
 		
-		public function SetFocus(onOff:Boolean, dir:int) : void{
-			if (this._focusedItem && !onOff) {
+		public function SetFocus(onOff:Boolean) : void{
+			if (!onOff && this._focusedItem) {
 				focusItem(this._focusedItem, onOff);
-				return;
+				this._focusedItem = null;
 			}
-			
-			SetInnerFocus(dir);
 		}
 		
-		public function SetInnerFocus(dir:int) : void {
-			if (!this._focusedItem) {
-				if (this.itemsContainer.numChildren == 0)
-					return;
-				var targetIdx:uint = dir == FocusDirection.Next ? 0 : this.itemsContainer.numChildren - 1;
-				focusItem(this.itemsContainer.getChildAt(targetIdx) as TextField, true);
+		public function ProcessKeyEvent(keyCode:uint) : void {
+			if (this.itemsContainer.numChildren == 0)
+				return;
+			
+			var targetIdx:uint;
+			var focusedIndex:int;
+			
+			if (keyCode == Keyboard.UP) {
+				if (!this._focusedItem) {
+					targetIdx = this.itemsContainer.numChildren - 1;
+					focusItem(this.itemsContainer.getChildAt(targetIdx) as TextField, true);
+				}
+				else {
+					focusedIndex = this.itemsContainer.getChildIndex(this._focusedItem) - 1;
+					if (focusedIndex < 0)
+						focusedIndex = 0;
+					focusItem(this._focusedItem, false);
+					focusItem(this.itemsContainer.getChildAt(focusedIndex) as TextField, true);
+				}
 			}
-			else {
-				var focusedIndex = this.itemsContainer.getChildIndex(this._focusedItem);
-				focusedIndex += dir;
-				if (focusedIndex < 0)
-					focusedIndex = 0;
-				else if (focusedIndex >= this.itemsContainer.numChildren)
-					focusedIndex = this.itemsContainer.numChildren - 1;
-				focusItem(this._focusedItem, false);
-				focusItem(this.itemsContainer.getChildAt(focusedIndex) as TextField, true);
+			else if (keyCode == Keyboard.DOWN) {
+				if (!this._focusedItem) {
+					targetIdx = 0;
+					focusItem(this.itemsContainer.getChildAt(targetIdx) as TextField, true);
+				}
+				else {
+					focusedIndex = this.itemsContainer.getChildIndex(this._focusedItem) + 1;
+					if (focusedIndex >= this.itemsContainer.numChildren)
+						focusedIndex = this.itemsContainer.numChildren - 1;
+					focusItem(this._focusedItem, false);
+					focusItem(this.itemsContainer.getChildAt(focusedIndex) as TextField, true);
+				}
 			}
 		}
 		
@@ -100,7 +117,7 @@
 		public function Highlight(item:String) : void {
 			var itemIndex:uint = 0;
 			for (; itemIndex < this._items.length; itemIndex++)
-				if (item == this._items[itemIndex])
+				if (item.toLowerCase() == (this._items[itemIndex] as String).toLowerCase())
 					break;
 			
 			if (itemIndex == this._items.length)
@@ -177,10 +194,10 @@
 			
 			if (onOff) {
 				item.background = true;
-				item.backgroundColor = 0xFFFFFF;
+				item.backgroundColor = Shared.Color_Primary;
 				
 				if (!focused)
-					item_tf.color = 0x000000;
+					item_tf.color = Shared.Color_Secondary;
 			
 				this._focusedItem = item;
 				
@@ -188,10 +205,10 @@
 			}
 			else {
 				item.background = false;
-				item.backgroundColor = 0x000000;
+				item.backgroundColor = Shared.Color_Secondary;
 				
 				if (!focused)
-					item_tf.color = 0xFFFFFF;
+					item_tf.color = Shared.Color_Primary;
 			}
 			
 			item.setTextFormat(item_tf);
@@ -203,10 +220,10 @@
 
 			var item_tf:TextFormat = item.getTextFormat();
 			if (onOff) {
-				item_tf.color = 0x00FF00;
+				item_tf.color = this.highlightColor;
 			}
 			else {
-				item_tf.color = 0xFFFFFF;
+				item_tf.color = Shared.Color_Primary;
 			}
 			
 			item.setTextFormat(item_tf);
@@ -243,7 +260,7 @@
 		}
 		
 		private function initializeComponent() {
-			this.graphics.lineStyle(1, 0xFFFFFF);
+			this.graphics.lineStyle(1, Shared.Color_Primary);
 			this.graphics.drawRect(0, 0, this._width, this._height);
 			
 			this.itemsContainer = new Sprite();
@@ -265,33 +282,30 @@
 			if (this.scrollbar)
 				this.removeChild(this.scrollbar);
 				
-			this.scrollbar = new Scrollbar(this.itemsContainer.scrollRect.height, this._items.length * this._itemHeight, this._items.length);
+			this.scrollbar = new Scrollbar(this.itemsContainer.scrollRect.height, this._items.length * this._itemHeight);
 			this.scrollbar.x = this.itemsContainer.x + this.itemsContainer.scrollRect.width - this.scrollbar.width ;
 			this.scrollbar.y = this.itemsContainer.y;
 			
 			this.addChild(this.scrollbar);
+			
+			var defaultItemTextFormat:TextFormat = new TextFormat(Shared.MainFont.fontName, this._itemHeight - 8, Shared.Color_Primary);
+			defaultItemTextFormat.kerning = true;
+			defaultItemTextFormat.align = "left";
 			
 			var itemIdx:uint = 0;
 			var nextHeight:uint = 1;
 			while (itemIdx < this._items.length) {
 				var newItem:TextField = new TextField();
 				newItem.y = nextHeight;
-				newItem.text = this._items[itemIdx];
 				newItem.width = this._width - 10;
 				newItem.height = this._itemHeight;
 				newItem.selectable = false;
 				newItem.embedFonts = true;
+				newItem.defaultTextFormat = defaultItemTextFormat;
+				newItem.filters = [new DropShadowFilter(0.5, 45, Shared.Color_Primary, 0.6, 0, 0, 1.0, 0.3, false, false, false)];
+				newItem.text = this._items[itemIdx];
 				newItem.addEventListener(MouseEvent.MOUSE_OVER, onItemMouseOver);
 				newItem.addEventListener(MouseEvent.CLICK, onItemClick);
-				
-				var newItem_tf:TextFormat = newItem.getTextFormat();
-				newItem_tf.color = 0xFFFFFF;
-				newItem_tf.font = Shared.MainFont.fontName;
-				newItem_tf.size = this._itemHeight - 8;
-				newItem_tf.align = "left";
-				newItem_tf.kerning = true;
-				
-				newItem.setTextFormat(newItem_tf);
 				
 				if (itemIdx == _highlightedItemIndex)
 					focusItem(newItem, true);

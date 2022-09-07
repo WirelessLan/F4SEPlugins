@@ -4,33 +4,6 @@ namespace ConfigReader {
 	std::string configPath = { "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".cfg" };
 	time_t configLoadedTime = 0;
 
-	char GetNextChar(const std::string& line, UInt32& index) {
-		if (index < line.length())
-			return line[index++];
-
-		return -1;
-	}
-
-	std::string GetNextData(const std::string& line, UInt32& index, char delimeter) {
-		char ch;
-		std::string retVal = "";
-
-		while ((ch = GetNextChar(line, index)) > 0) {
-			if (ch == '#') {
-				if (index > 0) index--;
-				break;
-			}
-
-			if (delimeter != 0 && ch == delimeter)
-				break;
-
-			retVal += ch;
-		}
-
-		Utility::Trim(retVal);
-		return retVal;
-	}
-
 	// Get Plugin List
 	std::vector<std::string> ReadConfig() {
 		std::ifstream configFile(configPath);
@@ -50,7 +23,7 @@ namespace ConfigReader {
 
 			UInt32 index = 0;
 
-			pluginName = GetNextData(line, index, 0);
+			pluginName = Utility::GetNextData(line, index, 0);
 			if (pluginName.empty()) {
 				_MESSAGE("Cannot read Plugin Name: %s", line.c_str());
 				continue;
@@ -79,7 +52,7 @@ namespace ConfigReader {
 
 			UInt32 index = 0;
 
-			poseName = GetNextData(line, index, 0);
+			poseName = Utility::GetNextData(line, index, 0);
 			if (poseName.empty()) {
 				_MESSAGE("Cannot read Pose Name: %s", line.c_str());
 				continue;

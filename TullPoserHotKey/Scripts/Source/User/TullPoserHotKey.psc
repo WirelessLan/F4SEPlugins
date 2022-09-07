@@ -1,4 +1,5 @@
 Scriptname TullPoserHotKey Native Hidden
 
-Function ShowMenu() global native
+Function ShowPoseMenu() global native
+Function ShowExpressionMenu() global native
 Function StopIdle() global native

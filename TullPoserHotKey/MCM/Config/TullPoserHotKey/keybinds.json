@@ -2,12 +2,21 @@
 	"modName": "TullPoserHotKey",
 	"keybinds": [
 		{
-			"id": "ShowMenuKey",
-			"desc": "메뉴 단축키",
+			"id": "ShowPoseMenuKey",
+			"desc": "포즈 메뉴 단축키",
 			"action": {
 				"type": "CallGlobalFunction",
 				"script": "TullPoserHotKey",
-				"function": "ShowMenu"
+				"function": "ShowPoseMenu"
+			}
+    	},
+		{
+			"id": "ShowExpressionMenuKey",
+			"desc": "표정 메뉴 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "TullPoserHotKey",
+				"function": "ShowExpressionMenu"
 			}
     	},
 		{

@@ -3,12 +3,13 @@
 	import flash.display.MovieClip;
     import flash.display.Loader;
     import flash.net.URLRequest;
-	import flash.events.Event;
 	import flash.text.Font;
-	import flash.events.KeyboardEvent;
+	import flash.events.Event;
+	import flash.ui.Keyboard;
 	
 	public class TullPoserHotKeyMenu extends MovieClip implements ICodeObject {
       	private var f4seCodeObject;
+		private var inputMap:Object = new Object();
 		
 		public function TullPoserHotKeyMenu() {
         	super();
@@ -38,22 +39,74 @@
 			
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.Initialize();
-			else
-				ShowMainMenu(null, null);
+		}
+
+		private function IsDirectionKey(keyCode:uint) : Boolean {
+			switch (keyCode) {
+				case Keyboard.UP:
+				case Keyboard.DOWN:
+				case Keyboard.LEFT:
+				case Keyboard.RIGHT:
+					return true;
+			}
+			return false;
 		}
 		
-		public function ProcessKeyEvent(ctrlName:String) : void {
-			if (ctrlName == "Pipboy") {
+		private function ShouldHandleKey(keyCode:uint, isDown:Boolean) : Boolean {
+			if (keyCode == 0xFF)
+				return false;
+				
+			if (!IsDirectionKey(keyCode))
+				return isDown ? false : true;
+				
+			if (isDown) {
+				if (!inputMap.hasOwnProperty(keyCode)) {
+					inputMap[keyCode] = 25;
+					return true;
+				}
+				else {
+					if (inputMap[keyCode] != 0) {
+						inputMap[keyCode]--;
+						return false;
+					}
+					else {
+						inputMap[keyCode] = 3;
+						return true;
+					}
+				}
+			}
+			else {
+				delete inputMap[keyCode];
+				return false;
+			}
+		}
+		
+		public function ProcessKeyEvent(keyCode:uint, isDown:Boolean) : void {
+			if (!ShouldHandleKey(keyCode, isDown))
+				return;
+			
+			if (keyCode == Keyboard.TAB) {
 				Shared.CloseMenu(1);
 			}
 			else {
 				if (Shared.CurrentView)
-					Shared.CurrentView.ProcessKeyEvent(ctrlName);
+					Shared.CurrentView.ProcessKeyEvent(keyCode);
 			}
 		}
 		
-		public function ShowMainMenu(selectedPlugin:String, selectedPose:String) : void {
-			Shared.ShowPluginListView(selectedPlugin, selectedPose);
+		public function ShowPoseMenu(selectedPlugin:String, selectedPose:String) : void {
+			var pluginListView = new PluginListView(selectedPlugin, selectedPose);
+			Shared.ShowView(pluginListView);
+			
+			if (selectedPose) {
+				var poseListView = new PoseListView(selectedPlugin, selectedPose);
+				Shared.ShowView(poseListView);
+			}
+		}
+		
+		public function ShowExpressionMenu(expArr:Array) : void {
+			var view = new ExpressionView(expArr);
+			Shared.ShowView(view);
 		}
 	}
 }

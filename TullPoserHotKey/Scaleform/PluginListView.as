@@ -52,10 +52,12 @@
 				Shared.F4SEPlugin.SelectPlugin(this.pluginList.SelectedItem);
 
 			this.pluginList.Highlight(this.pluginList.SelectedItem);
+			var view:PoseListView;
 			if (this.pluginList.SelectedItem == this.selectedPlugin)
-				Shared.ShowPoseListView(this.pluginList.SelectedItem, this.selectedPose);
+				view = new PoseListView(this.pluginList.SelectedItem, this.selectedPose);
 			else
-				Shared.ShowPoseListView(this.pluginList.SelectedItem, null);
+				view = new PoseListView(this.pluginList.SelectedItem, null);
+			Shared.ShowView(view);
 		}
 	}
 }

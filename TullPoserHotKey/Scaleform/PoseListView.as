@@ -1,7 +1,6 @@
 ﻿package  {
-	import flash.text.TextFormat;
-	import flash.text.TextField;
 	import UIComponent.View;
+	import UIComponent.Label;
 	import UIComponent.ListBox;
 	import UIComponent.UIEvent;
 	
@@ -9,7 +8,7 @@
 		private var menuWidth:uint = 300;
 		private var menuHeight:uint = 620;
 		
-		private var pluginNameText:TextField;
+		private var pluginNameLbl:Label;
 		private var poseList:ListBox;
 		
 		private var pluginName:String;
@@ -29,24 +28,10 @@
 		protected override function InitializeView() : void {
 			super.InitializeView();
 			
-			pluginNameText = new TextField();
-			pluginNameText.selectable = false;
-			pluginNameText.embedFonts = true;
-			pluginNameText.text = this.pluginName;
-			pluginNameText.x = 0;
-			pluginNameText.y = 50;
-			pluginNameText.width = menuWidth;
-			
-			var pluginNameText_tf:TextFormat = pluginNameText.getTextFormat();
-			pluginNameText_tf.color = 0xFFFFFF;
-			pluginNameText_tf.font = Shared.MainFont.fontName;
-			pluginNameText_tf.size = 16;
-			pluginNameText_tf.kerning = true;
-			pluginNameText_tf.align = "center";
-			
-			pluginNameText.setTextFormat(pluginNameText_tf);
-			
-			this.AddComponent(pluginNameText);
+			pluginNameLbl = new Label(menuWidth, 20, this.pluginName, 16);
+			pluginNameLbl.x = 0;
+			pluginNameLbl.y = 50;
+			this.AddComponent(pluginNameLbl);
 			
 			poseList = new ListBox(menuWidth - 20, menuHeight - 90);
 			poseList.x = 10;
