@@ -251,15 +251,23 @@ namespace ScaleformManager {
 			if (!fgAnimData)
 				return;
 
-			GFxValue arr;
-			movieRoot->CreateArray(&arr);
+			GFxValue arr[2];
+			movieRoot->CreateArray(&arr[0]);
 			for (UInt32 ii = 0; ii < 54; ii++) {
 				GFxValue exp;
 				exp.SetUInt(fgAnimData->exprs[ii] * 100);
-				arr.PushBack(&exp);
+				arr[0].PushBack(&exp);
 			}
 
-			root.Invoke("ShowExpressionMenu", nullptr, &arr, 1);
+			std::vector<std::string> expNames = ExpressionManager::GetExpressionNames();
+			movieRoot->CreateArray(&arr[1]);
+			for (std::string expName : expNames) {
+				GFxValue val;
+				val.SetString(expName.c_str());
+				arr[1].PushBack(&val);
+			}
+
+			root.Invoke("ShowExpressionMenu", nullptr, arr, 2);
 		}
 	}
 

@@ -10,18 +10,18 @@ namespace Utility {
 			}).base(), s.end());
 	}
 
-	char GetNextChar(const std::string& line, UInt32& index) {
+	UInt8 GetNextChar(const std::string& line, UInt32& index) {
 		if (index < line.length())
 			return line[index++];
 
-		return -1;
+		return 0xFF;
 	}
 
 	std::string GetNextData(const std::string& line, UInt32& index, char delimeter) {
-		char ch;
+		UInt8 ch;
 		std::string retVal = "";
 
-		while ((ch = GetNextChar(line, index)) > 0) {
+		while ((ch = GetNextChar(line, index)) != 0xFF) {
 			if (ch == '#') {
 				if (index > 0) index--;
 				break;

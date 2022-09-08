@@ -63,6 +63,50 @@ namespace ExpressionManager {
 		return retVec;
 	}
 
+	std::vector<std::string> GetExpressionNames() {
+		std::string expNamesPath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "_ExpNames.cfg";
+		std::ifstream expNamesFile(expNamesPath);
+		std::vector<std::string> retVec;
+
+		for (UInt32 ii = 0; ii < 54; ii++)
+			retVec.push_back(std::to_string(ii));
+
+		if (!expNamesFile.is_open())
+			return retVec;
+
+		std::string line;
+		std::string expIndexStr, expName;
+		while (std::getline(expNamesFile, line)) {
+			Utility::Trim(line);
+			if (line.empty() || line[0] == '#')
+				continue;
+
+			UInt32 index = 0;
+
+			expIndexStr = Utility::GetNextData(line, index, '|');
+			if (expIndexStr.empty()) {
+				_MESSAGE("Cannot read Expression Index: %s", line.c_str());
+				continue;
+			}
+
+			UInt32 expIdx = std::stoi(expIndexStr);
+			if (expIdx >= 54) {
+				_MESSAGE("Invalid Expression Index: %s", line.c_str());
+				continue;
+			}
+
+			expName = Utility::GetNextData(line, index, 0);
+			if (expName.empty()) {
+				_MESSAGE("Cannot read Expression Name: %s", line.c_str());
+				continue;
+			}
+
+			retVec[expIdx] = expName;
+		}
+
+		return retVec;
+	}
+
 	bool LoadExpression(Actor* actor, const std::string& saveName) {
 		std::string savePath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Expressions\\" + saveName + ".exp";
 		std::ifstream saveFile(savePath);

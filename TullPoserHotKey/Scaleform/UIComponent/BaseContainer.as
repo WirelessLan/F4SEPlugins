@@ -153,7 +153,7 @@
 		public function AddComponent(component:DisplayObject) : void {
 			if (component is IComponent) {
 				this.componentList.push(component);
-				component.addEventListener(MouseEvent.ROLL_OVER, onMouseOver);
+				component.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 			}
 			
 			this.componentContainer.addChild(component);

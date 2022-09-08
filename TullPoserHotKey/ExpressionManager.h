@@ -12,6 +12,7 @@ namespace ExpressionManager {
 	void ResetExpression(Actor* actor);
 	bool SaveExpression(const std::string& saveName, BSFaceGenAnimationData* fgAnimData);
 	std::vector<std::string> GetExpressions();
+	std::vector<std::string> GetExpressionNames();
 	bool LoadExpression(Actor* actor, const std::string& saveName);
 	bool DeleteExpression(const std::string& saveName);
 }

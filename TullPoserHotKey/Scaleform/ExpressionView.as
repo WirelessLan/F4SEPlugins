@@ -10,6 +10,7 @@
 		private var menuWidth:uint = 320;
 		private var menuHeight:uint = 680;
 		
+		private var _sliderNameArr:Array;
 		private var _sliderInitValArr:Array;
 		
 		private var panel:Panel;
@@ -19,7 +20,8 @@
 		private var saveBtn:Button;
 		private var resetBtn:Button;
 
-		public function ExpressionView(expArr:Array) {
+		public function ExpressionView(expArr:Array, expNameArr:Array) {
+			this._sliderNameArr = expNameArr;
 			this._sliderInitValArr = expArr;
         	super(menuWidth, menuHeight, "표정 설정");
 		}
@@ -80,14 +82,14 @@
 			var nSliderValLbl:Label;
 			
 			for (var ii:uint = 0; ii < 54; ii++) {
-				sliderNameLbl = new Label(30, 28, ii.toString(), 18);
-				sliderNameLbl.x = 5;
-				sliderNameLbl.y = nextPos + 5;
+				sliderNameLbl = new Label(menuWidth - 20, 32, this._sliderNameArr[ii], 24, "left");
+				sliderNameLbl.x = 10;
+				sliderNameLbl.y = nextPos + 3;
 				panel.AddComponent(sliderNameLbl);
 				
 				nSlider = new Slider(menuWidth - 75, 24, 0, 100, 1);
 				nSlider.x = 10;
-				nSlider.y = nextPos + 30;
+				nSlider.y = nextPos + 35;
 				nSlider.addEventListener(UIEvent.CHANGE, onSliderChange);
 				nSlider.value = this._sliderInitValArr[ii];
 				this.sliderArr.push(nSlider);
@@ -95,7 +97,7 @@
 				
 				nSliderValLbl = new Label(40, 30, this._sliderInitValArr[ii].toString(), 20);
 				nSliderValLbl.x = 255;
-				nSliderValLbl.y = nextPos + 28;
+				nSliderValLbl.y = nextPos + 33;
 				this.sliderValueLblArr.push(nSliderValLbl);
 				panel.AddComponent(nSliderValLbl);
 				

@@ -104,8 +104,8 @@
 			}
 		}
 		
-		public function ShowExpressionMenu(expArr:Array) : void {
-			var view = new ExpressionView(expArr);
+		public function ShowExpressionMenu(expArr:Array, expNameArr:Array) : void {
+			var view = new ExpressionView(expArr, expNameArr);
 			Shared.ShowView(view);
 		}
 	}

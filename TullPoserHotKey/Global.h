@@ -30,7 +30,7 @@
 #include "Hook.h"
 
 #define PLUGIN_NAME	"TullPoserHotKey"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 2, 0)
 
 struct CaseInsensitiveComparator {
 	bool operator()(const std::string& a, const std::string& b) const noexcept {
