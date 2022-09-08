@@ -1,8 +1,8 @@
-﻿package  {
+package  {
 	import F4SE.ICodeObject;
 	import flash.display.MovieClip;
-    import flash.display.Loader;
-    import flash.net.URLRequest;
+	import flash.display.Loader;
+	import flash.net.URLRequest;
 	import flash.text.Font;
 	import flash.events.Event;
 	import flash.ui.Keyboard;
@@ -60,17 +60,17 @@
 				return isDown ? false : true;
 				
 			if (isDown) {
+				var date = new Date();
 				if (!inputMap.hasOwnProperty(keyCode)) {
-					inputMap[keyCode] = 25;
+					inputMap[keyCode] = date.time + 250;
 					return true;
 				}
 				else {
-					if (inputMap[keyCode] != 0) {
-						inputMap[keyCode]--;
+					if (date.time - inputMap[keyCode] <= 50) {
 						return false;
 					}
 					else {
-						inputMap[keyCode] = 3;
+						inputMap[keyCode] = date.time;
 						return true;
 					}
 				}
