@@ -1,8 +1,8 @@
-package  {
+﻿package  {
 	import F4SE.ICodeObject;
 	import flash.display.MovieClip;
-	import flash.display.Loader;
-	import flash.net.URLRequest;
+    import flash.display.Loader;
+    import flash.net.URLRequest;
 	import flash.text.Font;
 	import flash.events.Event;
 	import flash.ui.Keyboard;
