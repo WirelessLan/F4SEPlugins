@@ -13,8 +13,6 @@
 		public function View(width:Number, height:Number, title:String) {
 			super(width, height);
 			this._title = title;
-			this.componentList = new Array();
-			this.focusedComponent = null;
 			
 			InitializeView();
 		}
@@ -36,22 +34,6 @@
 			titleLbl.x = 0;
 			titleLbl.y = 5;
 			this.AddComponent(titleLbl);
-		}
-		
-		private function onMouseOver(evn:MouseEvent) : * {
-			evn.stopPropagation();
-			
-			if (!evn.currentTarget is IComponent)
-				return;
-				
-			var tmpComp:IComponent = evn.currentTarget as IComponent;
-			if (tmpComp == this.focusedComponent || !tmpComp.IsFocusable())
-				return;
-				
-			if (this.focusedComponent)
-				this.focusedComponent.SetFocus(false);
-			this.focusedComponent = evn.currentTarget as IComponent;
-			this.focusedComponent.SetFocus(true);
 		}
 	}
 }

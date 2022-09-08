@@ -83,8 +83,6 @@
 		}
 		
 		private function setEditState(onOff:Boolean) : * {
-			var this_tf:TextFormat;
-			
 			if (onOff) {
 				this._isEditState = true;
 				if (Shared.F4SEPlugin)
@@ -93,12 +91,7 @@
 				
 				this.background = true;
 				this.backgroundColor = Shared.Color_DefaultBackground;
-				
 				this.textColor = Shared.Color_Secondary;
-				
-				this_tf = this.getTextFormat();
-				this_tf.color = Shared.Color_Secondary;
-				//this.setTextFormat(this_tf);
 				
 				stage.focus = this;
 			}
@@ -107,10 +100,6 @@
 				if (Shared.F4SEPlugin)
 					Shared.F4SEPlugin.AllowTextInput(false);
 				this.type = TextFieldType.DYNAMIC;
-				
-				this_tf = this.getTextFormat();
-				this_tf.color = Shared.Color_Primary;
-				//this.setTextFormat(this_tf);
 				
 				if (stage.focus == this)
 					stage.focus = null;
