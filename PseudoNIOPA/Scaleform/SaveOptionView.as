@@ -50,9 +50,7 @@
 			if (Shared.F4SEPlugin) {
 				var result:String = Shared.F4SEPlugin.LoadSave(this.saveName);
 				if (result.length != 0) {
-					if (result == Shared.ENOACTOR)
-						Shared.ShowMessageBox('오류', '선택된 액터가 없습니다');
-					else if (result == Shared.ESAVENAME || result == Shared.ENOPATH)
+					if (result == "ESAVENAME" || result == "ENOPATH")
 						Shared.ShowMessageBox('오류', '잘못된 파일 이름입니다');
 					else
 						Shared.ShowMessageBox('오류', '불러올 수 없습니다');

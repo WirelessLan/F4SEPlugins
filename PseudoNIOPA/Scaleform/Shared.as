@@ -1,12 +1,12 @@
 ﻿package {
 	import flash.text.Font;
+	import flash.display.MovieClip;
 	import UIComponent.View;
 	
 	public class Shared {
-		public static var F4SE;
 		public static var F4SEPlugin;
 		public static var MainFont:Font
-		public static var Root:PNIOPAMenu;
+		public static var Root:MovieClip;
 		
 		public static var CurrentView:View = null;
 		
@@ -17,11 +17,6 @@
 		public static const Color_Secondary:Number = 0x000000;
 		public static const Color_Background:Number = 0x110802;
 		public static const Color_DefaultBackground:Number = 0xFFFFFF;
-		
-		public static const ENOACTOR = "ENOACTOR";
-		public static const ESAVENAME = "ESAVENAME";
-		public static const ENOMOD = "ENOMOD";
-		public static const ENOPATH = "ENOPATH";
 		
 		private static function HideAllChild() : void {
 			for (var ii:uint = 0; ii < Root.numChildren; ii++)

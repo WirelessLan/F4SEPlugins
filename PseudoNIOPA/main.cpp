@@ -24,9 +24,9 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PostLoadGame:
 		ScaleformManager::ClearMenuSelection();
+		InputEnableManager::ResetInputEnableLayer();
 		Nodes::ClearAll();
-		if (Utility::IsActorFrozen(*g_player))
-			Utility::UnfreezeActor(*g_player);
+		Utility::UnfreezeActor(*g_player);
 		break;
 	}
 }

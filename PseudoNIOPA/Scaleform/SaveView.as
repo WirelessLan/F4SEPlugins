@@ -39,22 +39,28 @@
 		}
 		
 		private function saveBtn_Activated(evn:UIEvent) : * {
-			var saveName:String = inputSaveName.text.replace(/^\s+|\s+$|\\/g, '');
+			var saveName:String = inputSaveName.text.replace(/^\s+|\s+$/g, '');
 			if (saveName.length == 0) {
 				Shared.ShowMessageBox('오류', '저장할 이름을 입력해주세요');
 				return;
 			}
 			
+			var invalidChars:String = "<>:\"/\\|?*";
+			for (var ii = 0; ii < invalidChars.length; ii++) {
+				if (saveName.indexOf(invalidChars.charAt(ii)) >= 0) {
+					Shared.ShowMessageBox('오류', '잘못된 파일 이름입니다');
+					return;
+				}
+			}
+			
 			if (Shared.F4SEPlugin) {
 				var result:String = Shared.F4SEPlugin.Save(saveName);
 				if (result.length != 0) {
-					if (result == Shared.ENOACTOR)
-						Shared.ShowMessageBox('오류', '선택된 액터가 없습니다');
-					else if (result == Shared.ESAVENAME)
+					if (result == "ESAVENAME")
 						Shared.ShowMessageBox('오류', '저장할 이름을 입력해주세요');
-					else if (result == Shared.ENOMOD)
+					else if (result == "ENOMOD")
 						Shared.ShowMessageBox('오류', '수정된 노드가 없습니다');
-					else if (result == Shared.ENOPATH)
+					else if (result == "ENOPATH")
 						Shared.ShowMessageBox('오류', '잘못된 이름입니다');
 					else
 						Shared.ShowMessageBox('오류', '저장할 수 없습니다');

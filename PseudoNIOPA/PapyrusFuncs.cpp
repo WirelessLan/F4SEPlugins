@@ -8,7 +8,7 @@ namespace PapyrusFuncs {
 		return Utility::IsActorFrozen(actor);
 	}
 
-	void ShowMenu(StaticFunctionTag*) {
+	void ShowMenuNative(StaticFunctionTag*) {
 		ScaleformManager::PNIOPAMenu::OpenMenu();
 	}
 
@@ -21,9 +21,9 @@ namespace PapyrusFuncs {
 	}
 
 	void Register(VirtualMachine* vm) {
-		vm->RegisterFunction(new NativeFunction1<StaticFunctionTag, bool, Actor*>("IsActorFrozen", "PNIOPA_F4SE", IsActorFrozen, vm));
-		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ShowMenu", "PNIOPA_F4SE", ShowMenu, vm));
-		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ClearNodeSelection", "PNIOPA_F4SE", ClearNodeSelection, vm));
-		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ResetNode", "PNIOPA_F4SE", ResetNode, vm));
+		vm->RegisterFunction(new NativeFunction1<StaticFunctionTag, bool, Actor*>("IsActorFrozen", "PNIOPA", IsActorFrozen, vm));
+		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ShowMenuNative", "PNIOPA", ShowMenuNative, vm));
+		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ClearNodeSelection", "PNIOPA", ClearNodeSelection, vm));
+		vm->RegisterFunction(new NativeFunction0<StaticFunctionTag, void>("ResetNode", "PNIOPA", ResetNode, vm));
 	}
 };

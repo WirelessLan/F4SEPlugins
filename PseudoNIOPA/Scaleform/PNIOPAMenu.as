@@ -3,12 +3,13 @@
 	import flash.display.MovieClip;
     import flash.display.Loader;
     import flash.net.URLRequest;
-	import flash.events.Event;
 	import flash.text.Font;
-	import flash.events.KeyboardEvent;
+	import flash.events.Event;
+	import flash.ui.Keyboard;
 	
 	public class PNIOPAMenu extends MovieClip implements ICodeObject {
       	private var f4seCodeObject;
+		private var inputMap:Object = new Object();
 		
 		public function PNIOPAMenu() {
         	super();
@@ -25,7 +26,6 @@
 
 		public function onF4SEObjCreated(codeObject:*) : void {
 			this.f4seCodeObject = codeObject;
-			Shared.F4SE = this.f4seCodeObject;
          	Shared.F4SEPlugin = this.f4seCodeObject.plugins.PseudoNIOPA;
 			
 			if (Shared.MainFont)
@@ -39,17 +39,58 @@
 			
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.Initialize();
-			else
-				ShowMainMenu(null, null, null);
 		}
 		
-		public function ProcessKeyEvent(ctrlName:String) : void {
-			if (ctrlName == "Pipboy") {
+		private function IsDirectionKey(keyCode:uint) : Boolean {
+			switch (keyCode) {
+				case Keyboard.UP:
+				case Keyboard.DOWN:
+				case Keyboard.LEFT:
+				case Keyboard.RIGHT:
+					return true;
+			}
+			return false;
+		}
+		
+		private function ShouldHandleKey(keyCode:uint, isDown:Boolean) : Boolean {
+			if (keyCode == 0xFF)
+				return false;
+				
+			if (!IsDirectionKey(keyCode))
+				return isDown ? false : true;
+				
+			if (isDown) {
+				var date = new Date();
+				if (!inputMap.hasOwnProperty(keyCode)) {
+					inputMap[keyCode] = date.time + 250;
+					return true;
+				}
+				else {
+					if (date.time - inputMap[keyCode] <= 50) {
+						return false;
+					}
+					else {
+						inputMap[keyCode] = date.time;
+						return true;
+					}
+				}
+			}
+			else {
+				delete inputMap[keyCode];
+				return false;
+			}
+		}
+		
+		public function ProcessKeyEvent(keyCode:uint, isDown:Boolean) : void {
+			if (!ShouldHandleKey(keyCode, isDown))
+				return;
+			
+			if (keyCode == Keyboard.TAB) {
 				Shared.CloseMenu(1);
 			}
 			else {
 				if (Shared.CurrentView)
-					Shared.CurrentView.ProcessKeyEvent(ctrlName);
+					Shared.CurrentView.ProcessKeyEvent(keyCode);
 			}
 		}
 		

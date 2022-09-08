@@ -24,6 +24,7 @@
 
 #include "PapyrusFuncs.h"
 #include "ScaleformManager.h"
+#include "InputEnableManager.h"
 #include "Nodes.h"
 #include "Inputs.h"
 #include "Events.h"
@@ -31,7 +32,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 0, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 0)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;

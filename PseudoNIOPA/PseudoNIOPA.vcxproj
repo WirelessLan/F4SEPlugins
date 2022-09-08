@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="ConfigReader.cpp" />
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="InputEnableManager.cpp" />
     <ClCompile Include="Inputs.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Nodes.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="ConfigReader.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="InputEnableManager.h" />
     <ClInclude Include="Inputs.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Nodes.h" />

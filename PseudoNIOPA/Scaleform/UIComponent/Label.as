@@ -1,6 +1,7 @@
 ﻿package UIComponent {
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.filters.DropShadowFilter;
 
 	public class Label extends TextField implements IComponent {		
 		private var _width:Number;
@@ -18,8 +19,7 @@
 			initializeComponent();
 		}
 		
-		public function Activate() : void {
-		}
+		public function Activate() : void {}
 		
 		public function CanChangeFocus(dir:int) : Boolean {
 			return true;
@@ -29,11 +29,9 @@
 			return false;
 		}
 		
-		public function SetFocus(onOff:Boolean, dir:int) : void {
-		}
+		public function SetFocus(onOff:Boolean) : void {}
 		
-		public function SetInnerFocus(dir:int) : void {
-		}
+		public function ProcessKeyEvent(keyCode:uint) : void {}
 		
 		private function initializeComponent() {
 			var _defaultTextFormat:TextFormat = new TextFormat(Shared.MainFont.fontName, this._fontSize, Shared.Color_Primary);
@@ -43,6 +41,7 @@
 			this.selectable = false;
 			this.embedFonts = true;
 			this.defaultTextFormat = _defaultTextFormat;
+			this.filters = [new DropShadowFilter(0.5, 45, Shared.Color_Primary, 0.6, 0, 0, 1.0, 0.3, false, false, false)];
 			this.width = this._width;
 			this.height = this._height;
 			this.text = this._text;

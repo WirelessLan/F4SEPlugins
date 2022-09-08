@@ -1,6 +1,7 @@
 ﻿package UIComponent {
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.filters.DropShadowFilter;
 	import flash.events.MouseEvent;
 
 	public class Button extends TextField implements IComponent {		
@@ -27,12 +28,11 @@
 			return true;
 		}
 		
-		public function SetFocus(onOff:Boolean, dir:int) : void {
+		public function SetFocus(onOff:Boolean) : void {
 			focusButton(onOff);
 		}
 		
-		public function SetInnerFocus(dir:int) : void {
-		}
+		public function ProcessKeyEvent(keyCode:uint) : void {}
 		
 		private function focusButton(onOff:Boolean) : void {
 			var this_tf:TextFormat = this.getTextFormat();
@@ -65,6 +65,7 @@
 			this.selectable = false;
 			this.embedFonts = true;
 			this.defaultTextFormat = this_tf;
+			this.filters = [new DropShadowFilter(0.5, 45, Shared.Color_Primary, 0.6, 0, 0, 1.0, 0.3, false, false, false)];
 			this.width = this._width;
 			this.height = this._height;
 			this.addEventListener(MouseEvent.CLICK, onButtonClick);

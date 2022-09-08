@@ -7,7 +7,7 @@
 		
 		private var thumb:Sprite;
 		
-		public function Scrollbar(areaHeight:Number, totalHeight:Number, itemCnt:Number) {
+		public function Scrollbar(areaHeight:Number, totalHeight:Number) {
 			super();
 			
 			if(totalHeight > areaHeight) {

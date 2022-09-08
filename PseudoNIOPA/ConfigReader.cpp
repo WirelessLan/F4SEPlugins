@@ -76,6 +76,24 @@ namespace ConfigReader {
 		return retVec;
 	}
 
+	std::vector<std::string> GetNodeDataList() {
+		std::string directory = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\";
+		const char* match = "*.pnop";
+		std::vector<std::string> retVec;
+
+		for (IDirectoryIterator iter(directory.c_str(), match); !iter.Done(); iter.Next()) {
+			WIN32_FIND_DATA* fileData = iter.Get();
+
+			std::string s_fileName = fileData->cFileName;
+			size_t lastDotIdx = s_fileName.find_last_of(".");
+			std::string rawName = s_fileName.substr(0, lastDotIdx);
+
+			retVec.push_back(rawName);
+		}
+
+		return retVec;
+	}
+
 	bool SaveNodeData(const std::string& saveName, Actor* actor, const std::unordered_map<std::string, Nodes::NodeData>& nodeDataMap) {
 		std::string savePath = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\" + saveName + ".pnop";
 		std::ofstream saveFile(savePath);

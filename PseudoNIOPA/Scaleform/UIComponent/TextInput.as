@@ -2,12 +2,9 @@
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.text.TextFieldType;
-	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
-	import flash.ui.Keyboard;
-	import flash.events.Event;
-	import flash.events.TextEvent;
 	import flash.events.MouseEvent;
+	import flash.ui.Keyboard;
 
 	public class TextInput extends TextField implements IComponent {		
 		private var _width:Number;
@@ -24,10 +21,6 @@
 			this._height = height;
 			this._fontSize = fontSize;
 			initializeComponent();
-		}
-		
-		public function get IsInputMode() : Boolean {
-			return this._isEditState;
 		}
 		
 		public function Activate() : void {
@@ -48,15 +41,14 @@
 			return true;
 		}
 		
-		public function SetFocus(onOff:Boolean, dir:int) : void {
+		public function SetFocus(onOff:Boolean) : void {
 			setFocus(onOff);
 			if (!onOff && this._isEditState) {
 				setEditState(false);
 			}
 		}
 		
-		public function SetInnerFocus(dir:int) : void {
-		}
+		public function ProcessKeyEvent(keyCode:uint) : void {}
 		
 		private function setFocus(onOff:Boolean) : void {
 			var this_tf:TextFormat = this.getTextFormat();
@@ -80,11 +72,12 @@
 				return;
 				
 			if (this._enteredEditStateByActivate) {
-				_enteredEditStateByActivate = false;
+				this._enteredEditStateByActivate = false;
 				return;
 			}
 				
-			if (evn.keyCode == Keyboard.ENTER || evn.keyCode == Keyboard.TAB) {
+			if (evn.keyCode == Keyboard.ENTER || evn.keyCode == Keyboard.TAB
+			 || evn.keyCode == Keyboard.UP || evn.keyCode == Keyboard.DOWN) {
 				setEditState(false);
 			}
 		}
@@ -97,7 +90,8 @@
 				this.type = TextFieldType.INPUT;
 				
 				this.background = true;
-				this.backgroundColor = 0xFFFFFF;
+				this.backgroundColor = Shared.Color_DefaultBackground;
+				this.textColor = Shared.Color_Secondary;
 				
 				stage.focus = this;
 			}
@@ -107,14 +101,19 @@
 					Shared.F4SEPlugin.AllowTextInput(false);
 				this.type = TextFieldType.DYNAMIC;
 				
+				if (stage.focus == this)
+					stage.focus = null;
+				
 				if (this._isFocused) {
 					this.background = true;
 					this.backgroundColor = Shared.Color_Background;
 				}
 				else {
 					this.background = false;
-					this.backgroundColor = 0xFFFFFF;
+					this.backgroundColor = Shared.Color_DefaultBackground;
 				}
+				
+				this.textColor = Shared.Color_Primary;
 			}
 		}
 		

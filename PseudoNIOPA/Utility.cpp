@@ -20,6 +20,9 @@ namespace Utility {
 			return;
 
 		actor->uiFlags &= ~(1 << 8);
+
+		if (actor == *g_player)
+			InputEnableManager::SetInputEnableLayer();
 	}
 
 	void UnfreezeActor(Actor* actor) {
@@ -27,6 +30,9 @@ namespace Utility {
 			return;
 
 		actor->uiFlags |= 1 << 8;
+
+		if (actor == *g_player)
+			InputEnableManager::ResetInputEnableLayer();
 	}
 
 	Actor* GetCurrentConsoleActor() {

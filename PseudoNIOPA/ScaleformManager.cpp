@@ -49,72 +49,64 @@ namespace ScaleformManager {
 		}
 	}
 
-	std::string KeyCodeToControlID(UInt32 keyCode) {
+	UInt32 ReplaceKeyCodeForMenu(UInt32 keyCode) {
 		switch (keyCode) {
 		case InputMap::kGamepadButtonOffset_DPAD_UP:
-		case 0x26:	// Up Arrow
-			return "Forward";
+		case 0x57:	// W Key
+			return 0x26;
 			break;
 
 		case InputMap::kGamepadButtonOffset_DPAD_DOWN:
-		case 0x28:	// Down Arrow
-			return "Back";
+		case 0x53:	// S Key
+			return 0x28;
 			break;
 
 		case InputMap::kGamepadButtonOffset_DPAD_LEFT:
-		case 0x25:	// Left Arrow
-			return "StrafeLeft";
+		case 0x41:	// A Key
+			return 0x25;
 			break;
 
 		case InputMap::kGamepadButtonOffset_DPAD_RIGHT:
-		case 0x27:	// Right Arrow
-			return "StrafeRight";
+		case 0x44:	// D Key
+			return 0x27;
 			break;
 
 		case InputMap::kGamepadButtonOffset_A:
-		case 0x0D:	// Enter
-			return "Activate";
+		case 0x45:	// E Key
+			return 0x0D;
 			break;
 
 		case InputMap::kGamepadButtonOffset_B:
-		case 0x09:	// Tab
-			return "Pipboy";
+			return 0x09;
 			break;
 		}
 
-		return std::string();
+		return keyCode;
 	}
 
-	std::string DirectionToControlID(UInt32 dir) {
+	UInt32 DirectionToKeyCode(UInt32 dir) {
 		switch (dir) {
 		case 1:	// Up
-			return "Forward";
+			return 0x26;
 			break;
 
 		case 3:	// Down
-			return "Back";
+			return 0x28;
 			break;
 
 		case 4:	// Left
-			return "StrafeLeft";
+			return 0x25;
 			break;
 
 		case 2:	// Right
-			return "StrafeRight";
+			return 0x27;
 			break;
 		}
 
-		return std::string();
+		return 0xFF;
 	}
 
-	bool IsControlIDDirection(std::string ctrlId) {
-		if (ctrlId == "Forward" || ctrlId == "Back" ||
-			ctrlId == "StrafeLeft" || ctrlId == "StrafeRight")
-			return true;
-		return false;
-	}
-
-	void SendKeyEvent(std::string ctrlId) {
+	void SendKeyEvent(UInt32 keyCode, bool isDown) {
 		GFxMovieRoot* movieRoot = g_pnopMenu->movie->movieRoot;
 		GFxValue root;
 
@@ -123,10 +115,11 @@ namespace ScaleformManager {
 			return;
 		}
 
-		GFxValue ctrlName;
-		ctrlName.SetString(ctrlId.c_str());
+		GFxValue params[2];
+		params[0].SetUInt(keyCode);
+		params[1].SetBool(isDown);
 
-		root.Invoke("ProcessKeyEvent", nullptr, &ctrlName, 1);
+		root.Invoke("ProcessKeyEvent", nullptr, params, 2);
 	}
 
 	void MenuInputHandler::OnButtonEvent(ButtonEvent* inputEvent) {
@@ -152,95 +145,33 @@ namespace ScaleformManager {
 		if (keyCode >= InputMap::kMaxMacros)
 			return;
 
-		BSFixedString* control = inputEvent->GetControlID();
-		std::string ctrlStr = control->c_str();
-
-		if (ctrlStr == "Unmapped" || ctrlStr == "DISABLED") {
-			std::string nCtrlStr = KeyCodeToControlID(keyCode);
-			if (nCtrlStr.empty())
-				return;
-			ctrlStr = nCtrlStr;
-		}
-		else if (inputEvent->deviceType == InputEvent::kDeviceType_Gamepad) {
-			std::string nCtrlStr = KeyCodeToControlID(keyCode);
-			if (nCtrlStr.empty())
-				return;
-			ctrlStr = nCtrlStr;
-		}
+		keyCode = ReplaceKeyCodeForMenu(keyCode);
 
 		bool isDown = inputEvent->isDown == 1.0f;
-		bool isUp = inputEvent->isDown == 0.0f;
 
-		if (isDown) {
-			if (g_dirKeyDelayMap.find(keyCode) == g_dirKeyDelayMap.end())
-				g_dirKeyDelayMap.insert(std::make_pair(keyCode, 0));
-		}
-		else {
-			if (g_dirKeyDelayMap.find(keyCode) != g_dirKeyDelayMap.end())
-				g_dirKeyDelayMap.erase(keyCode);
-		}
-
-		if (IsControlIDDirection(ctrlStr)) {
-			if (isDown) {
-				auto it = g_dirKeyDelayMap.find(keyCode);
-				if (it != g_dirKeyDelayMap.end()) {
-					if (it->second != 0) {
-						it->second--;
-						return;
-					}
-					else {
-						if (inputEvent->timer == 0.0f)
-							it->second = 25;
-						else
-							it->second = 3;
-					}
-				}
-
-				SendKeyEvent(ctrlStr);
-			}
-		}
-		else {
-			if (isUp)
-				SendKeyEvent(ctrlStr);
-		}
+		SendKeyEvent(keyCode, isDown);
 	}
 
 	void MenuInputHandler::OnThumbstickEvent(ThumbstickEvent* inputEvent) {
-		static bool firstMove = false;
-		static UInt64 delay = 0;
-
-		if (inputEvent->deviceType != InputEvent::kDeviceType_Gamepad)
+		if (inputEvent->unk20[0] != 0xB)
 			return;
 
-		BSFixedString* control = inputEvent->GetControlID();
-		if (strcmp(control->c_str(), "Move") != 0)
-			return;
-
-		if (inputEvent->unk20[5] == 0) {
-			firstMove = false;
-			delay = 0;
-			return;
-		}
-
-		if (delay != 0) {
-			delay--;
-			return;
+		UInt32 prevKeyCode = DirectionToKeyCode(inputEvent->unk20[4]);
+		UInt32 currKeyCode = DirectionToKeyCode(inputEvent->unk20[5]);
+		if (currKeyCode != 0xFF) {
+			SendKeyEvent(currKeyCode, true);
 		}
 		else {
-			if (!firstMove) {
-				firstMove = true;
-				delay = 25;
+			if (currKeyCode == prevKeyCode) {
+				SendKeyEvent(0x25, false);
+				SendKeyEvent(0x26, false);
+				SendKeyEvent(0x27, false);
+				SendKeyEvent(0x28, false);
 			}
 			else {
-				delay = 3;
+				SendKeyEvent(prevKeyCode, false);
 			}
 		}
-
-		std::string ctrlStr = DirectionToControlID(inputEvent->unk20[5]);
-		if (ctrlStr.empty())
-			return;
-
-		SendKeyEvent(ctrlStr);
 	}
 
 	PNIOPAMenu::PNIOPAMenu() {
@@ -283,23 +214,26 @@ namespace ScaleformManager {
 		}
 
 		GFxValue params[3];
-		Actor* currActor = Utility::GetCurrentConsoleActor();
-		bool sameActor = currActor && g_selectedActor == currActor;
+		params[0].SetNull();
+		params[1].SetNull();
+		params[2].SetNull();
 
-		if (sameActor && !g_selectedMenu.empty())
-			params[0].SetString(g_selectedMenu.c_str());
-		else
-			params[0].SetNull();
+		Actor* actor = Utility::GetCurrentConsoleActor();
+		if (!actor)
+			return;
 
-		if (sameActor && !g_selectedGroup.empty())
-			params[1].SetString(g_selectedGroup.c_str());
-		else
-			params[1].SetNull();
-
-		if (sameActor && g_selectedNode)
-			params[2].SetString(g_selectedNode->m_name.c_str());
-		else
-			params[2].SetNull();
+		if (!g_selectedActor || g_selectedActor != actor) {
+			g_selectedActor = actor;
+			g_selectedNode = nullptr;
+		}
+		else {
+			if (!g_selectedMenu.empty())
+				params[0].SetString(g_selectedMenu.c_str());
+			if (!g_selectedGroup.empty())
+				params[1].SetString(g_selectedGroup.c_str());
+			if (g_selectedNode)
+				params[2].SetString(g_selectedNode->m_name.c_str());
+		}
 
 		root.Invoke("ShowMainMenu", nullptr, params, 3);
 	}
@@ -320,56 +254,36 @@ namespace ScaleformManager {
 	}
 
 	void ToggleFreezeHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor)
-			return;
-
-		if (!Utility::IsActorFrozen(actor))
-			Nodes::InsertModMap(actor);
-		Utility::ToggleFreeze(actor);
+		if (!Utility::IsActorFrozen(g_selectedActor))
+			Nodes::InsertModMap(g_selectedActor);
+		Utility::ToggleFreeze(g_selectedActor);
 
 		g_selectedMenu = std::string();
 	}
 
 	void ResetActorHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor)
-			return;
-
-		auto it = g_modifiedMap.find(actor->formID);
+		auto it = g_modifiedMap.find(g_selectedActor->formID);
 		if (it == g_modifiedMap.end()) {
-			if (Utility::IsActorFrozen(actor))
-				Utility::UnfreezeActor(actor);
+			if (Utility::IsActorFrozen(g_selectedActor))
+				Utility::UnfreezeActor(g_selectedActor);
 			return;
 		}
 
 		for (auto sit : it->second)
-			Nodes::ResetNode(actor, sit.first, &sit.second);
+			Nodes::ResetNode(g_selectedActor, sit.first, &sit.second);
 
-		Utility::UnfreezeActor(actor);
+		Utility::UnfreezeActor(g_selectedActor);
 
-		if (g_selectedActor == actor) {
-			g_selectedActor = nullptr;
-			g_selectedNode = nullptr;
-		}
-
+		g_selectedNode = nullptr;
 		g_selectedMenu = std::string();
 	}
 
 	void SelectNodeHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor)
-			return;
-
 		std::string nodeName = args->args[0].GetString();
-		if (!actor || nodeName.empty())
+		if (nodeName.empty())
 			return;
 
-		g_selectedNode = Nodes::GetNode(actor, nodeName);
-		if (!g_selectedNode)
-			return;
-
-		g_selectedActor = actor;
+		g_selectedNode = Nodes::GetNode(g_selectedActor, nodeName);
 	}
 
 	void GetNodeListHandler::Invoke(Args* args) {
@@ -378,9 +292,6 @@ namespace ScaleformManager {
 		if (groupName.empty())
 			return;
 
-		g_selectedMenu = "SELECTNODE";
-		g_selectedGroup = groupName;
-
 		std::vector<std::string> nodeList = ConfigReader::GetNodeListFromFile(std::string(groupName));
 		for (const std::string& node : nodeList) {
 			GFxValue nodeName;
@@ -388,17 +299,14 @@ namespace ScaleformManager {
 
 			args->result->PushBack(&nodeName);
 		}
+
+		g_selectedMenu = "SELECTNODE";
+		g_selectedGroup = groupName;
 	}
 
 	void GetNodeNameForSearchHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor) {
-			args->result->SetNull();
-			return;
-		}
-
-		if (!g_selectedNode || g_selectedActor != actor) {
-			NiNode* rootNode = actor->GetActorRootNode(false);
+		if (!g_selectedNode) {
+			NiNode* rootNode = g_selectedActor->GetActorRootNode(false);
 			if (!rootNode) {
 				args->result->SetNull();
 				return;
@@ -420,13 +328,7 @@ namespace ScaleformManager {
 			return;
 		}
 
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor) {
-			args->result->SetNull();
-			return;
-		}
-
-		NiNode* node = Nodes::GetNode(actor, nodeName);
+		NiNode* node = Nodes::GetNode(g_selectedActor, nodeName);
 		if (!node) {
 			args->result->SetNull();
 			return;
@@ -446,11 +348,7 @@ namespace ScaleformManager {
 		if (nodeName.empty())
 			return;
 
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor)
-			return;
-
-		NiNode* node = Nodes::GetNode(actor, nodeName);
+		NiNode* node = Nodes::GetNode(g_selectedActor, nodeName);
 		if (!node)
 			return;
 
@@ -473,43 +371,30 @@ namespace ScaleformManager {
 	void GetSavesHandler::Invoke(Args* args) {
 		args->movie->movieRoot->CreateArray(args->result);
 
-		std::string directory = "Data\\F4SE\\Plugins\\" + std::string(PLUGIN_NAME) + "\\Saves\\";
-		const char* match = "*.pnop";
+		std::vector<std::string> nodeDataList = ConfigReader::GetNodeDataList();
 
-		for (IDirectoryIterator iter(directory.c_str(), match); !iter.Done(); iter.Next()) {
-			WIN32_FIND_DATA* fileData = iter.Get();
-
-			std::string s_fileName = fileData->cFileName;
-			size_t lastDotIdx = s_fileName.find_last_of(".");
-			std::string rawName = s_fileName.substr(0, lastDotIdx);
-
+		for (std::string nodeDataName : nodeDataList) {
 			GFxValue fileName;
-			fileName.SetString(rawName.c_str());
+			fileName.SetString(nodeDataName.c_str());
 
 			args->result->PushBack(&fileName);
 		}
 	}
 
 	void SaveHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor) {
-			args->result->SetString("ENOACTOR");
-			return;
-		}
-
 		std::string saveName = args->args[0].GetString();
 		if (saveName.empty()) {
 			args->result->SetString("ESAVENAME");
 			return;
 		}
 
-		auto modMapIt = g_modifiedMap.find(actor->formID);
+		auto modMapIt = g_modifiedMap.find(g_selectedActor->formID);
 		if (modMapIt == g_modifiedMap.end() || modMapIt->second.empty()) {
 			args->result->SetString("ENOMOD");
 			return;
 		}
 
-		if (!ConfigReader::SaveNodeData(saveName, actor, modMapIt->second)) {
+		if (!ConfigReader::SaveNodeData(saveName, g_selectedActor, modMapIt->second)) {
 			args->result->SetString("ENOPATH");
 			return;
 		}
@@ -518,12 +403,6 @@ namespace ScaleformManager {
 	}
 
 	void LoadSaveHandler::Invoke(Args* args) {
-		Actor* actor = Utility::GetCurrentConsoleActor();
-		if (!actor) {
-			args->result->SetString("ENOACTOR");
-			return;
-		}
-
 		std::string saveName = args->args[0].GetString();
 		if (saveName.empty()) {
 			args->result->SetString("ESAVENAME");
@@ -536,7 +415,8 @@ namespace ScaleformManager {
 			return;
 		}
 
-		Nodes::SetNodes(actor, nodeDataMap);
+		Nodes::SetNodes(g_selectedActor, nodeDataMap);
+		g_selectedMenu = std::string();
 
 		args->result->SetString("");
 	}

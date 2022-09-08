@@ -86,18 +86,14 @@
 		}
 		
 		private function toggleFreezeBtn_Activated(evn:UIEvent) : * {
-			if (Shared.F4SEPlugin) {
+			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.ToggleFreeze();
-				Shared.F4SE.SendExternalEvent("PNIOPA_ToggleFreeze");
-			}
 			Shared.CloseMenu(0);
 		}
 		
 		private function resetActorBtn_Activated(evn:UIEvent) : * {
-			if (Shared.F4SEPlugin) {
+			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.ResetActor();
-				Shared.F4SE.SendExternalEvent("PNIOPA_ResetActor");
-			}
 			Shared.CloseMenu(0);
 		}
 	}
