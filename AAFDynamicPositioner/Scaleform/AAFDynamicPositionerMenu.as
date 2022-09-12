@@ -40,7 +40,7 @@
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.Initialize();
 			else
-				ShowMenu(-200, 0, 0);
+				ShowMenu(0, 0, 0);
 		}
 		
 		private function IsDirectionKey(keyCode:uint) : Boolean {

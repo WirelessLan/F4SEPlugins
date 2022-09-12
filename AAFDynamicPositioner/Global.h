@@ -29,7 +29,7 @@
 #include "InputEnable.h"
 
 #define PLUGIN_NAME	"AAFDynamicPositioner"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 5, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 5, 1)
 
 enum PositionerType {
 	kPositionerType_Relative = 0,

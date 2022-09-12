@@ -28,8 +28,6 @@ namespace Scaleform {
 		static void CloseMenu();
 
 		static bool IsMenuOpen();
-
-		static bool isMenuOpen;
 	};
 
 	class MCMFunctionHandler : public GFxFunctionHandler {

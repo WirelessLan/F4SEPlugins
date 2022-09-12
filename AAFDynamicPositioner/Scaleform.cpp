@@ -3,7 +3,6 @@
 namespace Scaleform {
 	const std::string PositionerMenuName = "AAFDynamicPositionerMenu";
 	PositionerMenu* g_posMenu;
-	bool PositionerMenu::isMenuOpen = false;
 	std::map<BSInputEventUser*, bool> g_menuEnableMap;
 
 	float g_offX, g_offY, g_offZ;
@@ -63,14 +62,6 @@ namespace Scaleform {
 		case InputMap::kGamepadButtonOffset_B:
 			return 0x09;
 			break;
-
-		// Prevent Arrow Keys
-		case 0x25:
-		case 0x26:
-		case 0x27:
-		case 0x28:
-			return 0xFF;
-			break;
 		}
 
 		return keyCode;
@@ -99,7 +90,7 @@ namespace Scaleform {
 	}
 
 	void SendKeyEvent(UInt32 keyCode, bool isDown) {
-		if (!PositionerMenu::IsMenuOpen())
+		if (!g_posMenu || !PositionerMenu::IsMenuOpen())
 			return;
 
 		GFxMovieRoot* movieRoot = g_posMenu->movie->movieRoot;
@@ -118,7 +109,7 @@ namespace Scaleform {
 	}
 
 	void MenuInputHandler::OnButtonEvent(ButtonEvent* inputEvent) {
-		if (!PositionerMenu::IsMenuOpen())
+		if (!g_posMenu || !PositionerMenu::IsMenuOpen())
 			return;
 
 		UInt32 keyCode;
@@ -145,7 +136,7 @@ namespace Scaleform {
 	}
 
 	void MenuInputHandler::OnThumbstickEvent(ThumbstickEvent* inputEvent) {
-		if (!PositionerMenu::IsMenuOpen())
+		if (!g_posMenu || !PositionerMenu::IsMenuOpen())
 			return;
 
 		if (inputEvent->unk20[0] != 0xB)
@@ -191,7 +182,6 @@ namespace Scaleform {
 		g_offY = offY;
 		g_offZ = offZ;
 
-		isMenuOpen = true;
 		Utility::BlockPlayerControls(true);
 		Utility::EnableMenuControls(&g_posMenuInputHandler, g_menuEnableMap, false);
 		InputEnable::SetInputEnableLayer();
@@ -225,8 +215,6 @@ namespace Scaleform {
 	}
 
 	void PositionerMenu::CloseMenu() {
-		isMenuOpen = false;
-
 		Utility::BlockPlayerControls(false);
 		Utility::EnableMenuControls(&g_posMenuInputHandler, g_menuEnableMap, true);
 		InputEnable::ResetInputEnableLayer();
@@ -236,7 +224,8 @@ namespace Scaleform {
 	}
 
 	bool PositionerMenu::IsMenuOpen() {
-		return isMenuOpen;
+		static BSFixedString menuName(PositionerMenuName.c_str());
+		return (*g_ui)->IsMenuOpen(menuName);
 	}
 
 	void MCMFunctionHandler::Invoke(Args* args) {
