@@ -1,7 +1,5 @@
 #include "Global.h"
 
-RelocPtr<uintptr_t> ExtraRefrPath_VTable(0x02C539D0);
-
 std::unordered_map<UInt32, ActorData> actorMap;
 std::unordered_map<UInt64, SceneData> sceneMap;
 
@@ -140,7 +138,7 @@ namespace Positioner {
 		return false;
 	}
 
-	void SetOffset(NiPoint3& offset, const std::vector<PositionData::Data> posVec, UInt32 posIdx) {
+	void GetOffsetFromPositionData(NiPoint3& offset, const std::vector<PositionData::Data> posVec, UInt32 posIdx) {
 		PositionData::Data data;
 		if (GetPositionData(data, posVec, posIdx))
 			offset = data.offset;
@@ -166,26 +164,20 @@ namespace Positioner {
 			if (positionerType == PositionerType::kPositionerType_Relative) {
 				float scale = Utility::GetActualScale(actorData->actor);
 				float scaleDiff = 1.0f - scale;
-				actorData->extraRefPath->x = actorData->originPos.x + rotatedOffset.x * scaleDiff;
-				actorData->extraRefPath->y = actorData->originPos.y + rotatedOffset.y * scaleDiff;
-				actorData->extraRefPath->z = actorData->originPos.z + rotatedOffset.z * scaleDiff;
+				actorData->extraRefPath->goalPos.x = actorData->originPos.x + rotatedOffset.x * scaleDiff;
+				actorData->extraRefPath->goalPos.y = actorData->originPos.y + rotatedOffset.y * scaleDiff;
+				actorData->extraRefPath->goalPos.z = actorData->originPos.z + rotatedOffset.z * scaleDiff;
 			}
 			else if (positionerType == PositionerType::kPositionerType_Absolute) {
-				actorData->extraRefPath->x = actorData->originPos.x + rotatedOffset.x;
-				actorData->extraRefPath->y = actorData->originPos.y + rotatedOffset.y;
-				actorData->extraRefPath->z = actorData->originPos.z + rotatedOffset.z;
+				actorData->extraRefPath->goalPos.x = actorData->originPos.x + rotatedOffset.x;
+				actorData->extraRefPath->goalPos.y = actorData->originPos.y + rotatedOffset.y;
+				actorData->extraRefPath->goalPos.z = actorData->originPos.z + rotatedOffset.z;
 			}
+
+			Utility::ModPos(actorData->actor, 'X', actorData->extraRefPath->goalPos.x);
+			Utility::ModPos(actorData->actor, 'Y', actorData->extraRefPath->goalPos.y);
+			Utility::ModPos(actorData->actor, 'Z', actorData->extraRefPath->goalPos.z);
 		}
-	}
-
-	bool IsValidExtraRefrPath(BSExtraData* extraData) {
-		if (!extraData)
-			return false;
-
-		uintptr_t* vtablePtr = reinterpret_cast<uintptr_t*>(extraData);
-		if (*vtablePtr == ExtraRefrPath_VTable.GetUIntPtr())
-			return true;
-		return false;
 	}
 
 	ExtraRefrPath* GetExtraRefrPath(Actor* actor) {
@@ -194,13 +186,42 @@ namespace Positioner {
 
 		BSExtraData* extraData = actor->extraDataList->m_data;
 		while (extraData) {
-			if (IsValidExtraRefrPath(extraData))
-				return (ExtraRefrPath*)extraData;
+			ExtraRefrPath* refrPath = DYNAMIC_CAST(extraData, BSExtraData, ExtraRefrPath);
+			if (refrPath)
+				return refrPath;
 
 			extraData = extraData->next;
 		}
 
 		return nullptr;
+	}
+
+	void SetOffset(const std::string& axis, float offset) {
+		if (!positionerEnabled)
+			return;
+
+		ActorData* actorData = GetSelectedActorData();
+		if (!actorData)
+			return;
+
+		ExtraRefrPath* extraRefPath = GetExtraRefrPath(actorData->actor);
+		if (!extraRefPath)
+			return;
+
+		if (actorData->extraRefPath != extraRefPath) {
+			actorData->extraRefPath = extraRefPath;
+			actorData->originPos = extraRefPath->goalPos;
+		}
+
+		if (axis == "X")
+			actorData->offset.x = offset;
+		else if (axis == "Y")
+			actorData->offset.y = offset;
+		else if (axis == "Z")
+			actorData->offset.z = offset;
+
+		ApplyOffset(actorData);
+		SavePosition(actorData);
 	}
 
 	bool IsPositionerEnabled(StaticFunctionTag*) {
@@ -284,7 +305,10 @@ namespace Positioner {
 				continue;
 
 			actorData->posIndex = ii;
-			SetOffset(actorData->offset, posDataVec, ii);
+			GetOffsetFromPositionData(actorData->offset, posDataVec, ii);
+
+			if (Scaleform::PositionerMenu::IsMenuOpen() && actorData->formId == selectedActorFormId)
+				Scaleform::PositionerMenu::UpdateMenu(actorData->offset.x, actorData->offset.y, actorData->offset.z);
 
 			// 액터의 실제 위치를 저장하는 ExtraRefrPath를 불러옴
 			ExtraRefrPath* extraRefPath = GetExtraRefrPath(actorData->actor);
@@ -294,15 +318,13 @@ namespace Positioner {
 			// ExtraRefPath는 변하지 않은 경우
 			if (actorData->extraRefPath && actorData->extraRefPath == extraRefPath) {
 				// 위치 조절 전 좌표로 원복
-				actorData->extraRefPath->x = actorData->originPos.x;
-				actorData->extraRefPath->y = actorData->originPos.y;
-				actorData->extraRefPath->z = actorData->originPos.z;
+				actorData->extraRefPath->goalPos = actorData->originPos;
 			}
 			// ExtraRefPath가 변한 경우
 			else {
 				actorData->extraRefPath = extraRefPath;
 				if (extraRefPath)
-					actorData->originPos = NiPoint3(extraRefPath->x, extraRefPath->y, extraRefPath->z);
+					actorData->originPos = extraRefPath->goalPos;
 			}
 
 			// 액터 오프셋 적용
@@ -323,6 +345,9 @@ namespace Positioner {
 			if (!actorData)
 				continue;
 
+			if (Scaleform::PositionerMenu::IsMenuOpen() && actorData->formId == selectedActorFormId)
+				Scaleform::PositionerMenu::CloseMenu();
+
 			// 선택한 액터가 종료되는 씬에 포함되어있을 경우 선택한 액터를 초기화
 			if (selectedActorFormId == actorData->formId)
 				selectedActorFormId = 0;
@@ -341,16 +366,13 @@ namespace Positioner {
 		if (!actorData)
 			return;
 
-		if (!actorData->actor)
-			return;
-
 		ExtraRefrPath* extraRefPath = GetExtraRefrPath(actorData->actor);
 		if (!extraRefPath)
 			return;
 
 		if (actorData->extraRefPath != extraRefPath) {
 			actorData->extraRefPath = extraRefPath;
-			actorData->originPos = NiPoint3(extraRefPath->x, extraRefPath->y, extraRefPath->z);
+			actorData->originPos = extraRefPath->goalPos;
 		}
 
 		if (isInc) {
@@ -551,6 +573,26 @@ namespace Positioner {
 		Utility::ShowMessagebox(msg);
 	}
 
+	void ShowPositionerMenuNative(StaticFunctionTag*) {
+		if (!positionerEnabled)
+			return;
+
+		ActorData* actorData = GetSelectedActorData();
+		if (!actorData)
+			return;
+
+		ExtraRefrPath* extraRefPath = GetExtraRefrPath(actorData->actor);
+		if (!extraRefPath)
+			return;
+
+		if (actorData->extraRefPath != extraRefPath) {
+			actorData->extraRefPath = extraRefPath;
+			actorData->originPos = extraRefPath->goalPos;
+		}
+
+		Scaleform::PositionerMenu::OpenMenu(actorData->offset.x, actorData->offset.y, actorData->offset.z);
+	}
+
 	void ResetPositioner() {
 		actorMap.clear();
 		sceneMap.clear();
@@ -584,5 +626,7 @@ namespace Positioner {
 			new NativeFunction0<StaticFunctionTag, void>("ClearSelectedActorOffset", "AAFDynamicPositioner", ClearSelectedActorOffset, vm));
 		vm->RegisterFunction(
 			new NativeFunction0<StaticFunctionTag, void>("ShowSelectedSceneOffset", "AAFDynamicPositioner", ShowSelectedSceneOffset, vm));
+		vm->RegisterFunction(
+			new NativeFunction0<StaticFunctionTag, void>("ShowPositionerMenuNative", "AAFDynamicPositioner", ShowPositionerMenuNative, vm));
 	}
 }

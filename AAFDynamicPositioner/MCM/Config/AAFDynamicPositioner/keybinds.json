@@ -19,6 +19,15 @@
 				"function": "ChangeActor"
 			}
 		},
+        {
+          "id": "ShowPositionerMenu",
+		  "desc": "메뉴에서 액터의 위치를 조절합니다",
+		  "action": {
+			  "type": "CallGlobalFunction",
+			  "script": "AAFDynamicPositioner",
+			  "function": "ShowPositionerMenu"
+		  }
+        },
 		{
 			"id": "IncXAxis",
 			"desc": "X축으로 좌표를 1만큼 이동합니다",

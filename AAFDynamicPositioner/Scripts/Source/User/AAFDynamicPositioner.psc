@@ -12,6 +12,7 @@ Actor Function GetSelectedActor() native global
 Spell Function GetHighlightSpell(Bool IsMovable) native global
 Function ClearSelectedActorOffset() native global
 Function ShowSelectedSceneOffset() native global
+Function ShowPositionerMenuNative() native global
 
 Function AddHighlight(Actor akTarget, Bool canMove) global
 	If akTarget == None
@@ -63,11 +64,6 @@ Function TogglePositioner() global
 EndFunction
 
 Function MoveActor(String axis, Bool isInc) global
-	If !IsPositionerEnabled()
-		Debug.Notification("위치 조절 모드가 꺼져있습니다.")
-		Return
-	EndIf
-
 	Int canMove = CanMovePosition()
 
 	; 1: 선택된 액터가 없음
@@ -103,4 +99,21 @@ Function ChangeActor() global
 	EndIf
 
 	AddHighlight(selectedActor, CanMovePosition() == 0)
+EndFunction
+
+Function ShowPositionerMenu() global
+	Int canMove = CanMovePosition()
+	If canMove != 0
+		If canMove == 1
+			Debug.Notification("선택된 액터가 없습니다.")
+		ElseIf canMove == 2
+			Debug.Notification("스케일이 1인 액터는 이동할 수 없습니다.")
+		ElseIf canMove == 3
+			Debug.Notification("위치 조절 모드가 꺼져있습니다.")
+		EndIf
+
+		Return
+	EndIf
+
+	ShowPositionerMenuNative()
 EndFunction

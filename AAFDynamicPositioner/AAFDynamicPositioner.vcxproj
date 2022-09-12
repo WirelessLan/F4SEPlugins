@@ -166,15 +166,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigReader.cpp" />
+    <ClCompile Include="InputEnable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PositionData.cpp" />
     <ClCompile Include="Positioner.cpp" />
+    <ClCompile Include="Scaleform.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConfigReader.h" />
+    <ClInclude Include="InputEnable.h" />
     <ClInclude Include="PositionData.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="Scaleform.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Positioner.h" />
   </ItemGroup>

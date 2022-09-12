@@ -2,14 +2,12 @@
 
 class ExtraRefrPath : public BSExtraData {
 public:
-	UInt64	unk18;
-	UInt64	unk20;
-	UInt64	unk28;
-	UInt64	unk30;
-	float	rot;
-	float	x;		// 3C
-	float	y;		// 40
-	float	z;		// 44
+	NiPoint3	startPos;	// 18
+	NiPoint3	startTan;	// 24
+	NiPoint3	startEuler;	// 30
+	NiPoint3	goalPos;	// 3C
+	NiPoint3	goalTan;	// 48
+	NiPoint3	goalEuler;	// 54
 };
 
 struct ActorData {
@@ -32,4 +30,5 @@ namespace Positioner {
 	ActorData* GetActorDataByFormId(UInt32 formId);
 	void ResetPositioner();
 	void RegisterPositionerFunctions(VirtualMachine* vm);
+	void SetOffset(const std::string& axis, float offset);
 }

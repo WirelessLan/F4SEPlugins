@@ -3,6 +3,7 @@
 namespace Utility {
 	RelocAddr <_GetScale> GetScale(0x3F8540);
 	RelocAddr <_SetScale> SetScale(0x3F85B0);
+	RelocAddr <_ModPos> ModPos(0x4F3C30);
 
 	float GetActualScale(TESObjectREFR* refr) {
 		if (!refr)
@@ -65,5 +66,36 @@ namespace Utility {
 
 	void ShowMessagebox(std::string asText) {
 		CallGlobalFunctionNoWait1<BSFixedString>("Debug", "Messagebox", BSFixedString(asText.c_str()));
+	}
+
+	void BlockPlayerControls(bool block) {
+		UInt8* g_pc = (UInt8 *)*g_playerControls;
+		if (!g_pc)
+			return;
+
+		*(g_pc + 0x251) = block;
+	}
+
+	void EnableMenuControls(BSInputEventUser* exception, std::map<BSInputEventUser*, bool>& enableVec,  bool enabled) {
+		if (!*g_menuControls)
+			return;
+
+		if (!enabled)
+			enableVec.clear();
+
+		// 0 ~ 7 is reserved
+		for (UInt32 ii = 8; ii < (*g_menuControls)->inputEvents.count; ii++) {
+			if ((*g_menuControls)->inputEvents.entries[ii] != exception) {
+				if (!enabled) {
+					enableVec.insert(std::make_pair((*g_menuControls)->inputEvents.entries[ii], (*g_menuControls)->inputEvents.entries[ii]->enabled));
+					(*g_menuControls)->inputEvents.entries[ii]->enabled = enabled;
+				}
+				else {
+					auto it = enableVec.find((*g_menuControls)->inputEvents.entries[ii]);
+					if (it != enableVec.end())
+						(*g_menuControls)->inputEvents.entries[ii]->enabled = it->second;
+				}
+			}
+		}
 	}
 }

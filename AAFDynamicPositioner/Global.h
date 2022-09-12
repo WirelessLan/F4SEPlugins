@@ -3,6 +3,7 @@
 #include <f4se/GameReferences.h>
 #include <f4se/GameData.h>
 #include <f4se/GameExtraData.h>
+#include <f4se/GameMenus.h>
 #include <f4se/GameRTTI.h>
 #include <f4se/NiNodes.h>
 #include <f4se/PapyrusVM.h>
@@ -10,6 +11,8 @@
 #include <f4se/PapyrusEvents.h>
 #include <f4se/ScaleformCallbacks.h>
 #include <f4se/ScaleformValue.h>
+#include <f4se/ScaleformLoader.h>
+#include <f4se/InputMap.h>
 
 #include <f4se_common/f4se_version.h>
 
@@ -22,9 +25,11 @@
 #include "ConfigReader.h"
 #include "Positioner.h"
 #include "PositionData.h"
+#include "Scaleform.h"
+#include "InputEnable.h"
 
 #define PLUGIN_NAME	"AAFDynamicPositioner"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 4, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(0, 5, 0)
 
 enum PositionerType {
 	kPositionerType_Relative = 0,

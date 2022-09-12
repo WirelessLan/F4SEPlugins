@@ -13,29 +13,12 @@ F4SEScaleformInterface* g_scaleform;
 
 PluginSettings			g_pluginSettings;
 
-class MCMFunctionHandler : public GFxFunctionHandler {
-public:
-	virtual void Invoke(Args* args) {
-		if (args->numArgs == 0 || !args->args[0].IsString())
-			return;
-
-		if (args->numArgs == 2) {
-			if (strcmp(args->args[0].GetString(), "bSeparatePlayerOffset") == 0)
-				g_pluginSettings.bSeparatePlayerOffset = args->args[1].GetBool();
-			else if (strcmp(args->args[0].GetString(), "bUnifyAAFDoppelgangerScale") == 0)
-				g_pluginSettings.bUnifyAAFDoppelgangerScale = args->args[1].GetBool();
-			else if (strcmp(args->args[0].GetString(), "fMoveAxisSize") == 0)
-				g_pluginSettings.fMoveAxisSize = args->args[1].GetNumber();
-			else if (strcmp(args->args[0].GetString(), "iPlayerPositionerType") == 0)
-				g_pluginSettings.iPlayerPositionerType = (PositionerType)args->args[1].GetInt();
-			else if (strcmp(args->args[0].GetString(), "iNPCPositionerType") == 0)
-				g_pluginSettings.iNPCPositionerType = (PositionerType)args->args[1].GetInt();
-		}
-	}
-};
-
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
+	case F4SEMessagingInterface::kMessage_GameLoaded:
+		Scaleform::PositionerMenu::RegisterMenu();
+		break;
+
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		Positioner::ResetPositioner();
@@ -49,7 +32,7 @@ bool RegisterPapyrusFunctions(VirtualMachine* vm) {
 }
 
 bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
-	RegisterFunction<MCMFunctionHandler>(f4se_root, view->movieRoot, "UpdateSettings");
+	Scaleform::RegisterScaleform(view, f4se_root);
 	return true;
 }
 

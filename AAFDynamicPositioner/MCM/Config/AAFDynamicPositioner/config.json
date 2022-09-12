@@ -8,7 +8,7 @@
       "numLines": 8
     },
     {
-      "text": "<p align='center'><font size='32'>AAF Dynamic Positioner</font><font size='10'> BETA</font></p>",
+      "text": "<p align='center'><font size='32'>AAF Dynamic Positioner</font><font size='10'> v0.5</font></p>",
       "type": "text",
       "html": true
     }
@@ -131,6 +131,11 @@
         {
           "id": "ChangeActor",
           "text": "선택된 액터 변경",
+          "type": "hotkey"
+        },
+        {
+          "id": "ShowPositionerMenu",
+          "text": "위치 조절 메뉴",
           "type": "hotkey"
         },
         {
