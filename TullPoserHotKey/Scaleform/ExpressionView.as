@@ -82,12 +82,12 @@
 			var nSliderValLbl:Label;
 			
 			for (var ii:uint = 0; ii < 54; ii++) {
-				sliderNameLbl = new Label(menuWidth - 20, 32, this._sliderNameArr[ii], 24, "left");
+				sliderNameLbl = new Label(menuWidth - 20, 28, this._sliderNameArr[ii], 20, "left");
 				sliderNameLbl.x = 10;
 				sliderNameLbl.y = nextPos + 3;
 				panel.AddComponent(sliderNameLbl);
 				
-				nSlider = new Slider(menuWidth - 75, 24, 0, 100, 1);
+				nSlider = new Slider(menuWidth - 75, 20, 0, 100, 1);
 				nSlider.x = 10;
 				nSlider.y = nextPos + 35;
 				nSlider.addEventListener(UIEvent.CHANGE, onSliderChange);
@@ -97,11 +97,11 @@
 				
 				nSliderValLbl = new Label(40, 30, this._sliderInitValArr[ii].toString(), 20);
 				nSliderValLbl.x = 255;
-				nSliderValLbl.y = nextPos + 33;
+				nSliderValLbl.y = nextPos + 30.5;
 				this.sliderValueLblArr.push(nSliderValLbl);
 				panel.AddComponent(nSliderValLbl);
 				
-				nextPos += 60;
+				nextPos += 70;
 			}
 			
 			loadBtn = new Button(menuWidth - 20, 30);

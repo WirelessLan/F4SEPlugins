@@ -15,7 +15,7 @@
 		private var _dragMode:Boolean = false;
 		private var _barWidth:Number = 10;
 		private var _barPos:Number;
-		private var _margin:Number = 5;
+		private var _margin:Number = 3;
 		private var _min:Number;
 		private var _max:Number;
 		private var _unit:Number = 1;
@@ -198,9 +198,9 @@
 		private function draw() {
 			this.graphics.clear();
 			if (this._focused)
-				this.graphics.lineStyle(1, this._focusColor);
+				this.graphics.lineStyle(0.5, this._focusColor);
 			else
-				this.graphics.lineStyle(1, Shared.Color_Primary);
+				this.graphics.lineStyle(0.5, Shared.Color_Primary);
 			this.graphics.beginFill(Shared.Color_Background, 1);
 			this.graphics.drawRect(0, 0, this._width, this._height);
 			this.graphics.endFill();
@@ -209,7 +209,7 @@
 				this.graphics.beginFill(this._focusColor, 1);
 			else
 				this.graphics.beginFill(Shared.Color_Primary, 1);
-			this.graphics.drawRect(this._barPos - (this._barWidth / 2), 5, this._barWidth, this._height - 10);
+			this.graphics.drawRect(this._barPos - (this._barWidth / 2), this._margin, this._barWidth, this._height - this._margin * 2);
 			this.graphics.endFill();
 		}
 	}

@@ -11,13 +11,15 @@
 		private var _fontSize:Number;
 		private var _defaultTextFormat:TextFormat;
 		private var _align:String;
+		private var _bold:Boolean;
 		
-		public function Label(width:Number, height:Number, text:String, fontSize:Number, align:String = "center") {
+		public function Label(width:Number, height:Number, text:String, fontSize:Number, align:String = "center", bold:Boolean = false) {
 			this._width = width;
 			this._height = height;
 			this._text = text;
 			this._fontSize = fontSize;
 			this._align = align;
+			this._bold = bold;
 			initializeComponent();
 		}
 		
@@ -38,6 +40,7 @@
 		private function initializeComponent() {
 			var _defaultTextFormat:TextFormat = new TextFormat(Shared.MainFont.fontName, this._fontSize, Shared.Color_Primary);
 			_defaultTextFormat.kerning = true;
+			_defaultTextFormat.bold = this._bold;
 			_defaultTextFormat.align = this._align;
 			
 			this.selectable = false;

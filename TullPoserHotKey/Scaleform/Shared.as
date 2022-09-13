@@ -15,7 +15,7 @@
 		
 		public static const Color_Primary:Number = 0xFFFFFF;
 		public static const Color_Secondary:Number = 0x000000;
-		public static const Color_Background:Number = 0x000000;
+		public static const Color_Background:Number = 0x282828;
 		public static const Color_DefaultBackground:Number = 0xFFFFFF;
 		
 		private static function HideAllChild() : void {
