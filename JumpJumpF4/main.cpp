@@ -12,6 +12,10 @@ UInt32 uMaxAdditionalJumpCnt = 1;
 PluginHandle			g_pluginHandle;
 F4SEMessagingInterface* g_messaging;
 
+class TESIdleForm;
+
+TESIdleForm* additionalJumpAnim = nullptr;
+
 struct CharacterStateChangeEvent {
 	UInt32	toState;
 	UInt32	fromState;
@@ -66,6 +70,39 @@ public:
 class ActiveEffect;
 class JetpackEffect;
 
+typedef bool (*_PlayIdle)(Actor::MiddleProcess* aiProc, Actor* actor, uint32_t flag, TESIdleForm* idle, bool unk01, uint64_t unk02);
+RelocAddr <_PlayIdle> PlayIdle_Internal(0x0E35510);
+
+bool PlayIdle(Actor* actor, TESIdleForm* idle) {
+	if (!actor || !actor->middleProcess || !idle)
+		return false;
+
+	return PlayIdle_Internal(actor->middleProcess, actor, 0x35, idle, 0, 0);
+}
+
+TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId) {
+	if (!*g_dataHandler)
+		return nullptr;
+
+	const ModInfo* mod = (*g_dataHandler)->LookupModByName(pluginName.c_str());
+	if (!mod || mod->modIndex == -1)
+		return nullptr;
+
+	UInt32 actualFormId = formId;
+	UInt32 pluginIndex = mod->GetPartialIndex();
+	if (!mod->IsLight())
+		actualFormId |= pluginIndex << 24;
+	else
+		actualFormId |= pluginIndex << 12;
+
+	return LookupFormByID(actualFormId);
+}
+
+TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
+	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
+	return GetFormFromIdentifier(pluginName, formID);
+}
+
 typedef EventResult(*_bhkCharacterStateChangeEvent_Handler)(void* arg1, CharacterStateChangeEvent* evn, void* dispatcher);
 RelocAddr<uintptr_t> bhkCharacterStateChangeEvent_Handler_Target(0x2D44690 + 0x8);
 _bhkCharacterStateChangeEvent_Handler bhkCharacterStateChangeEvent_Handler_Original;
@@ -102,6 +139,9 @@ void JumpHandler_HandleEvent_Hook(void* arg1, ButtonEvent* evn) {
 		if (controller && controller->context.currentState == hknpCharacterContext::kCharacterStateType_InAir) {
 			if (additionalJumpCnt < uMaxAdditionalJumpCnt) {
 				additionalJumpCnt++;
+
+				PlayIdle(*g_player, additionalJumpAnim);
+
 				controller->context.currentState = 1;
 				controller->fallTime = 0;
 			}
@@ -133,10 +173,27 @@ void ReadConfig() {
 		uMaxAdditionalJumpCnt = std::stoul(out);
 		_MESSAGE("uMaxAdditionalJumpCnt: %u", uMaxAdditionalJumpCnt);
 	}
+
+	if (GetConfigValue("Settings", "sAdditionalJumpAnim", &out)) {
+		size_t delimiter = out.find('|');
+		if (delimiter != std::string::npos) {
+			std::string modName = out.substr(0, delimiter);
+			std::string modForm = out.substr(delimiter + 1);
+			TESIdleForm* jumpIdle = DYNAMIC_CAST(GetFormFromIdentifier(modName, modForm), TESForm, TESIdleForm);
+			if (jumpIdle) {
+				additionalJumpAnim = jumpIdle;
+				_MESSAGE("sAdditionalJumpAnim: %s", out.c_str());
+			}
+		}
+	}
 }
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
+	case F4SEMessagingInterface::kMessage_GameLoaded:
+		ReadConfig();
+		break;
+
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
 		additionalJumpCnt = 0;
@@ -175,8 +232,6 @@ extern "C" {
 
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
-
-		ReadConfig();
 
 		bhkCharacterStateChangeEvent_Handler_Original = *(_bhkCharacterStateChangeEvent_Handler*)(bhkCharacterStateChangeEvent_Handler_Target.GetUIntPtr());
 		SafeWrite64(bhkCharacterStateChangeEvent_Handler_Target, (uintptr_t)bhkCharacterStateChangeEvent_Handler_Hook);
