@@ -128,18 +128,6 @@ bool GetConfigValue(const char* section, const char* key, std::string* dataOut) 
 }
 
 void ReadConfig() {
-	static time_t lastConfigRead = 0;
-
-	std::string configPath{ "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".ini" };
-	struct _stat64 stat;
-	if (_stat64(configPath.c_str(), &stat) != 0)
-		return;
-
-	if (lastConfigRead != 0 && lastConfigRead == stat.st_mtime)
-		return;
-
-	lastConfigRead = stat.st_mtime;
-
 	std::string out;
 	if (GetConfigValue("Settings", "uMaxAdditionalJumpCnt", &out)) {
 		uMaxAdditionalJumpCnt = std::stoul(out);
@@ -151,7 +139,6 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
-		ReadConfig();
 		additionalJumpCnt = 0;
 		break;
 	}
@@ -188,6 +175,8 @@ extern "C" {
 
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
 		_MESSAGE("%s Loaded", PLUGIN_NAME);
+
+		ReadConfig();
 
 		bhkCharacterStateChangeEvent_Handler_Original = *(_bhkCharacterStateChangeEvent_Handler*)(bhkCharacterStateChangeEvent_Handler_Target.GetUIntPtr());
 		SafeWrite64(bhkCharacterStateChangeEvent_Handler_Target, (uintptr_t)bhkCharacterStateChangeEvent_Handler_Hook);
