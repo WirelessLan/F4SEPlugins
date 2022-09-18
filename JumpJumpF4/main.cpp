@@ -77,7 +77,7 @@ bool PlayIdle(Actor* actor, TESIdleForm* idle) {
 	if (!actor || !actor->middleProcess || !idle)
 		return false;
 
-	return PlayIdle_Internal(actor->middleProcess, actor, 0x35, idle, 0, 0);
+	return PlayIdle_Internal(actor->middleProcess, actor, 0x35, idle, true, 0);
 }
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId) {
@@ -131,16 +131,31 @@ bool IsJetpackEffectActive() {
 	return false;
 }
 
+bhkCharacterController* GetCharacterController(Actor* actor) {
+	if (!actor || !actor->middleProcess || !actor->middleProcess->unk08)
+		return nullptr;
+
+	return (bhkCharacterController*)(*g_player)->middleProcess->unk08->unk3B0[6];
+}
+
+bool IsFirstPerson() {
+	if (!*g_playerCamera)
+		return false;
+
+	return (*g_playerCamera)->cameraState == (*g_playerCamera)->cameraStates[PlayerCamera::kCameraState_FirstPerson];
+}
+
 void JumpHandler_HandleEvent_Hook(void* arg1, ButtonEvent* evn) {
 	bool isDown = evn->isDown == 1.0f && evn->timer == 0.0f;
 
-	if (isDown && !IsJetpackEffectActive() && *g_player && (*g_player)->middleProcess && (*g_player)->middleProcess->unk08) {
-		bhkCharacterController* controller = (bhkCharacterController*)(*g_player)->middleProcess->unk08->unk3B0[6];
+	if (isDown && !IsJetpackEffectActive()) {
+		bhkCharacterController* controller = GetCharacterController(*g_player);
 		if (controller && controller->context.currentState == hknpCharacterContext::kCharacterStateType_InAir) {
 			if (additionalJumpCnt < uMaxAdditionalJumpCnt) {
 				additionalJumpCnt++;
 
-				PlayIdle(*g_player, additionalJumpAnim);
+				if (!IsFirstPerson())
+					PlayIdle(*g_player, additionalJumpAnim);
 
 				controller->context.currentState = 1;
 				controller->fallTime = 0;
