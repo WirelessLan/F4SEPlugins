@@ -1,7 +1,6 @@
 #include "Global.h"
 
 std::string rulePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Rules.txt" };
-time_t ruleLoadedTime = 0;
 
 std::unordered_map<UInt32, std::string> actorRules;
 std::unordered_map<UInt32, std::string> raceRules;
@@ -47,25 +46,25 @@ void ParseRules(std::fstream& ruleFile) {
 
 		ruleType = GetString(line, lineIdx, '|');
 		if (ruleType.empty()) {
-			_MESSAGE("Can't read ruleType!!!");
+			_MESSAGE("Cannot read the ruleType - %s", line.c_str());
 			continue;
 		}
 
 		pluginName = GetString(line, lineIdx, '|');
 		if (pluginName.empty()) {
-			_MESSAGE("Can't read pluginName!!!");
+			_MESSAGE("Cannot read the pluginName - %s", line.c_str());
 			continue;
 		}
 
 		formId = GetString(line, lineIdx, ':');
 		if (formId.empty()) {
-			_MESSAGE("Can't read formId!!!");
+			_MESSAGE("Cannot read the formId - %s", line.c_str());
 			continue;
 		}
 
 		meshesPath = GetString(line, lineIdx, 0);
 		if (meshesPath.empty()) {
-			_MESSAGE("Can't read meshesPath!!!");
+			_MESSAGE("Cannot read the meshesPath - %s", line.c_str());
 			continue;
 		}
 
@@ -74,7 +73,7 @@ void ParseRules(std::fstream& ruleFile) {
 
 		TESForm* ruleTargetForm = GetFormFromIdentifier(pluginName, formId);
 		if (!ruleTargetForm) {
-			_MESSAGE("Can't find Form[%s|%s]!!!", pluginName.c_str(), formId.c_str());
+			_MESSAGE("Cannot find the Form - %s", line.c_str());
 			continue;
 		}
 
@@ -82,8 +81,10 @@ void ParseRules(std::fstream& ruleFile) {
 			actorRules.insert(std::pair<UInt32, std::string>(ruleTargetForm->formID, meshesPath));
 		else if (_stricmp(ruleType.c_str(), "Race") == 0)
 			raceRules.insert(std::pair<UInt32, std::string>(ruleTargetForm->formID, meshesPath));
-		else
-			_MESSAGE("Unknown ruleType[%s]...", ruleType.c_str());
+		else {
+			_MESSAGE("Unknown ruleType - %s", line.c_str());
+			continue;
+		}
 
 		_MESSAGE("ruleType[%s] pluginName[%s] formId[0x%08X] meshesPath[%s]", ruleType.c_str(), pluginName.c_str(), ruleTargetForm->formID, meshesPath.c_str());
 	}
@@ -94,6 +95,7 @@ bool ShouldLoadRules() {
 	if (_stat64(rulePath.c_str(), &stat) != 0)
 		return false;
 
+	static time_t ruleLoadedTime = 0;
 	if (ruleLoadedTime == 0 || ruleLoadedTime != stat.st_mtime) {
 		ruleLoadedTime = stat.st_mtime;
 		return true;
@@ -105,7 +107,7 @@ bool ShouldLoadRules() {
 void LoadRules() {
 	std::fstream ruleFile(rulePath);
 	if (!ruleFile.is_open()) {
-		_MESSAGE("Cannot open a Rules file!!");
+		_MESSAGE("No Rules file found");
 		return;
 	}
 
@@ -116,31 +118,46 @@ void LoadRules() {
 	ruleFile.close();
 }
 
-bool CheckCACSRule(UInt32 raceId, UInt32 actorId) {
-	if (raceRules.empty() && actorRules.empty())
+bool CheckCACSRule(RuleType type, UInt32 formId) {
+	if (formId == 0xFFFFFFFF)
 		return false;
 
-	auto race_it = raceRules.find(raceId);
-	auto actor_it = actorRules.find(actorId);
-	if (race_it == raceRules.end() && actor_it == actorRules.end())
+	switch (type) {
+	case RuleType::kRuleType_Actor:
+		if (actorRules.find(formId) == actorRules.end())
+			return false;
+		break;
+
+	case RuleType::kRuleType_Race:
+		if (raceRules.find(formId) == raceRules.end())
+			return false;
+		break;
+
+	default:
 		return false;
+	}
 
 	return true;
 }
 
 const std::string GetCACSPath(RuleType type, UInt32 formId) {
-	if (type == RuleType::kRuleType_Actor) {
+	if (formId == 0xFFFFFFFF)
+		return std::string();
+
+	switch (type) {
+	case RuleType::kRuleType_Actor: {
 		auto it = actorRules.find(formId);
-		if (it == actorRules.end())
-			return "";
-		return it->second;
+		if (it != actorRules.end())
+			return it->second;
+		break;
 	}
-	else if (type == RuleType::kRuleType_Race) {
+	case RuleType::kRuleType_Race: {
 		auto it = raceRules.find(formId);
-		if (it == raceRules.end())
-			return "";
-		return it->second;
+		if (it != raceRules.end())
+			return it->second;
+		break;
 	}
-	else
-		return "";
+	}
+
+	return std::string();
 }

@@ -7,5 +7,5 @@ enum RuleType {
 
 bool ShouldLoadRules();
 void LoadRules();
-bool CheckCACSRule(UInt32 raceId, UInt32 actorId);
+bool CheckCACSRule(RuleType type, UInt32 formId);
 const std::string GetCACSPath(RuleType type, UInt32 formId);

@@ -1,32 +1,29 @@
 #include "Global.h"
 
-inline void ltrim(std::string& s) {
+void trim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
 		return !std::isspace(ch);
-		}));
-}
-
-inline void rtrim(std::string& s) {
+	}));
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
 		return !std::isspace(ch);
-		}).base(), s.end());
-}
-
-void trim(std::string& s) {
-	ltrim(s);
-	rtrim(s);
+	}).base(), s.end());
 }
 
 bool IsFileExists(const std::string& path) {
-	if (path == "")
+	if (path.empty())
 		return false;
-
-	std::string fullPath = "Data\\" + path;
-
-	DWORD dwAttrib = GetFileAttributes(fullPath.c_str());
+	DWORD dwAttrib = GetFileAttributes(path.c_str());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+std::string GetFileExt(const std::string& fname) {
+	size_t idx = fname.rfind('.');
+	if (idx == std::string::npos)
+		return std::string();
+	return fname.substr(idx + 1);
+}
+
+typedef ExtraLeveledCreature* (*_GetExtraLeveledCreature)(ExtraDataList*, UInt8);
 RelocAddr <_GetExtraLeveledCreature> GetExtraLeveledCreature_Internal(0x000436A0);
 
 TESForm* GetActorBaseForm(Actor* actor) {

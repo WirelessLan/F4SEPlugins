@@ -1,9 +1,21 @@
 #pragma once
-#include "Global.h"
 
-typedef void (*_ActorChangeMeshes)(void*, Actor*);
-typedef const char* (*_SetModelPath)(void*, UInt64, const char*, const char*);
-typedef void* (*_GetNiObject)(NiAVObject*);
+struct CustomPath {
+	std::string racePath;
+	std::string actorpath;
+};
+
+class ThreadPathMap {
+public:
+	ThreadPathMap() {}
+	void Add(std::thread::id key, CustomPath value);
+	const CustomPath* Get(std::thread::id key);
+	void Delete(std::thread::id key);
+
+private:
+	std::unordered_map<std::thread::id, CustomPath> _map;
+	std::mutex _mutex;
+};
 
 void Hooks_ActorChangeMeshes();
 void Hooks_SetModelPath();

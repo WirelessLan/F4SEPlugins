@@ -14,6 +14,7 @@
 
 #include <fstream>
 #include <unordered_map>
+#include <mutex>
 #include <algorithm>
 #include <thread>
 
@@ -22,4 +23,4 @@
 #include "Utils.h"
 
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 2)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 6, 3)

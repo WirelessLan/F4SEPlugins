@@ -1,50 +1,51 @@
 #include "Global.h"
 
-std::unordered_map<std::thread::id, std::pair<std::string, std::string>> g_acThreadMap;
+ThreadPathMap g_threadPathMap;
 
+typedef void (*_ActorChangeMeshes)(void*, Actor*);
 RelocAddr <_ActorChangeMeshes> ActorChangeMeshes_HookTarget(0x5B93F0);
 _ActorChangeMeshes ActorChangeMeshes_Original;
 
+typedef const char* (*_SetModelPath)(void*, UInt64, const char*, const char*);
 RelocAddr <_SetModelPath> SetModelPath_HookTarget(0x1B7CD40);
 _SetModelPath SetModelPath_Original;
 
+typedef void* (*_GetNiObject)(NiAVObject*);
 RelocAddr <uintptr_t> GetNiObject_HookTarget(0x02E14818 + 0x20);
 _GetNiObject GetNiObject_Original;
 
-void ActorChangeMeshes_Hook(void* arg1, Actor* arg2) {
-	bool isTarget = false;
+void ActorChangeMeshes_Hook(void* arg1, Actor* actor) {
 	std::thread::id threadId = std::this_thread::get_id();
 
-	UInt32 raceFormId = 0;
-	if (arg2->race)
-		raceFormId = arg2->race->formID;
+	UInt32 raceFormId = actor->race ? actor->race->formID : 0xFFFFFFFF;
+	UInt32 baseFormId = actor->baseForm ? actor->baseForm->formID : 0xFFFFFFFF;
 
-	UInt32 baseFormId = arg2->baseForm ? arg2->baseForm->formID : 0;
-	TESForm* baseForm = GetActorBaseForm(arg2);
-	if (baseForm)
-		baseFormId = baseForm->formID;
+	if ((baseFormId >> 24) == 0xFF) {
+		TESForm* baseForm = GetActorBaseForm(actor);
+		if (baseForm)
+			baseFormId = baseForm->formID;
+	}
 
-	if (raceFormId && baseFormId && CheckCACSRule(raceFormId, baseFormId)) {
+	bool isTarget = false;
+	if (CheckCACSRule(RuleType::kRuleType_Race, raceFormId) || CheckCACSRule(RuleType::kRuleType_Actor, baseFormId)) {
 		isTarget = true;
 		std::string racePath = GetCACSPath(RuleType::kRuleType_Race, raceFormId);
 		std::string actorPath = GetCACSPath(RuleType::kRuleType_Actor, baseFormId);
-		g_acThreadMap.insert(std::pair<std::thread::id, std::pair<std::string, std::string>>(threadId, std::pair<std::string, std::string>(racePath, actorPath)));
+		g_threadPathMap.Add(threadId, { racePath, actorPath });
 	}
 
-	ActorChangeMeshes_Original(arg1, arg2);
+	ActorChangeMeshes_Original(arg1, actor);
 
 	if (isTarget)
-		g_acThreadMap.erase(threadId);
+		g_threadPathMap.Delete(threadId);
 }
 
 const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, const char* prefixPath) {
 	std::thread::id threadId = std::this_thread::get_id();
 
-	auto it = g_acThreadMap.find(threadId);
-	if (it != g_acThreadMap.end()) {
-		bool checkPath = false;
-		size_t subPathLen = _mbstrlen(subPath);
-		if (_stricmp(prefixPath, "meshes\\") == 0 && subPathLen >= 4 && _stricmp(&subPath[subPathLen - 4], ".nif") == 0) {
+	const CustomPath* paths = g_threadPathMap.Get(threadId);
+	if (paths) {
+		if (_stricmp(prefixPath, "meshes\\") == 0 && _stricmp(GetFileExt(subPath).c_str(), "nif") == 0) {
 			std::string prefixPathStr = prefixPath;
 			std::string subPathStr = subPath;
 			std::transform(prefixPathStr.begin(), prefixPathStr.end(), prefixPathStr.begin(), ::tolower);
@@ -54,23 +55,18 @@ const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, cons
 			if (prefixPos != std::string::npos)
 				subPathStr = subPathStr.substr(prefixPos + prefixPathStr.length());
 
-			std::string currentCustomPrefixPath;
-			std::string fullPath;
-			
-			if (it->second.second != "") {
-				fullPath = std::string(prefixPath + it->second.second + subPathStr.c_str());
-				if (IsFileExists(fullPath)) {
-					currentCustomPrefixPath = prefixPath + it->second.second;
+			// Check Actor Path
+			if (!paths->actorpath.empty()) {
+				std::string currentCustomPrefixPath = prefixPath + paths->actorpath;
+				if (IsFileExists("data\\" + currentCustomPrefixPath + subPathStr))
 					return SetModelPath_Original(arg1, arg2, subPathStr.c_str(), currentCustomPrefixPath.c_str());
-				}
 			}
 
-			if (it->second.first != "") {
-				fullPath = std::string(prefixPath + it->second.first + subPathStr.c_str());
-				if (IsFileExists(fullPath)) {
-					currentCustomPrefixPath = prefixPath + it->second.first;
+			// Check Race Path
+			if (!paths->racePath.empty()) {
+				std::string currentCustomPrefixPath = prefixPath + paths->racePath;
+				if (IsFileExists("data\\" + currentCustomPrefixPath + subPathStr)) 
 					return SetModelPath_Original(arg1, arg2, subPathStr.c_str(), currentCustomPrefixPath.c_str());
-				}
 			}
 		}
 	}
@@ -81,38 +77,41 @@ const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, cons
 void* GetNiObject_Hook(NiAVObject* node) {
 	std::thread::id threadId = std::this_thread::get_id();
 
-	auto it = g_acThreadMap.find(threadId);
-	if (it != g_acThreadMap.end()) {
+	const CustomPath* paths = g_threadPathMap.Get(threadId);
+	if (paths) {
 		if (node) {
 			node->IncRef();
-			NiExtraData* bodyMorphs = node->GetExtraData("BODYTRI");
-			if (bodyMorphs) {
-				NiStringExtraData* stringData = dynamic_cast<NiStringExtraData*>(bodyMorphs);
-				if (stringData)	{
-					stringData->IncRef();
 
+			NiExtraData* bodyTri = node->GetExtraData("BODYTRI");
+			if (bodyTri) {
+				bodyTri->IncRef();
+
+				NiStringExtraData* stringData = DYNAMIC_CAST(bodyTri, NiExtraData, NiStringExtraData);
+				if (stringData)	{
 					bool found = false;
-					std::string fullPath, subPath;
-					
-					if (it->second.second != "") {
-						subPath = it->second.second + std::string(stringData->m_string.c_str());
-						fullPath = "meshes\\" + subPath;
+					std::string dataStr = stringData->m_string.c_str();
+
+					if (!paths->actorpath.empty() && dataStr.find(paths->actorpath) == std::string::npos) {
+						std::string subPath = paths->actorpath + dataStr;
+						std::string fullPath = "data\\meshes\\" + subPath;
 						if (IsFileExists(fullPath)) {
 							found = true;
-							stringData->m_string = BSFixedString(subPath.c_str());
+							stringData->m_string = subPath.c_str();
 						}
 					}
+					
 
-					if (!found && it->second.first != "") {
-						subPath = it->second.first + std::string(stringData->m_string.c_str());
-						fullPath = "meshes\\" + subPath;
+					if (!found && !paths->racePath.empty() && dataStr.find(paths->racePath) == std::string::npos) {
+						std::string subPath = paths->racePath + dataStr;
+						std::string fullPath = "data\\meshes\\" + subPath;
 						if (IsFileExists(fullPath))
-							stringData->m_string = BSFixedString(subPath.c_str());
+							stringData->m_string = subPath.c_str();
 					}
-
-					stringData->DecRef();
 				}
+
+				bodyTri->DecRef();
 			}
+
 			node->DecRef();
 		}
 	}
@@ -120,10 +119,27 @@ void* GetNiObject_Hook(NiAVObject* node) {
 	return GetNiObject_Original(node);
 }
 
+void ThreadPathMap::Add(std::thread::id key, CustomPath value) {
+	std::lock_guard<std::mutex> guard(_mutex);
+	_map[key] = value;
+}
+
+const CustomPath* ThreadPathMap::Get(std::thread::id key) {
+	std::lock_guard<std::mutex> guard(_mutex);
+	auto it = _map.find(key);
+	if (it == _map.end())
+		return nullptr;
+	return &it->second;
+}
+
+void ThreadPathMap::Delete(std::thread::id key) {
+	std::lock_guard<std::mutex> guard(_mutex);
+	_map.erase(key);
+}
+
 void Hooks_ActorChangeMeshes() {
-	struct AiProcess_Code : Xbyak::CodeGenerator {
-		AiProcess_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)
-		{
+	struct ActorChangeMeshes_Code : Xbyak::CodeGenerator {
+		ActorChangeMeshes_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x10], rdx);
@@ -136,7 +152,7 @@ void Hooks_ActorChangeMeshes() {
 		}
 	};
 	void* codeBuf = g_localTrampoline.StartAlloc();
-	AiProcess_Code code(codeBuf);
+	ActorChangeMeshes_Code code(codeBuf);
 	g_localTrampoline.EndAlloc(code.getCurr());
 
 	ActorChangeMeshes_Original = (_ActorChangeMeshes)codeBuf;
@@ -145,9 +161,8 @@ void Hooks_ActorChangeMeshes() {
 }
 
 void Hooks_SetModelPath() {
-	struct AiProcess_Code : Xbyak::CodeGenerator {
-		AiProcess_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)
-		{
+	struct SetModelPath_Code : Xbyak::CodeGenerator {
+		SetModelPath_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x08], rbx);
@@ -161,7 +176,7 @@ void Hooks_SetModelPath() {
 		}
 	};
 	void* codeBuf = g_localTrampoline.StartAlloc();
-	AiProcess_Code code(codeBuf);
+	SetModelPath_Code code(codeBuf);
 	g_localTrampoline.EndAlloc(code.getCurr());
 
 	SetModelPath_Original = (_SetModelPath)codeBuf;
