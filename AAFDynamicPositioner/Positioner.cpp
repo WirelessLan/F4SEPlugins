@@ -590,6 +590,9 @@ namespace Positioner {
 			actorData->originPos = extraRefPath->goalPos;
 		}
 
+		if (Scaleform::PositionerMenu::IsMenuOpen())
+			return;
+
 		Scaleform::PositionerMenu::OpenMenu(actorData->offset.x, actorData->offset.y, actorData->offset.z);
 	}
 

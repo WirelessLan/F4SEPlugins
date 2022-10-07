@@ -1,15 +1,21 @@
 #include "Global.h"
 
 namespace Utility {
-	RelocAddr <_GetScale> GetScale(0x3F8540);
-	RelocAddr <_SetScale> SetScale(0x3F85B0);
+	typedef float (*_GetScale)(TESObjectREFR*);
+	extern RelocAddr <_GetScale> GetScale_Internal;
+	RelocAddr <_GetScale> GetScale_Internal(0x3F8540);
+
+	typedef float (*_SetScale)(TESObjectREFR*, float);
+	extern RelocAddr <_SetScale> SetScale_Internal;
+	RelocAddr <_SetScale> SetScale_Internal(0x3F85B0);
+
 	RelocAddr <_ModPos> ModPos(0x4F3C30);
 
 	float GetActualScale(TESObjectREFR* refr) {
 		if (!refr)
 			return 0.0f;
 
-		float actualScale = GetScale(refr);
+		float actualScale = GetScale_Internal(refr);
 
 		NiAVObject* skeletonNode = refr->GetActorRootNode(false);
 		if (!skeletonNode)
@@ -29,6 +35,18 @@ namespace Utility {
 		}
 
 		return actualScale;
+	}
+
+	void SetScale(TESObjectREFR* refr, float scale) {
+		float currActualScale = GetActualScale(refr);
+		if (currActualScale == scale)
+			return;
+
+		UInt16 refScale = reinterpret_cast<UInt16&>(refr->unk104);
+		float baseScale = currActualScale * 100 / refScale;
+
+		float modifiedRefScale = std::round(scale / baseScale * 100) / 100;
+		SetScale_Internal(refr, modifiedRefScale);
 	}
 
 	TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
