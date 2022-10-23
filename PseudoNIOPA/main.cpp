@@ -117,6 +117,13 @@ void ReadINIFile() {
 			_MESSAGE("DecScaleKey: 0x%02X", g_pluginSettings.DecScaleKey);
 		}
 	}
+	if (ConfigReader::GetConfigValue("Keys", "CloseMenukey", &data)) {
+		value = ReadKey(data);
+		if (value) {
+			g_pluginSettings.CloseMenukey = value;
+			_MESSAGE("CloseMenukey: 0x%02X", g_pluginSettings.CloseMenukey);
+		}
+	}
 }
 
 /* Plugin Query */

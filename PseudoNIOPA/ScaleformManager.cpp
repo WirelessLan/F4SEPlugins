@@ -49,6 +49,11 @@ namespace ScaleformManager {
 		}
 	}
 
+	void CloseMenu() {
+		RegisterMenuInputHandler(false);
+		PNIOPAMenu::CloseMenu();
+	}
+
 	UInt32 ReplaceKeyCodeForMenu(UInt32 keyCode) {
 		switch (keyCode) {
 		case InputMap::kGamepadButtonOffset_DPAD_UP:
@@ -145,9 +150,15 @@ namespace ScaleformManager {
 		if (keyCode >= InputMap::kMaxMacros)
 			return;
 
-		keyCode = ReplaceKeyCodeForMenu(keyCode);
-
 		bool isDown = inputEvent->isDown == 1.0f;
+
+		if (keyCode == g_pluginSettings.CloseMenukey && !isDown) {
+			g_selectedMenu = std::string();
+			CloseMenu();
+			return;
+		}
+
+		keyCode = ReplaceKeyCodeForMenu(keyCode);
 
 		SendKeyEvent(keyCode, isDown);
 	}
@@ -243,8 +254,7 @@ namespace ScaleformManager {
 		if (!closeAll)
 			g_selectedMenu = std::string();
 
-		RegisterMenuInputHandler(false);
-		PNIOPAMenu::CloseMenu();
+		CloseMenu();
 	}
 
 	void AllowTextInputHandler::Invoke(Args* args) {

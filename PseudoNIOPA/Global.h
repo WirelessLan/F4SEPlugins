@@ -32,7 +32,7 @@
 #include "ConfigReader.h"
 
 #define PLUGIN_NAME	"PseudoNIOPA"
-#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 0)
+#define PLUGIN_VERSION MAKE_EXE_VERSION(1, 1, 1)
 
 struct PluginSettings {
 	UInt32 DirXKey = 0xBC;
@@ -44,6 +44,7 @@ struct PluginSettings {
 	UInt32 DecRotKey = 0x25;
 	UInt32 IncScaleKey = 0x21;
 	UInt32 DecScaleKey = 0x22;
+	UInt32 CloseMenukey = 0xFF;
 };
 
 extern PluginSettings g_pluginSettings;
