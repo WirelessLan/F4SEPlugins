@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CACS.h" />
+    <ClInclude Include="CaseInsensitiveMap.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Utils.h" />

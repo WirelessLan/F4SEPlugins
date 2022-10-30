@@ -8,10 +8,30 @@
 PluginHandle			g_pluginHandle = kPluginHandle_Invalid;
 F4SEMessagingInterface* g_messaging = NULL;
 
+bool bDebug = false;
+
+void ReadConfig() {
+	char	result[256] = { 0 };
+	std::string configPath{ "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".ini" };
+	GetPrivateProfileString("Debug", "bDebug", NULL, result, sizeof(result), configPath.c_str());
+
+	std::string sResult = result;
+	if (sResult.empty()) {
+		_MESSAGE("bDebug: %d", bDebug);
+		return;
+	}
+
+	bDebug = std::stoul(sResult, nullptr, 10);
+	_MESSAGE("bDebug: %d", bDebug);
+}
+
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
+		SetModelProcessor();
+		ClearPathMap();
+
 		if (ShouldLoadRules()) {
 			_MESSAGE("Load Rules...");
 			LoadRules();
@@ -63,12 +83,13 @@ extern "C" {
 			return false;
 		}
 
+		ReadConfig();
+
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 
 		Hooks_ActorChangeMeshes();
 		Hooks_SetModelPath();
-		Hooks_GetNiObject();
 
 		return true;
 	}

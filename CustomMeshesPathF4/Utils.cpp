@@ -9,6 +9,36 @@ void trim(std::string& s) {
 	}).base(), s.end());
 }
 
+bool iequals(const std::string& a, const std::string& b) {
+	return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) {
+		return tolower(a) == tolower(b);
+	});
+}
+
+std::string toLower(const std::string& str) {
+	std::string retStr = str;
+	std::transform(retStr.begin(), retStr.end(), retStr.begin(), [](unsigned char c) {
+		return std::tolower(c);
+	});
+	return retStr;
+}
+
+std::string remove_prefix(const std::string& prefixStr, const std::string& str) {
+	size_t prefixPos = str.find(prefixStr);
+	if (prefixPos == 0)
+		return str.substr(prefixStr.length());
+	return str;
+}
+
+void Log(const char* fmt, ...) {
+	if (bDebug) {
+		va_list args;
+		va_start(args, fmt);
+		gLog.Log(IDebugLog::kLevel_Message, fmt, args);
+		va_end(args);
+	}
+}
+
 bool IsFileExists(const std::string& path) {
 	if (path.empty())
 		return false;

@@ -1,6 +1,7 @@
 #include "Global.h"
 
 ThreadPathMap g_threadPathMap;
+FullPathMap g_fullPathMap;
 
 typedef void (*_ActorChangeMeshes)(void*, Actor*);
 RelocAddr <_ActorChangeMeshes> ActorChangeMeshes_HookTarget(0x5B93F0);
@@ -9,10 +10,6 @@ _ActorChangeMeshes ActorChangeMeshes_Original;
 typedef const char* (*_SetModelPath)(void*, UInt64, const char*, const char*);
 RelocAddr <_SetModelPath> SetModelPath_HookTarget(0x1B7CD40);
 _SetModelPath SetModelPath_Original;
-
-typedef void* (*_GetNiObject)(NiAVObject*);
-RelocAddr <uintptr_t> GetNiObject_HookTarget(0x02E14818 + 0x20);
-_GetNiObject GetNiObject_Original;
 
 void ActorChangeMeshes_Hook(void* arg1, Actor* actor) {
 	std::thread::id threadId = std::this_thread::get_id();
@@ -31,7 +28,7 @@ void ActorChangeMeshes_Hook(void* arg1, Actor* actor) {
 		isTarget = true;
 		std::string racePath = GetCACSPath(RuleType::kRuleType_Race, raceFormId);
 		std::string actorPath = GetCACSPath(RuleType::kRuleType_Actor, baseFormId);
-		g_threadPathMap.Add(threadId, { racePath, actorPath });
+		g_threadPathMap.Add(threadId, { raceFormId, racePath, baseFormId, actorPath });
 	}
 
 	ActorChangeMeshes_Original(arg1, actor);
@@ -46,27 +43,23 @@ const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, cons
 	const CustomPath* paths = g_threadPathMap.Get(threadId);
 	if (paths) {
 		if (_stricmp(prefixPath, "meshes\\") == 0 && _stricmp(GetFileExt(subPath).c_str(), "nif") == 0) {
-			std::string prefixPathStr = prefixPath;
-			std::string subPathStr = subPath;
-			std::transform(prefixPathStr.begin(), prefixPathStr.end(), prefixPathStr.begin(), ::tolower);
-			std::transform(subPathStr.begin(), subPathStr.end(), subPathStr.begin(), ::tolower);
+			std::string prefixPathStr = toLower(prefixPath);
+			std::string subPathStr = toLower(subPath);
 
-			size_t prefixPos = subPathStr.find(prefixPathStr);
-			if (prefixPos != std::string::npos)
-				subPathStr = subPathStr.substr(prefixPos + prefixPathStr.length());
+			subPathStr = remove_prefix(prefixPathStr, subPathStr);
+
+			std::string customPrefixPath, customSubPath, customFullPath;
 
 			// Check Actor Path
-			if (!paths->actorpath.empty()) {
-				std::string currentCustomPrefixPath = prefixPath + paths->actorpath;
-				if (IsFileExists("data\\" + currentCustomPrefixPath + subPathStr))
-					return SetModelPath_Original(arg1, arg2, subPathStr.c_str(), currentCustomPrefixPath.c_str());
+			if (SetCustomPaths(RuleType::kRuleType_Actor, paths->actorId, paths->actorPath, subPathStr, customPrefixPath, customSubPath, customFullPath)) {
+				g_fullPathMap.Add(customFullPath, *paths);
+				return SetModelPath_Original(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
 			}
 
 			// Check Race Path
-			if (!paths->racePath.empty()) {
-				std::string currentCustomPrefixPath = prefixPath + paths->racePath;
-				if (IsFileExists("data\\" + currentCustomPrefixPath + subPathStr)) 
-					return SetModelPath_Original(arg1, arg2, subPathStr.c_str(), currentCustomPrefixPath.c_str());
+			if (SetCustomPaths(RuleType::kRuleType_Race, paths->raceId, paths->racePath, subPathStr, customPrefixPath, customSubPath, customFullPath)) {
+				g_fullPathMap.Add(customFullPath, *paths);
+				return SetModelPath_Original(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
 			}
 		}
 	}
@@ -74,12 +67,11 @@ const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, cons
 	return SetModelPath_Original(arg1, arg2, subPath, prefixPath);
 }
 
-void* GetNiObject_Hook(NiAVObject* node) {
-	std::thread::id threadId = std::this_thread::get_id();
-
-	const CustomPath* paths = g_threadPathMap.Get(threadId);
-	if (paths) {
-		if (node) {
+void CustomModelProcessor::Process(BSModelDB::ModelData* modelData, const char* modelName, NiAVObject** root, UInt32* typeOut) {
+	CustomPath paths;
+	if (g_fullPathMap.Get(modelName, paths)) {
+		if (root && *root) {
+			NiAVObject* node = *root;
 			node->IncRef();
 
 			NiExtraData* bodyTri = node->GetExtraData("BODYTRI");
@@ -87,22 +79,22 @@ void* GetNiObject_Hook(NiAVObject* node) {
 				bodyTri->IncRef();
 
 				NiStringExtraData* stringData = DYNAMIC_CAST(bodyTri, NiExtraData, NiStringExtraData);
-				if (stringData)	{
+				if (stringData) {
 					bool found = false;
 					std::string dataStr = stringData->m_string.c_str();
 
-					if (!paths->actorpath.empty() && dataStr.find(paths->actorpath) == std::string::npos) {
-						std::string subPath = paths->actorpath + dataStr;
+					if (!paths.actorPath.empty() && dataStr.find(paths.actorPath) == std::string::npos) {
+						std::string subPath = paths.actorPath + dataStr;
 						std::string fullPath = "data\\meshes\\" + subPath;
 						if (IsFileExists(fullPath)) {
 							found = true;
 							stringData->m_string = subPath.c_str();
 						}
 					}
-					
 
-					if (!found && !paths->racePath.empty() && dataStr.find(paths->racePath) == std::string::npos) {
-						std::string subPath = paths->racePath + dataStr;
+
+					if (!found && !paths.racePath.empty() && dataStr.find(paths.racePath) == std::string::npos) {
+						std::string subPath = paths.racePath + dataStr;
 						std::string fullPath = "data\\meshes\\" + subPath;
 						if (IsFileExists(fullPath))
 							stringData->m_string = subPath.c_str();
@@ -116,25 +108,16 @@ void* GetNiObject_Hook(NiAVObject* node) {
 		}
 	}
 
-	return GetNiObject_Original(node);
+	if (m_oldProcessor)
+		m_oldProcessor->Process(modelData, modelName, root, typeOut);
 }
 
-void ThreadPathMap::Add(std::thread::id key, CustomPath value) {
-	std::lock_guard<std::mutex> guard(_mutex);
-	_map[key] = value;
-}
-
-const CustomPath* ThreadPathMap::Get(std::thread::id key) {
-	std::lock_guard<std::mutex> guard(_mutex);
-	auto it = _map.find(key);
-	if (it == _map.end())
-		return nullptr;
-	return &it->second;
-}
-
-void ThreadPathMap::Delete(std::thread::id key) {
-	std::lock_guard<std::mutex> guard(_mutex);
-	_map.erase(key);
+void SetModelProcessor() {
+	static bool bSet = false;
+	if (!bSet) {
+		(*g_TESProcessor) = new CustomModelProcessor(*g_TESProcessor);
+		bSet = true;
+	}
 }
 
 void Hooks_ActorChangeMeshes() {
@@ -184,7 +167,7 @@ void Hooks_SetModelPath() {
 	g_branchTrampoline.Write6Branch(SetModelPath_HookTarget.GetUIntPtr(), (uintptr_t)SetModelPath_Hook);
 }
 
-void Hooks_GetNiObject() {
-	GetNiObject_Original = *(_GetNiObject*)(GetNiObject_HookTarget.GetUIntPtr());
-	SafeWrite64(GetNiObject_HookTarget, (uintptr_t)GetNiObject_Hook);
+void ClearPathMap() {
+	g_threadPathMap.Clear();
+	g_fullPathMap.Clear();
 }
