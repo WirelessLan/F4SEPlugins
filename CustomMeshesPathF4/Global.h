@@ -26,6 +26,6 @@
 #include "Utils.h"
 
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 7, 0)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 7, 1)
 
 extern bool bDebug;

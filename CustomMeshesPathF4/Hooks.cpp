@@ -69,7 +69,7 @@ const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, cons
 
 void CustomModelProcessor::Process(BSModelDB::ModelData* modelData, const char* modelName, NiAVObject** root, UInt32* typeOut) {
 	CustomPath paths;
-	if (g_fullPathMap.Get(modelName, paths)) {
+	if (modelName && g_fullPathMap.Get(modelName, paths)) {
 		if (root && *root) {
 			NiAVObject* node = *root;
 			node->IncRef();
