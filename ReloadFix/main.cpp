@@ -13,9 +13,8 @@ F4SEMessagingInterface* g_messaging = NULL;
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_NewGame:
-	case F4SEMessagingInterface::kMessage_PostLoadGame:
-		isSprintQueued = false;
-		isAutoMoveSprint = false;
+	case F4SEMessagingInterface::kMessage_PreLoadGame:
+		g_reloadStackSize = 0;
 		break;
 	}
 }

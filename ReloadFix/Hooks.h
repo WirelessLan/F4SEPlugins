@@ -10,15 +10,8 @@ public:
 class BSAnimationGraphEvent {
 public:
 	TESObjectREFR* refr;
-	BSFixedString	name;
-	BSFixedString	args;
+	BSFixedString name;
+	BSFixedString args;
 };
-
-typedef void(*_TogglePOV)(void* arg1, ButtonEvent* event);
-typedef void(*_MovementHandler)(void*, ButtonEvent*);
-typedef void(*_SprintHandler)(void*, ButtonEvent*);
-typedef void(*_ReadyWeaponHandler)(void*, ButtonEvent*);
-typedef EventResult(*_PlayerAnimGraphEvent_ReceiveEvent)(void*, BSAnimationGraphEvent*, void*);
-typedef EventResult(*_MenuOpenCloseEvent_ReceiveEvent)(void*, MenuOpenCloseEvent*, void*);
 
 void Install();
