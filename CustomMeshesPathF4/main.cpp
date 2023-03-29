@@ -16,12 +16,9 @@ void ReadConfig() {
 	GetPrivateProfileString("Debug", "bDebug", NULL, result, sizeof(result), configPath.c_str());
 
 	std::string sResult = result;
-	if (sResult.empty()) {
-		_MESSAGE("bDebug: %d", bDebug);
-		return;
-	}
+	if (!sResult.empty())
+		bDebug = std::stoul(sResult, nullptr, 10);
 
-	bDebug = std::stoul(sResult, nullptr, 10);
 	_MESSAGE("bDebug: %d", bDebug);
 }
 
@@ -33,7 +30,7 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 		ClearPathMap();
 
 		if (ShouldLoadRules()) {
-			_MESSAGE("Load Rules...");
+			_MESSAGE("Loading Rules...");
 			LoadRules();
 		}
 		break;
@@ -71,7 +68,7 @@ extern "C" {
 	}
 
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
-		_MESSAGE("%s Loaded", PLUGIN_NAME);
+		_MESSAGE("%s v%d.%d.%d Loaded", PLUGIN_NAME, (PLUGIN_VERSION >> 24) & 0xFF, (PLUGIN_VERSION >> 16) & 0xFF, (PLUGIN_VERSION >> 4) & 0xFF);
 
 		if (!g_branchTrampoline.Create(1024 * 64)) {
 			_ERROR("couldn't create branch trampoline. this is fatal. skipping remainder of init process.");

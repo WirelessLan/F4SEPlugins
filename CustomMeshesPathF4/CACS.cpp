@@ -39,9 +39,9 @@ std::string GetString(const std::string& line, UInt32& index, char delimeter) {
 void ParseRules(std::fstream& ruleFile) {
 	std::string ruleType, pluginName, formId, meshesPath, customPath;
 	std::string line;
-	bool isCustomPath = false;
 
 	while (std::getline(ruleFile, line)) {
+		bool isCustomNifPath = false;
 		UInt32 lineIdx = 0;
 
 		trim(line);
@@ -50,37 +50,37 @@ void ParseRules(std::fstream& ruleFile) {
 
 		ruleType = GetString(line, lineIdx, '|');
 		if (ruleType.empty()) {
-			_MESSAGE("Cannot read the ruleType - %s", line.c_str());
+			_MESSAGE("[Warning] Cannot read the RuleType: %s", line.c_str());
 			continue;
 		}
 
 		pluginName = GetString(line, lineIdx, '|');
 		if (pluginName.empty()) {
-			_MESSAGE("Cannot read the pluginName - %s", line.c_str());
+			_MESSAGE("[Warning] Cannot read the PluginName: %s", line.c_str());
 			continue;
 		}
 
 		formId = GetString(line, lineIdx, ':');
 		if (formId.empty()) {
-			_MESSAGE("Cannot read the formId - %s", line.c_str());
+			_MESSAGE("[Warning] Cannot read the FormId: %s", line.c_str());
 			continue;
 		}
 
 		meshesPath = GetString(line, lineIdx, ':');
 		if (meshesPath.empty()) {
-			_MESSAGE("Cannot read the meshesPath - %s", line.c_str());
+			_MESSAGE("[Warning] Cannot read the Path: %s", line.c_str());
 			continue;
 		}
 
 		meshesPath = toLower(meshesPath);
 
 		if (lineIdx != line.length()) {
-			isCustomPath = true;
+			isCustomNifPath = true;
 			meshesPath = remove_prefix("meshes\\", meshesPath);
 
 			customPath = GetString(line, lineIdx, 0);
 			if (customPath.empty()) {
-				_MESSAGE("Cannot read the customPath - %s", line.c_str());
+				_MESSAGE("[Warning] Cannot read the CustomPath: %s", line.c_str());
 				continue;
 			}
 
@@ -90,18 +90,18 @@ void ParseRules(std::fstream& ruleFile) {
 
 		TESForm* ruleTargetForm = GetFormFromIdentifier(pluginName, formId);
 		if (!ruleTargetForm) {
-			_MESSAGE("Cannot find the Form - %s", line.c_str());
+			_MESSAGE("[Warning] Cannot find the Form: %s", line.c_str());
 			continue;
 		}
 
-		if (isCustomPath) {
+		if (isCustomNifPath) {
 			std::unordered_map<UInt32, CaseInsensitiveMap<std::string>>* customPathMap;
 			if (_stricmp(ruleType.c_str(), "Actor") == 0)
 				customPathMap = &actorCustomPaths;
 			else if (_stricmp(ruleType.c_str(), "Race") == 0)
 				customPathMap = &raceCustomPaths;
 			else {
-				_MESSAGE("Unknown ruleType - %s", line.c_str());
+				_MESSAGE("[Warning] Unknown RuleType: %s", line.c_str());
 				continue;
 			}
 
@@ -115,7 +115,7 @@ void ParseRules(std::fstream& ruleFile) {
 				it->second.insert(std::make_pair(meshesPath, customPath));
 			}
 
-			_MESSAGE("ruleType[%s] pluginName[%s] formId[0x%08X] meshesPath[%s] customPath[%s]", ruleType.c_str(), pluginName.c_str(), ruleTargetForm->formID, meshesPath.c_str(), customPath.c_str());
+			_MESSAGE("[Info] RuleType[%s] PluginName[%s] FormID[0x%08X] SrcPath[%s] DestPath[%s]", ruleType.c_str(), pluginName.c_str(), ruleTargetForm->formID, meshesPath.c_str(), customPath.c_str());
 		}
 		else {
 			if (meshesPath[meshesPath.length() - 1] != '\\')
@@ -126,11 +126,11 @@ void ParseRules(std::fstream& ruleFile) {
 			else if (_stricmp(ruleType.c_str(), "Race") == 0)
 				raceRules.insert(std::make_pair(ruleTargetForm->formID, meshesPath));
 			else {
-				_MESSAGE("Unknown ruleType - %s", line.c_str());
+				_MESSAGE("[Warning] Unknown RuleType: %s", line.c_str());
 				continue;
 			}
 
-			_MESSAGE("ruleType[%s] pluginName[%s] formId[0x%08X] meshesPath[%s]", ruleType.c_str(), pluginName.c_str(), ruleTargetForm->formID, meshesPath.c_str());
+			_MESSAGE("[Info] RuleType[%s] PluginName[%s] FormID[0x%08X] CustomPath[%s]", ruleType.c_str(), pluginName.c_str(), ruleTargetForm->formID, meshesPath.c_str());
 		}
 	}
 }
@@ -152,7 +152,7 @@ bool ShouldLoadRules() {
 void LoadRules() {
 	std::fstream ruleFile(rulePath);
 	if (!ruleFile.is_open()) {
-		_MESSAGE("No Rules file found");
+		_MESSAGE("[Warning] Cannot open the file: %s", rulePath.c_str());
 		return;
 	}
 
@@ -234,16 +234,16 @@ bool SetCustomPaths(RuleType type, UInt32 cId, const std::string& cPath, const s
 			o_subPath = lower_it->second;
 			o_fullPath = "data\\" + o_prefixPath + o_subPath;
 			if (IsFileExists(o_fullPath)) {
-				Log("Info::type[%s] cId[0x%08X] cPath[%s] subPath[%s] o_prefixPath[%s] o_subPath[%s] o_fullPath[%s]", type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId,
-					cPath.c_str(), subPath.c_str(), o_prefixPath.c_str(), o_subPath.c_str(), o_fullPath.c_str());
+				Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
+					type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
 				return true;
 			}
 
 			o_prefixPath = "meshes\\";
 			o_fullPath = "data\\" + o_prefixPath + o_subPath;
 			if (IsFileExists(o_fullPath)) {
-				Log("Info::type[%s] cId[0x%08X] cPath[%s] subPath[%s] o_prefixPath[%s] o_subPath[%s] o_fullPath[%s]", type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId,
-					cPath.c_str(), subPath.c_str(), o_prefixPath.c_str(), o_subPath.c_str(), o_fullPath.c_str());
+				Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
+					type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
 				return true;
 			}
 		}
@@ -253,11 +253,12 @@ bool SetCustomPaths(RuleType type, UInt32 cId, const std::string& cPath, const s
 	o_subPath = subPath;
 	o_fullPath = "data\\" + o_prefixPath + o_subPath;
 	if (IsFileExists(o_fullPath)) {
-		Log("Info::type[%s] cId[0x%08X] cPath[%s] subPath[%s] o_prefixPath[%s] o_subPath[%s] o_fullPath[%s]", type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId,
-			cPath.c_str(), subPath.c_str(), o_prefixPath.c_str(), o_subPath.c_str(), o_fullPath.c_str());
+		Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
+			type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
 		return true;
 	}
 
-	Log("Info::type[%s] cId[0x%08X] cPath[%s] subPath[%s] set default path...", type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, cPath.c_str(), subPath.c_str());
+	Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> Set to default path", 
+		type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str());
 	return false;
 }
