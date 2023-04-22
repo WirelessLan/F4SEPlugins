@@ -123,7 +123,7 @@ void SetModelProcessor() {
 
 void Hooks_ReplaceRefModel() {
 	struct asm_code : Xbyak::CodeGenerator {
-		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
+		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf) {
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x10], rdx);
@@ -146,7 +146,7 @@ void Hooks_ReplaceRefModel() {
 
 void Hooks_PrepareName() {
 	struct asm_code : Xbyak::CodeGenerator {
-		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
+		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf) {
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x08], rbx);

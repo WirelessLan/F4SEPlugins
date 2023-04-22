@@ -33,6 +33,78 @@ void Log(const char* fmt, ...) {
 	}
 }
 
+namespace BSResource {
+	struct ID {
+		std::uint32_t file;	// 0
+		std::uint32_t ext;	// 4
+		std::uint32_t dir;	// 8
+
+		static void GenerateID(ID& id, const char* path) {
+			using func_t = void(*)(ID&, const char*);
+			func_t func = RelocAddr<func_t>(0x1B6F0E0);
+			func(id, path);
+		}
+	};
+
+	namespace SDirectory2 {
+		struct Cursor {
+			std::uint64_t	unk00[0x178 >> 3];
+		};
+
+		void GetReader(SDirectory2::Cursor** cursor) {
+			using func_t = void(*)(SDirectory2::Cursor**);
+			func_t func = RelocAddr<func_t>(0x1B71700);
+			func(cursor);
+		}
+
+		void ReleaseReader(SDirectory2::Cursor* cursor) {
+			using func_t = void(*)(SDirectory2::Cursor*);
+			func_t func = RelocAddr<func_t>(0x1B715E0);
+			func(cursor);
+		}
+
+		bool Exists(SDirectory2::Cursor* cursor, ID& id) {
+			using func_t = bool(*)(SDirectory2::Cursor*, ID&);
+			func_t func = RelocAddr<func_t>(0x1B72000);
+			return func(cursor, id);
+		}
+	}
+
+	class EntryDB {
+	public:
+		std::uint64_t	unk00[0x180 >> 3];	// 000
+		std::uint64_t	unk180;				// 180
+	};
+
+	RelocPtr<EntryDB*> g_entryDB(0x58CD0A0);
+
+	ID* AcquireIfExist(ID& id) {
+		if (!*g_entryDB)
+			return nullptr;
+
+		using func_t = ID*(*)(std::uint64_t&, ID&);
+		func_t func = RelocAddr<func_t>(0x196000);
+		return func((*g_entryDB)->unk180, id);
+	}
+}
+
+bool IsFileExists(const std::string& path) {
+	BSResource::ID file_id;
+	BSResource::SDirectory2::Cursor* cursor;
+
+	BSResource::ID::GenerateID(file_id, path.c_str());
+
+	BSResource::ID* exist_id = BSResource::AcquireIfExist(file_id);
+	if (exist_id)
+		return true;
+
+	BSResource::SDirectory2::GetReader(&cursor);
+	bool retVal = BSResource::SDirectory2::Exists(cursor, file_id);
+	BSResource::SDirectory2::ReleaseReader(cursor);
+
+	return retVal;
+}
+
 std::string GetFileExt(const std::string& fname) {
 	size_t idx = fname.rfind('.');
 	if (idx == std::string::npos)
@@ -58,55 +130,6 @@ TESForm* GetActorBaseForm(Actor* actor) {
 		return nullptr;
 
 	return extraLeveldCreature->baseForm;
-}
-
-namespace BSResource {
-	struct ID {
-		std::uint32_t file;	// 0
-		std::uint32_t ext;	// 4
-		std::uint32_t dir;	// 8
-	};
-
-	namespace SDirectory2 {
-		struct Cursor {
-		};
-	}
-
-	void GenerateID(ID& id, const char* path) {
-		using func_t = void(*)(ID&, const char*);
-		func_t func = RelocAddr<func_t>(0x1B6F0E0);
-		func(id, path);
-	}
-
-	void GetReader(SDirectory2::Cursor** cursor) {
-		using func_t = void(*)(SDirectory2::Cursor**);
-		func_t func = RelocAddr<func_t>(0x1B71700);
-		func(cursor);
-	}
-
-	void ReleaseReader(SDirectory2::Cursor* cursor) {
-		using func_t = void(*)(SDirectory2::Cursor*);
-		func_t func = RelocAddr<func_t>(0x1B715E0);
-		func(cursor);
-	}
-
-	bool Exists(SDirectory2::Cursor* cursor, ID& id) {
-		using func_t = bool(*)(SDirectory2::Cursor*, ID&);
-		func_t func = RelocAddr<func_t>(0x1B72000);
-		return func(cursor, id);
-	}
-}
-
-bool IsFileExists(const std::string& path) {
-	BSResource::ID file_id;
-	BSResource::SDirectory2::Cursor* cursor;
-
-	BSResource::GenerateID(file_id, path.c_str());
-	BSResource::GetReader(&cursor);
-	bool retVal = BSResource::Exists(cursor, file_id);
-	BSResource::ReleaseReader(cursor);
-
-	return retVal;
 }
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {

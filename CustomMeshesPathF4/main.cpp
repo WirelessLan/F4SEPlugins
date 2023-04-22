@@ -70,11 +70,11 @@ extern "C" {
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
 		_MESSAGE("%s v%d.%d.%d Loaded", PLUGIN_NAME, (PLUGIN_VERSION >> 24) & 0xFF, (PLUGIN_VERSION >> 16) & 0xFF, (PLUGIN_VERSION >> 4) & 0xFF);
 
-		if (!g_branchTrampoline.Create(1024 * 64)) {
+		if (!g_branchTrampoline.Create(static_cast<size_t>(1024 * 64))) {
 			_ERROR("couldn't create branch trampoline. this is fatal. skipping remainder of init process.");
 			return false;
 		}
-		if (!g_localTrampoline.Create(1024 * 64, nullptr))
+		if (!g_localTrampoline.Create(static_cast<size_t>(1024 * 64), nullptr))
 		{
 			_ERROR("couldn't create codegen buffer. this is fatal. skipping remainder of init process.");
 			return false;
