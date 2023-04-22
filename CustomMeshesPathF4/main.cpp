@@ -11,7 +11,7 @@ F4SEMessagingInterface* g_messaging = NULL;
 bool bDebug = false;
 
 void ReadConfig() {
-	char	result[256] = { 0 };
+	char result[256] = { 0 };
 	std::string configPath{ "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".ini" };
 	GetPrivateProfileString("Debug", "bDebug", NULL, result, sizeof(result), configPath.c_str());
 
@@ -85,8 +85,8 @@ extern "C" {
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 
-		Hooks_ActorChangeMeshes();
-		Hooks_SetModelPath();
+		Hooks_ReplaceRefModel();
+		Hooks_PrepareName();
 
 		return true;
 	}

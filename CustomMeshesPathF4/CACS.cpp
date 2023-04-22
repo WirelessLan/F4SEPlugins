@@ -2,24 +2,23 @@
 
 std::string rulePath{ "Data\\F4SE\\Plugins\\"  PLUGIN_NAME  "_Rules.txt" };
 
-std::unordered_map<UInt32, std::string> actorRules;
-std::unordered_map<UInt32, std::string> raceRules;
+std::unordered_map<std::uint32_t, std::string> actorRules;
+std::unordered_map<std::uint32_t, std::string> raceRules;
 
-std::unordered_map<UInt32, CaseInsensitiveMap<std::string>> actorCustomPaths;
-std::unordered_map<UInt32, CaseInsensitiveMap<std::string>> raceCustomPaths;
+std::unordered_map<std::uint32_t, CaseInsensitiveMap<std::string>> actorCustomPaths;
+std::unordered_map<std::uint32_t, CaseInsensitiveMap<std::string>> raceCustomPaths;
 
-char GetChar(const std::string& line, UInt32& index) {
+std::uint8_t GetChar(const std::string& line, std::uint32_t& index) {
 	if (index < line.length())
 		return line[index++];
-
-	return -1;
+	return 0xFF;
 }
 
-std::string GetString(const std::string& line, UInt32& index, char delimeter) {
-	char ch;
+std::string GetString(const std::string& line, std::uint32_t& index, char delimeter) {
+	std::uint8_t ch;
 	std::string retVal = "";
 
-	while ((ch = GetChar(line, index)) > 0) {
+	while ((ch = GetChar(line, index)) != 0xFF) {
 		if (ch == '#') {
 			if (index > 0)
 				index--;
@@ -32,7 +31,7 @@ std::string GetString(const std::string& line, UInt32& index, char delimeter) {
 		retVal += ch;
 	}
 
-	trim(retVal);
+	Trim(retVal);
 	return retVal;
 }
 
@@ -42,9 +41,9 @@ void ParseRules(std::fstream& ruleFile) {
 
 	while (std::getline(ruleFile, line)) {
 		bool isCustomNifPath = false;
-		UInt32 lineIdx = 0;
+		std::uint32_t lineIdx = 0;
 
-		trim(line);
+		Trim(line);
 		if (line.empty() || line[0] == '#')
 			continue;
 
@@ -72,11 +71,11 @@ void ParseRules(std::fstream& ruleFile) {
 			continue;
 		}
 
-		meshesPath = toLower(meshesPath);
+		meshesPath = ToLower(meshesPath);
 
 		if (lineIdx != line.length()) {
 			isCustomNifPath = true;
-			meshesPath = remove_prefix("meshes\\", meshesPath);
+			meshesPath = RemovePrefix("meshes\\", meshesPath);
 
 			customPath = GetString(line, lineIdx, 0);
 			if (customPath.empty()) {
@@ -84,8 +83,8 @@ void ParseRules(std::fstream& ruleFile) {
 				continue;
 			}
 
-			customPath = toLower(customPath);
-			customPath = remove_prefix("meshes\\", customPath);
+			customPath = ToLower(customPath);
+			customPath = RemovePrefix("meshes\\", customPath);
 		}
 
 		TESForm* ruleTargetForm = GetFormFromIdentifier(pluginName, formId);
@@ -95,7 +94,7 @@ void ParseRules(std::fstream& ruleFile) {
 		}
 
 		if (isCustomNifPath) {
-			std::unordered_map<UInt32, CaseInsensitiveMap<std::string>>* customPathMap;
+			std::unordered_map<std::uint32_t, CaseInsensitiveMap<std::string>>* customPathMap;
 			if (_stricmp(ruleType.c_str(), "Actor") == 0)
 				customPathMap = &actorCustomPaths;
 			else if (_stricmp(ruleType.c_str(), "Race") == 0)
@@ -166,7 +165,7 @@ void LoadRules() {
 	ruleFile.close();
 }
 
-bool CheckCACSRule(RuleType type, UInt32 formId) {
+bool CheckCACSRule(RuleType type, std::uint32_t formId) {
 	if (formId == 0xFFFFFFFF)
 		return false;
 
@@ -188,7 +187,7 @@ bool CheckCACSRule(RuleType type, UInt32 formId) {
 	return true;
 }
 
-const std::string GetCACSPath(RuleType type, UInt32 formId) {
+const std::string GetCACSPath(RuleType type, std::uint32_t formId) {
 	if (formId == 0xFFFFFFFF)
 		return std::string();
 
@@ -210,40 +209,54 @@ const std::string GetCACSPath(RuleType type, UInt32 formId) {
 	return std::string();
 }
 
-bool IsEqualPath(const std::string& path1, const std::string& path2) {
-	std::string path1WoPrefix = remove_prefix("meshes\\", path1);
-	std::string path2WoPrefix = remove_prefix("meshes\\", path2);
-	return path1WoPrefix == path2WoPrefix;
-}
+bool SetCustomPaths(RuleType type, const CustomPath* customPath, const char* prefixPath, const char* subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_fullPath) {
+	std::string prefixPathStr = ToLower(prefixPath);
+	std::string subPathStr = ToLower(subPath);
 
-bool SetCustomPaths(RuleType type, UInt32 cId, const std::string& cPath, const std::string& subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_fullPath) {
+	subPathStr = RemovePrefix(prefixPathStr, subPathStr);
+
+	std::uint32_t formId;
+	std::string cPath;
+
+	std::unordered_map<std::uint32_t, CaseInsensitiveMap<std::string>>* customPathMap;
+	if (type == RuleType::kRuleType_Actor) {
+		customPathMap = &actorCustomPaths;
+		formId = customPath->actorId;
+		cPath = customPath->actorPath;
+	}
+	else if (type == RuleType::kRuleType_Race) {
+		customPathMap = &raceCustomPaths;
+		formId = customPath->raceId;
+		cPath = customPath->racePath;
+	}
+	else
+		return false;
+
 	if (cPath.empty())
 		return false;
 
-	std::unordered_map<UInt32, CaseInsensitiveMap<std::string>>* customPathMap;
-	if (type == RuleType::kRuleType_Actor)
-		customPathMap = &actorCustomPaths;
-	else
-		customPathMap = &raceCustomPaths;
-
-	auto upper_it = customPathMap->find(cId);
+	auto upper_it = customPathMap->find(formId);
 	if (upper_it != customPathMap->end()) {
 		auto lower_it = upper_it->second.find(subPath);
 		if (lower_it != upper_it->second.end()) {
 			o_prefixPath = "meshes\\" + cPath;
 			o_subPath = lower_it->second;
 			o_fullPath = "data\\" + o_prefixPath + o_subPath;
-			if (IsFileExists(o_fullPath)) {
+
+			std::string filePath = o_prefixPath + o_subPath;
+			if (IsFileExists(filePath)) {
 				Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
-					type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
+					type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_fullPath.c_str());
 				return true;
 			}
 
 			o_prefixPath = "meshes\\";
 			o_fullPath = "data\\" + o_prefixPath + o_subPath;
-			if (IsFileExists(o_fullPath)) {
+
+			filePath = o_prefixPath + o_subPath;
+			if (IsFileExists(filePath)) {
 				Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
-					type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
+					type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_fullPath.c_str());
 				return true;
 			}
 		}
@@ -252,13 +265,15 @@ bool SetCustomPaths(RuleType type, UInt32 cId, const std::string& cPath, const s
 	o_prefixPath = "meshes\\" + cPath;
 	o_subPath = subPath;
 	o_fullPath = "data\\" + o_prefixPath + o_subPath;
-	if (IsFileExists(o_fullPath)) {
+
+	std::string filePath = o_prefixPath + o_subPath;
+	if (IsFileExists(filePath)) {
 		Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s", 
-			type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str(), o_fullPath.c_str());
+			type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_fullPath.c_str());
 		return true;
 	}
 
 	Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> Set to default path", 
-		type == RuleType::kRuleType_Actor ? "Actor" : "Race", cId, subPath.c_str());
+		type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str());
 	return false;
 }

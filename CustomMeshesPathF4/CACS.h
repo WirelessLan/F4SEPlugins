@@ -7,6 +7,6 @@ enum RuleType {
 
 bool ShouldLoadRules();
 void LoadRules();
-bool CheckCACSRule(RuleType type, UInt32 formId);
-const std::string GetCACSPath(RuleType type, UInt32 formId);
-bool SetCustomPaths(RuleType, UInt32, const std::string&, const std::string&, std::string&, std::string&, std::string&);
+bool CheckCACSRule(RuleType type, std::uint32_t formId);
+const std::string GetCACSPath(RuleType type, std::uint32_t formId);
+bool SetCustomPaths(RuleType type, const CustomPath* path, const char* prefixPath, const char* subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_fullPath);

@@ -21,11 +21,11 @@
 
 #include "CaseInsensitiveMap.h"
 
-#include "CACS.h"
 #include "Hooks.h"
+#include "CACS.h"
 #include "Utils.h"
 
 #define PLUGIN_NAME	"CustomMeshesPathF4"
-#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 7, 2)
+#define PLUGIN_VERSION	MAKE_EXE_VERSION(0, 8, 0)
 
 extern bool bDebug;

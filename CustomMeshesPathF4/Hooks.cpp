@@ -3,19 +3,19 @@
 ThreadPathMap g_threadPathMap;
 FullPathMap g_fullPathMap;
 
-typedef void (*_ActorChangeMeshes)(void*, Actor*);
-RelocAddr <_ActorChangeMeshes> ActorChangeMeshes_HookTarget(0x5B93F0);
-_ActorChangeMeshes ActorChangeMeshes_Original;
+using ReplaceRefModel_t = void(*)(void*, TESObjectREFR*);
+RelocAddr<ReplaceRefModel_t> ReplaceRefModel_Target(0x5B93F0);
+ReplaceRefModel_t ReplaceRefModel;
 
-typedef const char* (*_SetModelPath)(void*, UInt64, const char*, const char*);
-RelocAddr <_SetModelPath> SetModelPath_HookTarget(0x1B7CD40);
-_SetModelPath SetModelPath_Original;
+using PrepareName_t = const char* (*)(char*, std::uint32_t, const char*, const char*);
+RelocAddr<PrepareName_t> PrepareName_Target(0x1B7CD40);
+PrepareName_t PrepareName;
 
-void ActorChangeMeshes_Hook(void* arg1, Actor* actor) {
+void ReplaceRefModel_Hook(void* arg1, Actor* actor) {
 	std::thread::id threadId = std::this_thread::get_id();
 
-	UInt32 raceFormId = actor->race ? actor->race->formID : 0xFFFFFFFF;
-	UInt32 baseFormId = actor->baseForm ? actor->baseForm->formID : 0xFFFFFFFF;
+	std::uint32_t raceFormId = actor->race ? actor->race->formID : 0xFFFFFFFF;
+	std::uint32_t baseFormId = actor->baseForm ? actor->baseForm->formID : 0xFFFFFFFF;
 
 	if ((baseFormId >> 24) == 0xFF) {
 		TESForm* baseForm = GetActorBaseForm(actor);
@@ -31,40 +31,35 @@ void ActorChangeMeshes_Hook(void* arg1, Actor* actor) {
 		g_threadPathMap.Add(threadId, { raceFormId, racePath, baseFormId, actorPath });
 	}
 
-	ActorChangeMeshes_Original(arg1, actor);
+	ReplaceRefModel(arg1, actor);
 
 	if (isTarget)
 		g_threadPathMap.Delete(threadId);
 }
 
-const char* SetModelPath_Hook(void* arg1, UInt64 arg2, const char* subPath, const char* prefixPath) {
+const char* PrepareName_Hook(char* arg1, std::uint32_t arg2, const char* subPath, const char* prefixPath) {
 	std::thread::id threadId = std::this_thread::get_id();
 
 	const CustomPath* paths = g_threadPathMap.Get(threadId);
 	if (paths) {
 		if (_stricmp(prefixPath, "meshes\\") == 0 && _stricmp(GetFileExt(subPath).c_str(), "nif") == 0) {
-			std::string prefixPathStr = toLower(prefixPath);
-			std::string subPathStr = toLower(subPath);
-
-			subPathStr = remove_prefix(prefixPathStr, subPathStr);
-
 			std::string customPrefixPath, customSubPath, customFullPath;
 
 			// Check Actor Path
-			if (SetCustomPaths(RuleType::kRuleType_Actor, paths->actorId, paths->actorPath, subPathStr, customPrefixPath, customSubPath, customFullPath)) {
+			if (SetCustomPaths(RuleType::kRuleType_Actor, paths, prefixPath, subPath, customPrefixPath, customSubPath, customFullPath)) {
 				g_fullPathMap.Add(customFullPath, *paths);
-				return SetModelPath_Original(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
+				return PrepareName(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
 			}
 
 			// Check Race Path
-			if (SetCustomPaths(RuleType::kRuleType_Race, paths->raceId, paths->racePath, subPathStr, customPrefixPath, customSubPath, customFullPath)) {
+			if (SetCustomPaths(RuleType::kRuleType_Race, paths, prefixPath, subPath, customPrefixPath, customSubPath, customFullPath)) {
 				g_fullPathMap.Add(customFullPath, *paths);
-				return SetModelPath_Original(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
+				return PrepareName(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
 			}
 		}
 	}
 
-	return SetModelPath_Original(arg1, arg2, subPath, prefixPath);
+	return PrepareName(arg1, arg2, subPath, prefixPath);
 }
 
 void CustomModelProcessor::Process(BSModelDB::ModelData* modelData, const char* modelName, NiAVObject** root, UInt32* typeOut) {
@@ -120,9 +115,9 @@ void SetModelProcessor() {
 	}
 }
 
-void Hooks_ActorChangeMeshes() {
-	struct ActorChangeMeshes_Code : Xbyak::CodeGenerator {
-		ActorChangeMeshes_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
+void Hooks_ReplaceRefModel() {
+	struct asm_code : Xbyak::CodeGenerator {
+		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x10], rdx);
@@ -131,21 +126,21 @@ void Hooks_ActorChangeMeshes() {
 			jmp(ptr[rip + retnLabel]);
 
 			L(retnLabel);
-			dq(ActorChangeMeshes_HookTarget.GetUIntPtr() + 0x0A);
+			dq(ReplaceRefModel_Target.GetUIntPtr() + 0x0A);
 		}
 	};
 	void* codeBuf = g_localTrampoline.StartAlloc();
-	ActorChangeMeshes_Code code(codeBuf);
+	asm_code code(codeBuf);
 	g_localTrampoline.EndAlloc(code.getCurr());
 
-	ActorChangeMeshes_Original = (_ActorChangeMeshes)codeBuf;
+	ReplaceRefModel = (ReplaceRefModel_t)codeBuf;
 
-	g_branchTrampoline.Write6Branch(ActorChangeMeshes_HookTarget.GetUIntPtr(), (uintptr_t)ActorChangeMeshes_Hook);
+	g_branchTrampoline.Write6Branch(ReplaceRefModel_Target.GetUIntPtr(), (std::uintptr_t)ReplaceRefModel_Hook);
 }
 
-void Hooks_SetModelPath() {
-	struct SetModelPath_Code : Xbyak::CodeGenerator {
-		SetModelPath_Code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
+void Hooks_PrepareName() {
+	struct asm_code : Xbyak::CodeGenerator {
+		asm_code(void* buf) : Xbyak::CodeGenerator(4096, buf)	{
 			Xbyak::Label retnLabel;
 
 			mov(ptr[rsp + 0x08], rbx);
@@ -155,16 +150,16 @@ void Hooks_SetModelPath() {
 			jmp(ptr[rip + retnLabel]);
 
 			L(retnLabel);
-			dq(SetModelPath_HookTarget.GetUIntPtr() + 0x0F);
+			dq(PrepareName_Target.GetUIntPtr() + 0x0F);
 		}
 	};
 	void* codeBuf = g_localTrampoline.StartAlloc();
-	SetModelPath_Code code(codeBuf);
+	asm_code code(codeBuf);
 	g_localTrampoline.EndAlloc(code.getCurr());
 
-	SetModelPath_Original = (_SetModelPath)codeBuf;
+	PrepareName = (PrepareName_t)codeBuf;
 
-	g_branchTrampoline.Write6Branch(SetModelPath_HookTarget.GetUIntPtr(), (uintptr_t)SetModelPath_Hook);
+	g_branchTrampoline.Write6Branch(PrepareName_Target.GetUIntPtr(), (std::uintptr_t)PrepareName_Hook);
 }
 
 void ClearPathMap() {

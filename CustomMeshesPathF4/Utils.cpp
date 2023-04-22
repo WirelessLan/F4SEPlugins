@@ -1,6 +1,6 @@
 #include "Global.h"
 
-void trim(std::string& s) {
+void Trim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
 		return !std::isspace(ch);
 	}));
@@ -9,13 +9,7 @@ void trim(std::string& s) {
 	}).base(), s.end());
 }
 
-bool iequals(const std::string& a, const std::string& b) {
-	return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) {
-		return tolower(a) == tolower(b);
-	});
-}
-
-std::string toLower(const std::string& str) {
+std::string ToLower(const std::string& str) {
 	std::string retStr = str;
 	std::transform(retStr.begin(), retStr.end(), retStr.begin(), [](unsigned char c) {
 		return std::tolower(c);
@@ -23,7 +17,7 @@ std::string toLower(const std::string& str) {
 	return retStr;
 }
 
-std::string remove_prefix(const std::string& prefixStr, const std::string& str) {
+std::string RemovePrefix(const std::string& prefixStr, const std::string& str) {
 	size_t prefixPos = str.find(prefixStr);
 	if (prefixPos == 0)
 		return str.substr(prefixStr.length());
@@ -39,13 +33,6 @@ void Log(const char* fmt, ...) {
 	}
 }
 
-bool IsFileExists(const std::string& path) {
-	if (path.empty())
-		return false;
-	DWORD dwAttrib = GetFileAttributes(path.c_str());
-	return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
-}
-
 std::string GetFileExt(const std::string& fname) {
 	size_t idx = fname.rfind('.');
 	if (idx == std::string::npos)
@@ -53,23 +40,81 @@ std::string GetFileExt(const std::string& fname) {
 	return fname.substr(idx + 1);
 }
 
-typedef ExtraLeveledCreature* (*_GetExtraLeveledCreature)(ExtraDataList*, UInt8);
-RelocAddr <_GetExtraLeveledCreature> GetExtraLeveledCreature_Internal(0x000436A0);
+class ExtraLeveledCreature : public BSExtraData {
+public:
+	TESForm* baseForm;              // 18
+};
 
 TESForm* GetActorBaseForm(Actor* actor) {
 	if (!actor || !actor->extraDataList)
 		return nullptr;
 
-	ExtraLeveledCreature* extraLeveledCreature = GetExtraLeveledCreature_Internal(actor->extraDataList, 0x2D);
-	return extraLeveledCreature ? extraLeveledCreature->baseForm : nullptr;
+	BSExtraData* extraData = actor->extraDataList->GetByType(ExtraDataType::kExtraData_LeveledCreature);
+	if (!extraData)
+		return nullptr;
+
+	ExtraLeveledCreature* extraLeveldCreature = DYNAMIC_CAST(extraData, BSExtraData, ExtraLeveledCreature);
+	if (!extraLeveldCreature)
+		return nullptr;
+
+	return extraLeveldCreature->baseForm;
+}
+
+namespace BSResource {
+	struct ID {
+		std::uint32_t file;	// 0
+		std::uint32_t ext;	// 4
+		std::uint32_t dir;	// 8
+	};
+
+	namespace SDirectory2 {
+		struct Cursor {
+		};
+	}
+
+	void GenerateID(ID& id, const char* path) {
+		using func_t = void(*)(ID&, const char*);
+		func_t func = RelocAddr<func_t>(0x1B6F0E0);
+		func(id, path);
+	}
+
+	void GetReader(SDirectory2::Cursor** cursor) {
+		using func_t = void(*)(SDirectory2::Cursor**);
+		func_t func = RelocAddr<func_t>(0x1B71700);
+		func(cursor);
+	}
+
+	void ReleaseReader(SDirectory2::Cursor* cursor) {
+		using func_t = void(*)(SDirectory2::Cursor*);
+		func_t func = RelocAddr<func_t>(0x1B715E0);
+		func(cursor);
+	}
+
+	bool Exists(SDirectory2::Cursor* cursor, ID& id) {
+		using func_t = bool(*)(SDirectory2::Cursor*, ID&);
+		func_t func = RelocAddr<func_t>(0x1B72000);
+		return func(cursor, id);
+	}
+}
+
+bool IsFileExists(const std::string& path) {
+	BSResource::ID file_id;
+	BSResource::SDirectory2::Cursor* cursor;
+
+	BSResource::GenerateID(file_id, path.c_str());
+	BSResource::GetReader(&cursor);
+	bool retVal = BSResource::Exists(cursor, file_id);
+	BSResource::ReleaseReader(cursor);
+
+	return retVal;
 }
 
 TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::string& formIdStr) {
-	UInt32 formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
+	std::uint32_t formID = std::stoul(formIdStr, nullptr, 16) & 0xFFFFFF;
 	return GetFormFromIdentifier(pluginName, formID);
 }
 
-TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formId) {
+TESForm* GetFormFromIdentifier(const std::string& pluginName, const std::uint32_t formId) {
 	if (!*g_dataHandler)
 		return nullptr;
 
@@ -77,8 +122,8 @@ TESForm* GetFormFromIdentifier(const std::string& pluginName, const UInt32 formI
 	if (!mod || mod->modIndex == -1)
 		return nullptr;
 
-	UInt32 actualFormId = formId;
-	UInt32 pluginIndex = mod->GetPartialIndex();
+	std::uint32_t actualFormId = formId;
+	std::uint32_t pluginIndex = mod->GetPartialIndex();
 	if (!mod->IsLight())
 		actualFormId |= pluginIndex << 24;
 	else

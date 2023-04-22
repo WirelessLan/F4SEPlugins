@@ -1,10 +1,10 @@
 #pragma once
 
 struct CustomPath {
-	UInt32 raceId;
+	std::uint32_t raceId;
 	std::string racePath;
 
-	UInt32 actorId;
+	std::uint32_t actorId;
 	std::string actorPath;
 };
 
@@ -76,7 +76,7 @@ protected:
 };
 
 void SetModelProcessor();
-void Hooks_ActorChangeMeshes();
-void Hooks_SetModelPath();
+void Hooks_ReplaceRefModel();
+void Hooks_PrepareName();
 
 void ClearPathMap();
