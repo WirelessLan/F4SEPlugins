@@ -3,7 +3,7 @@
 ThreadPathMap g_threadPathMap;
 FullPathMap g_fullPathMap;
 
-using ReplaceRefModel_t = void(*)(void*, TESObjectREFR*);
+using ReplaceRefModel_t = void(*)(TESForm&, TESObjectREFR*);
 RelocAddr<ReplaceRefModel_t> ReplaceRefModel_Target(0x5B93F0);
 ReplaceRefModel_t ReplaceRefModel;
 
@@ -11,7 +11,13 @@ using PrepareName_t = const char* (*)(char*, std::uint32_t, const char*, const c
 RelocAddr<PrepareName_t> PrepareName_Target(0x1B7CD40);
 PrepareName_t PrepareName;
 
-void ReplaceRefModel_Hook(void* arg1, Actor* actor) {
+void ReplaceRefModel_Hook(TESForm& a_npc, TESObjectREFR* a_ref) {
+	Actor* actor = DYNAMIC_CAST(a_ref, TESObjectREFR, Actor);
+	if (!actor) {
+		ReplaceRefModel(a_npc, a_ref);
+		return;
+	}
+
 	std::thread::id threadId = std::this_thread::get_id();
 
 	std::uint32_t raceFormId = actor->race ? actor->race->formID : 0xFFFFFFFF;
@@ -31,7 +37,7 @@ void ReplaceRefModel_Hook(void* arg1, Actor* actor) {
 		g_threadPathMap.Add(threadId, { raceFormId, racePath, baseFormId, actorPath });
 	}
 
-	ReplaceRefModel(arg1, actor);
+	ReplaceRefModel(a_npc, a_ref);
 
 	if (isTarget)
 		g_threadPathMap.Delete(threadId);
