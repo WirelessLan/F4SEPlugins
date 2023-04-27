@@ -1,9 +1,11 @@
-// F4SE
-#include "common/IDebugLog.h"  // IDebugLog
+#include <ShlObj.h>
 
-#include <shlobj.h>	// CSIDL_MYCODUMENTS
+#include <f4se/PluginAPI.h>
+#include <f4se_common/BranchTrampoline.h>
 
 #include "Global.h"
+#include "CACS.h"
+#include "Hooks.h"
 
 PluginHandle			g_pluginHandle = kPluginHandle_Invalid;
 F4SEMessagingInterface* g_messaging = NULL;
@@ -11,8 +13,8 @@ F4SEMessagingInterface* g_messaging = NULL;
 bool bDebug = false;
 
 void ReadConfig() {
+	const std::string configPath{ "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".ini" };
 	char result[256] = { 0 };
-	std::string configPath{ "Data\\F4SE\\Plugins\\" PLUGIN_NAME ".ini" };
 	GetPrivateProfileString("Debug", "bDebug", NULL, result, sizeof(result), configPath.c_str());
 
 	std::string sResult = result;
@@ -26,12 +28,12 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
-		SetModelProcessor();
-		ClearPathMap();
+		Hooks::SetModelProcessor();
+		Hooks::ClearPathMap();
 
-		if (ShouldLoadRules()) {
+		if (CACS::ShouldLoadRules()) {
 			_MESSAGE("Loading Rules...");
-			LoadRules();
+			CACS::LoadRules();
 		}
 		break;
 	}
@@ -85,8 +87,8 @@ extern "C" {
 		if (g_messaging)
 			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
 
-		Hooks_ReplaceRefModel();
-		Hooks_PrepareName();
+		Hooks::Hooks_ReplaceRefModel();
+		Hooks::Hooks_PrepareName();
 
 		return true;
 	}
