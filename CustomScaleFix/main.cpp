@@ -1,23 +1,26 @@
-// F4SE
-#include "common/IDebugLog.h"  // IDebugLog
+#include <ShlObj.h>
 
-#include <shlobj.h>	// CSIDL_MYCODUMENTS
+#include <f4se/PluginAPI.h>
+#include <f4se_common/BranchTrampoline.h>
 
 #include "Global.h"
+#include "Configs.h"
+#include "ZoomData.h"
+#include "PlayerAnimEvents.h"
+#include "FurniturePositions.h"
 
 PluginHandle			g_pluginHandle;
 F4SEMessagingInterface*	g_messaging;
 
-PluginOptions			g_pluginOptions;
+bool bUseCameraOverrideScaleFix = true;
+bool bUseCustomFurniturePosition = true;
 
 void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 	case F4SEMessagingInterface::kMessage_NewGame:
 	case F4SEMessagingInterface::kMessage_PreLoadGame:
-		if (g_pluginOptions.useCustomFurniturePosition && ShouldLoadFurnitureConfig()) {
-			_MESSAGE("Load Furniture Config...");
-			LoadFurnitureConfig();
-		}
+		if (FurniturePositions::ShouldLoadFurnitureConfig())
+			FurniturePositions::LoadFurnitureConfig();
 		break;
 	}
 }
@@ -36,7 +39,7 @@ extern "C" {
 		info->version = PLUGIN_VERSION;
 
 		if (f4se->runtimeVersion != RUNTIME_VERSION_1_10_163) {
-			_MESSAGE("unsupported runtime version %d", f4se->runtimeVersion);
+			_MESSAGE("[Critical] unsupported runtime version %d", f4se->runtimeVersion);
 			return false;
 		}
 
@@ -45,7 +48,7 @@ extern "C" {
 		// Get the messaging interface
 		g_messaging = (F4SEMessagingInterface*)f4se->QueryInterface(kInterface_Messaging);
 		if (!g_messaging) {
-			_MESSAGE("couldn't get messaging interface");
+			_MESSAGE("[Critical] couldn't get messaging interface");
 			return false;
 		}
 
@@ -53,36 +56,35 @@ extern "C" {
 	}
 
 	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
-		_MESSAGE("%s Loaded", PLUGIN_NAME);
+		_MESSAGE("[Info] %s v%d.%d.%d Loaded", PLUGIN_NAME, (PLUGIN_VERSION >> 24) & 0xFF, (PLUGIN_VERSION >> 16) & 0xFF, (PLUGIN_VERSION >> 4) & 0xFF);
 
-		if (!g_branchTrampoline.Create(1024 * 64)) {
-			_ERROR("couldn't create branch trampoline. this is fatal. skipping remainder of init process.");
+		if (!g_branchTrampoline.Create(static_cast<size_t>(1024 * 64))) {
+			_ERROR("[Critical] couldn't create branch trampoline. this is fatal. skipping remainder of init process.");
 			return false;
 		}
-		if (!g_localTrampoline.Create(1024 * 64, nullptr)) {
-			_ERROR("couldn't create codegen buffer. this is fatal. skipping remainder of init process.");
+		if (!g_localTrampoline.Create(static_cast<size_t>(1024 * 64), nullptr)) {
+			_ERROR("[Critical] couldn't create codegen buffer. this is fatal. skipping remainder of init process.");
 			return false;
 		}
 
-		GetConfigValue("Options", "bUseCameraOverrideScaleFix", &g_pluginOptions.useCameraOverrideScaleFix);
-		GetConfigValue("Options", "bUseCustomFurniturePosition", &g_pluginOptions.useCustomFurniturePosition);
-		GetConfigValue("Options", "bPlayerOnlyCustomFurniturePosition", &g_pluginOptions.playerOnlyCustomFurniturePosition);
-		GetConfigValue("Options", "uFurniturePositionType", &g_pluginOptions.furniturePositionType);
+		Configs::GetConfigValue("Options", "bUseCameraOverrideScaleFix", &bUseCameraOverrideScaleFix);
+		Configs::GetConfigValue("Options", "bUseCustomFurniturePosition", &bUseCustomFurniturePosition);
 		
-		_MESSAGE("bUseCameraOverrideScaleFix: %d", g_pluginOptions.useCameraOverrideScaleFix);
-		_MESSAGE("bUseCustomFurniturePosition: %d", g_pluginOptions.useCustomFurniturePosition);
-		_MESSAGE("bPlayerOnlyCustomFurniturePosition: %d", g_pluginOptions.playerOnlyCustomFurniturePosition);
-		_MESSAGE("uFurniturePositionType: %u", g_pluginOptions.furniturePositionType);
+		_MESSAGE("[Info] bUseCameraOverrideScaleFix: %d", bUseCameraOverrideScaleFix);
+		_MESSAGE("[Info] bUseCustomFurniturePosition: %d", bUseCustomFurniturePosition);
 
-		Hooks_GetZoomData();
+		ZoomData::Hooks_GetGeometryOffset();
 
-		if (g_pluginOptions.useCameraOverrideScaleFix)
-			Hooks_PlayerAnimationEvent();
-		if (g_pluginOptions.useCustomFurniturePosition)
-			Hooks_GetFurniturePosition();
+		if (bUseCameraOverrideScaleFix)
+			PlayerAnimEvents::Hooks_PlayerAnimEvents();
 
-		if (g_messaging)
-			g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
+		if (bUseCustomFurniturePosition) {
+			FurniturePositions::Hooks_PlayFurnitureAnimation();
+			FurniturePositions::Hooks_InitializeChairBedQuickPosition();
+
+			if (g_messaging)
+				g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
+		}
 
 		return true;
 	}

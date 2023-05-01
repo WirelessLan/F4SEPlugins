@@ -23,33 +23,33 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0EBD8FA1-B74D-4810-866C-8B218AE27807}</ProjectGuid>
     <RootNamespace>CustomScaleFix</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>CustomScaleFix</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -165,18 +165,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FurniturePosition.cpp" />
+    <ClCompile Include="FurniturePositions.cpp" />
     <ClCompile Include="ZoomData.cpp" />
-    <ClCompile Include="ConfigReader.cpp" />
+    <ClCompile Include="Configs.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PlayerAnimationEvent.cpp" />
-    <ClCompile Include="Util.cpp" />
-    <ClInclude Include="FurniturePosition.h" />
+    <ClCompile Include="PlayerAnimEvents.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClInclude Include="FurniturePositions.h" />
     <ClInclude Include="ZoomData.h" />
-    <ClInclude Include="ConfigReader.h" />
+    <ClInclude Include="Configs.h" />
     <ClInclude Include="Global.h" />
-    <ClInclude Include="PlayerAnimationEvent.h" />
-    <ClInclude Include="Util.h" />
+    <ClInclude Include="PlayerAnimEvents.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
