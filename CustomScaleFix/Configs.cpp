@@ -52,7 +52,7 @@ namespace Configs {
 		return false;
 	}
 
-	bool ConfigReader::emptyOrCommentLine() {
+	bool ConfigReader::emptyOrComment() {
 		if (_line.empty() || _line[0] == '#')
 			return true;
 		return false;

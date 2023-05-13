@@ -19,8 +19,9 @@
 namespace FurniturePositions {
 	struct FurnitureKeywordOffset {
 		BGSKeyword* keyword;
-		float horizontal;
-		float vertical;
+		float x;
+		float y;
+		float z;
 	};
 
 	std::vector<FurnitureKeywordOffset> furnitureOffsets;
@@ -66,15 +67,16 @@ namespace FurniturePositions {
 		if (!offset)
 			return nullptr;
 
-		float horOffset = offset->horizontal * (1.0f - scale);
-		float verOffset = offset->vertical * (1.0f - scale);
+		float xOffset = offset->x * (1.0f - scale);
+		float yOffset = offset->y * (1.0f - scale);
+		float zOffset = offset->z * (1.0f - scale);
 
 		float furnitureRot = a_furnRef->rot.z + GetCurrentFurnitureMarkerRotation(a_actorRef, a_furnRef);
 
 		furniturePos = a_furnRef->pos;
-		furniturePos.x += horOffset * std::sin(furnitureRot);
-		furniturePos.y += horOffset * std::cos(furnitureRot);
-		furniturePos.z += verOffset;
+		furniturePos.x += xOffset * std::cos(furnitureRot) + yOffset * std::sin(furnitureRot);
+		furniturePos.y += -xOffset * std::sin(furnitureRot) + yOffset * std::cos(furnitureRot);
+		furniturePos.z += zOffset;
 
 		return &furniturePos;
 	}
@@ -209,47 +211,79 @@ namespace FurniturePositions {
 
 			std::fstream configFile(_configPath);
 			if (!configFile.is_open()) {
-				_MESSAGE("[Warning] Cannot read the furniture config file - %s", _configPath.c_str());
+				_MESSAGE("[Warning] Cannot read the furniture config file: %s", _configPath.c_str());
 				return retVec;
 			}
 
-			std::string pluginName, formId, horOffset, verOffset;
+			std::string pluginName, formId, xOffsetStr, yOffsetStr, zOffsetStr;
 
 			while (getLine(configFile)) {
-				if (emptyOrCommentLine())
+				if (emptyOrComment())
 					continue;
 
 				pluginName = getNextData('|');
 				if (pluginName.empty()) {
-					_MESSAGE("[Warning] Cannot read the Plugin Name - %s", _line.c_str());
+					_MESSAGE("[Warning] Cannot read the Plugin Name: %s", _line.c_str());
 					continue;
 				}
 
 				formId = getNextData('|');
 				if (formId.empty()) {
-					_MESSAGE("[Warning] Cannot read the Form ID - %s", _line.c_str());
+					_MESSAGE("[Warning] Cannot read the Form ID: %s", _line.c_str());
 					continue;
 				}
 
-				horOffset = getNextData(',');
-				if (horOffset.empty()) {
-					_MESSAGE("[Warning] Cannot read the Horizontal Offset - %s", _line.c_str());
+				xOffsetStr = getNextData(',');
+				if (xOffsetStr.empty()) {
+					_MESSAGE("[Warning] Cannot read the X Offset: %s", _line.c_str());
 					continue;
 				}
 
-				verOffset = getNextData(0);
-				if (verOffset.empty()) {
-					_MESSAGE("[Warning] Cannot read the Vertical Offset - %s", _line.c_str());
+				yOffsetStr = getNextData(',');
+				if (yOffsetStr.empty()) {
+					_MESSAGE("[Warning] Cannot read the Y Offset: %s", _line.c_str());
+					continue;
+				}
+
+				zOffsetStr = getNextData(0);
+				if (zOffsetStr.empty()) {
+					_MESSAGE("[Warning] Cannot read the Z Offset: %s", _line.c_str());
 					continue;
 				}
 
 				TESForm* keyword = Utils::GetFormFromIdentifier(pluginName, formId);
 				if (!keyword) {
-					_MESSAGE("[Warning] Cannot find the Keyword - %s", _line.c_str());
+					_MESSAGE("[Warning] Cannot find the Keyword: %s", _line.c_str());
 					continue;
 				}
 
-				retVec.push_back({ (BGSKeyword*)keyword, stof(horOffset), stof(verOffset) });
+				float xOffset;
+				try {
+					xOffset = std::stof(xOffsetStr);
+				}
+				catch (...) {
+					_MESSAGE("[Warning] Failed to parse the X Offset: %s", _line.c_str());
+					continue;
+				}
+				float yOffset;
+				try {
+					yOffset = std::stof(yOffsetStr);
+				}
+				catch (...) {
+					_MESSAGE("[Warning] Failed to parse the Y Offset: %s", _line.c_str());
+					continue;
+				}
+
+				float zOffset;
+				try {
+					zOffset = std::stof(zOffsetStr);
+				}
+				catch (...) {
+					_MESSAGE("[Warning] Failed to parse the Z Offset: %s", _line.c_str());
+					continue;
+				}
+
+				retVec.push_back({ (BGSKeyword*)keyword, xOffset, yOffset, zOffset });
 			}
 
 			return retVec;

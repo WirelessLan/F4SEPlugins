@@ -14,7 +14,7 @@ namespace Configs {
 		std::uint32_t _lineIndex;
 
 		bool getLine(std::fstream& a_file);
-		bool emptyOrCommentLine();
+		bool emptyOrComment();
 		std::string getNextData(char delimeter);
 		std::uint8_t getNextChar();
 		void undoGetNextChar();
