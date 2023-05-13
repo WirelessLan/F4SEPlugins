@@ -45,16 +45,12 @@ namespace Hooks {
 	};
 
 	struct FormPath {
+		CACS::RuleType RuleType;
 		std::uint32_t FormID;
 		std::string Path;
 	};
 
-	struct CustomPath {
-		FormPath ActorPath;
-		FormPath RacePath;
-	};
-
-	ThreadSafeMap<std::thread::id, CustomPath> g_threadPathMap;
+	ThreadSafeMap<std::thread::id, std::vector<FormPath>> g_threadPathMap;
 	ThreadSafeMap<std::string, std::string> g_fullPathMap;
 
 	using ReplaceRefModel_t = void(*)(TESForm&, TESObjectREFR*);
@@ -72,60 +68,62 @@ namespace Hooks {
 			return;
 		}
 
-		std::uint32_t baseFormId = Utils::GetBaseFormID(actor);
-		std::uint32_t raceFormId = actor->race ? actor->race->formID : 0;
-
 		std::thread::id threadId = std::this_thread::get_id();
+		std::vector<FormPath> pathVec;
 
-		bool isTarget = false;
-		if (CACS::CheckCACSRule(CACS::RuleType::kRuleType_Actor, baseFormId) || CACS::CheckCACSRule(CACS::RuleType::kRuleType_Race, raceFormId)) {
-			isTarget = true;
+		std::uint32_t baseFormId = Utils::GetBaseFormID(actor);
+		if (CACS::CheckCACSRule(CACS::RuleType::kRuleType_Actor, baseFormId)) {
 			std::string actorPath = CACS::GetCACSPath(CACS::RuleType::kRuleType_Actor, baseFormId);
-			std::string racePath = CACS::GetCACSPath(CACS::RuleType::kRuleType_Race, raceFormId);
-			g_threadPathMap.Add(threadId, { { baseFormId, actorPath }, { raceFormId, racePath } });
+			pathVec.push_back({ CACS::RuleType::kRuleType_Actor, baseFormId, actorPath });
 		}
+
+		std::uint32_t raceFormId = actor->race ? actor->race->formID : 0;
+		if (CACS::CheckCACSRule(CACS::RuleType::kRuleType_Race, raceFormId)) {
+			std::string racePath = CACS::GetCACSPath(CACS::RuleType::kRuleType_Race, raceFormId);
+			pathVec.push_back({ CACS::RuleType::kRuleType_Race, raceFormId, racePath });
+		}
+
+		if (!pathVec.empty())
+			g_threadPathMap.Add(threadId, pathVec);
 
 		ReplaceRefModel(a_npc, a_ref);
 
-		if (isTarget)
+		if (!pathVec.empty())
 			g_threadPathMap.Delete(threadId);
 	}
 
-	const char* PrepareName_Hook(char* arg1, std::uint32_t arg2, const char* subPath, const char* prefixPath) {
+	const char* PrepareName_Hook(char* arg1, std::uint32_t arg2, const char* a_subPath, const char* a_prefixPath) {
+		if (_stricmp(a_prefixPath, "meshes\\") != 0 || _stricmp(Utils::GetFileExt(a_subPath).c_str(), "nif") != 0)
+			return PrepareName(arg1, arg2, a_subPath, a_prefixPath);
+
 		std::thread::id threadId = std::this_thread::get_id();
 
-		const CustomPath* cPath = g_threadPathMap.Get(threadId);
-		if (cPath) {
-			if (_stricmp(prefixPath, "meshes\\") == 0 && _stricmp(Utils::GetFileExt(subPath).c_str(), "nif") == 0) {
-				std::string customPrefixPath, customSubPath, customPath;
+		const std::vector<FormPath>* cPath = g_threadPathMap.Get(threadId);
+		if (!cPath)
+			return PrepareName(arg1, arg2, a_subPath, a_prefixPath);
 
-				// Check Actor Path
-				if (CACS::SetCustomPaths(CACS::RuleType::kRuleType_Actor, cPath->ActorPath.FormID, cPath->ActorPath.Path, prefixPath, subPath, customPrefixPath, customSubPath, customPath)) {
-					g_fullPathMap.Add(customPath, cPath->ActorPath.Path);
-					return PrepareName(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
-				}
+		for (const FormPath& path : *cPath) {
+			std::string customPrefixPath, customSubPath, customPath;
 
-				// Check Race Path
-				if (CACS::SetCustomPaths(CACS::RuleType::kRuleType_Race, cPath->RacePath.FormID, cPath->RacePath.Path, prefixPath, subPath, customPrefixPath, customSubPath, customPath)) {
-					g_fullPathMap.Add(customPath, cPath->RacePath.Path);
-					return PrepareName(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
-				}
+			if (CACS::SetCustomPaths(path.RuleType, path.FormID, path.Path, a_prefixPath, a_subPath, customPrefixPath, customSubPath, customPath)) {
+				g_fullPathMap.Add(customPath, path.Path);
+				return PrepareName(arg1, arg2, customSubPath.c_str(), customPrefixPath.c_str());
 			}
 		}
 
-		return PrepareName(arg1, arg2, subPath, prefixPath);
+		return PrepareName(arg1, arg2, a_subPath, a_prefixPath);
 	}
 
 	class CustomModelProcessor : public BSModelDB::BSModelProcessor {
 	public:
 		CustomModelProcessor(BSModelDB::BSModelProcessor* oldProcessor) : m_oldProcessor(oldProcessor) { }
 
-		virtual void Process(BSModelDB::ModelData* modelData, const char* modelName, NiAVObject** root, UInt32* typeOut) {
-			if (modelName) {
-				std::string modelPath = Utils::RemovePrefix(Utils::ReplaceSlash(Utils::ToLower(modelName)), "data\\");
+		virtual void Process(BSModelDB::ModelData* a_modelData, const char* a_modelName, NiAVObject** a_root, UInt32* a_typeOut) {
+			if (a_modelName) {
+				std::string modelPath = Utils::RemovePrefix(Utils::ReplaceSlash(Utils::ToLower(a_modelName)), "data\\");
 				std::string* cPath = g_fullPathMap.Get(modelPath);
-				if (cPath && root && *root) {
-					NiAVObject* node = *root;
+				if (cPath && a_root && *a_root) {
+					NiAVObject* node = *a_root;
 					node->IncRef();
 
 					NiExtraData* bodyTri = node->GetExtraData("BODYTRI");
@@ -151,7 +149,7 @@ namespace Hooks {
 			}
 
 			if (m_oldProcessor)
-				m_oldProcessor->Process(modelData, modelName, root, typeOut);
+				m_oldProcessor->Process(a_modelData, a_modelName, a_root, a_typeOut);
 		}
 
 		DEFINE_STATIC_HEAP(Heap_Allocate, Heap_Free)
@@ -207,6 +205,7 @@ namespace Hooks {
 				dq(PrepareName_Target.GetUIntPtr() + 0x0F);
 			}
 		};
+
 		void* codeBuf = g_localTrampoline.StartAlloc();
 		asm_code code(codeBuf);
 		g_localTrampoline.EndAlloc(code.getCurr());

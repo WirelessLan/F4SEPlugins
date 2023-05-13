@@ -17,24 +17,24 @@ namespace CACS {
 	std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::string>> actorCustomPaths;
 	std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::string>> raceCustomPaths;
 
-	std::uint8_t GetChar(const std::string& line, std::uint32_t& index) {
-		if (index < line.length())
-			return line[index++];
+	std::uint8_t GetChar(const std::string& a_line, std::uint32_t& a_index) {
+		if (a_index < a_line.length())
+			return a_line[a_index++];
 		return 0xFF;
 	}
 
-	std::string GetString(const std::string& line, std::uint32_t& index, char delimeter) {
+	std::string GetString(const std::string& a_line, std::uint32_t& a_index, char a_delimeter) {
 		std::uint8_t ch;
 		std::string retVal = "";
 
-		while ((ch = GetChar(line, index)) != 0xFF) {
+		while ((ch = GetChar(a_line, a_index)) != 0xFF) {
 			if (ch == '#') {
-				if (index > 0)
-					index--;
+				if (a_index > 0)
+					a_index--;
 				break;
 			}
 
-			if (delimeter != 0 && ch == delimeter)
+			if (a_delimeter != 0 && ch == a_delimeter)
 				break;
 
 			retVal += ch;
@@ -44,11 +44,11 @@ namespace CACS {
 		return retVal;
 	}
 
-	void ParseRules(std::fstream& ruleFile) {
+	void ParseRules(std::fstream& a_ruleFile) {
 		std::string ruleType, pluginName, formId, meshesPath, customNifPath;
 		std::string line;
 
-		while (std::getline(ruleFile, line)) {
+		while (std::getline(a_ruleFile, line)) {
 			bool isCustomNifPath = false;
 			std::uint32_t lineIdx = 0;
 
@@ -173,41 +173,38 @@ namespace CACS {
 		ruleFile.close();
 	}
 
-	bool CheckCACSRule(RuleType type, std::uint32_t formId) {
-		if (formId == 0)
+	bool CheckCACSRule(RuleType a_type, std::uint32_t a_formId) {
+		if (a_formId == 0)
 			return false;
 
-		switch (type) {
+		switch (a_type) {
 		case RuleType::kRuleType_Actor:
-			if (actorRules.find(formId) == actorRules.end())
-				return false;
+			if (actorRules.find(a_formId) != actorRules.end())
+				return true;
 			break;
 
 		case RuleType::kRuleType_Race:
-			if (raceRules.find(formId) == raceRules.end())
-				return false;
+			if (raceRules.find(a_formId) != raceRules.end())
+				return true;
 			break;
-
-		default:
-			return false;
 		}
 
-		return true;
+		return false;
 	}
 
-	const std::string GetCACSPath(RuleType type, std::uint32_t formId) {
-		if (formId == 0)
+	const std::string GetCACSPath(RuleType a_type, std::uint32_t a_formId) {
+		if (a_formId == 0)
 			return std::string();
 
-		switch (type) {
+		switch (a_type) {
 		case RuleType::kRuleType_Actor: {
-			auto it = actorRules.find(formId);
+			auto it = actorRules.find(a_formId);
 			if (it != actorRules.end())
 				return it->second;
 			break;
 		}
 		case RuleType::kRuleType_Race: {
-			auto it = raceRules.find(formId);
+			auto it = raceRules.find(a_formId);
 			if (it != raceRules.end())
 				return it->second;
 			break;
@@ -217,58 +214,55 @@ namespace CACS {
 		return std::string();
 	}
 
-	bool SetCustomPaths(RuleType type, std::uint32_t formId, const std::string& meshPath, const char* prefixPath, const char* subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_customPath) {
-		std::string prefixPathStr = Utils::ReplaceSlash(Utils::ToLower(prefixPath));
-		std::string subPathStr = Utils::ReplaceSlash(Utils::ToLower(subPath));
+	bool SetCustomPaths(RuleType a_type, std::uint32_t a_formId, const std::string& a_customPath, const char* a_prefixPath, const char* a_subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_customPath) {
+		std::string prefixPathStr = Utils::ReplaceSlash(Utils::ToLower(a_prefixPath));
+		std::string subPathStr = Utils::RemovePrefix(Utils::RemovePrefix(Utils::ReplaceSlash(Utils::ToLower(a_subPath)), "data\\"), prefixPathStr);
 
 		subPathStr = Utils::RemovePrefix(subPathStr, prefixPathStr);
 
 		std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::string>>* customPathMap;
-		if (type == RuleType::kRuleType_Actor)
+		if (a_type == RuleType::kRuleType_Actor)
 			customPathMap = &actorCustomPaths;
-		else if (type == RuleType::kRuleType_Race)
+		else if (a_type == RuleType::kRuleType_Race)
 			customPathMap = &raceCustomPaths;
 		else
 			return false;
 
-		if (meshPath.empty())
-			return false;
-
-		// Find CustomNifPath
-		auto upper_it = customPathMap->find(formId);
+		// Find CustomPath
+		auto upper_it = customPathMap->find(a_formId);
 		if (upper_it != customPathMap->end()) {
 			auto lower_it = upper_it->second.find(subPathStr);
 			if (lower_it != upper_it->second.end()) {
-				o_prefixPath = "meshes\\" + meshPath;
+				o_prefixPath = prefixPathStr + a_customPath;
 				o_subPath = lower_it->second;
 				o_customPath = o_prefixPath + o_subPath;
 				if (Utils::IsFileExists(o_customPath)) {
-					Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s",
-						type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_customPath.c_str());
+					Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Prefix[%s] Path[%s] -> %s",
+						a_type == RuleType::kRuleType_Actor ? "Actor" : "Race", a_formId, prefixPathStr.c_str(), subPathStr.c_str(), o_customPath.c_str());
 					return true;
 				}
 
-				o_prefixPath = "meshes\\";
+				o_prefixPath = prefixPathStr;
 				o_customPath = o_prefixPath + o_subPath;
 				if (Utils::IsFileExists(o_customPath)) {
-					Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s",
-						type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_customPath.c_str());
+					Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Prefix[%s] Path[%s] -> %s",
+						a_type == RuleType::kRuleType_Actor ? "Actor" : "Race", a_formId, prefixPathStr.c_str(), subPathStr.c_str(), o_customPath.c_str());
 					return true;
 				}
 			}
 		}
 
-		o_prefixPath = "meshes\\" + meshPath;
+		o_prefixPath = prefixPathStr + a_customPath;
 		o_subPath = subPathStr;
 		o_customPath = o_prefixPath + o_subPath;
 		if (Utils::IsFileExists(o_customPath)) {
-			Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> %s",
-				type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str(), o_customPath.c_str());
+			Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Prefix[%s] Path[%s] -> %s",
+				a_type == RuleType::kRuleType_Actor ? "Actor" : "Race", a_formId, prefixPathStr.c_str(), subPathStr.c_str(), o_customPath.c_str());
 			return true;
 		}
 
-		Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Path[%s] -> Set to default path",
-			type == RuleType::kRuleType_Actor ? "Actor" : "Race", formId, subPathStr.c_str());
+		Utils::Log("[Debug] Type[%s] FormID[0x%08X] : Prefix[%s] Path[%s] -> Set to default path",
+			a_type == RuleType::kRuleType_Actor ? "Actor" : "Race", a_formId, prefixPathStr.c_str(), subPathStr.c_str());
 		return false;
 	}
 }

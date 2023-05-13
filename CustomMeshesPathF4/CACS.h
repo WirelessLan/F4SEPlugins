@@ -8,7 +8,7 @@ namespace CACS {
 
 	bool ShouldLoadRules();
 	void LoadRules();
-	bool CheckCACSRule(RuleType type, std::uint32_t formId);
-	const std::string GetCACSPath(RuleType type, std::uint32_t formId);
-	bool SetCustomPaths(RuleType type, std::uint32_t formId, const std::string& meshPath, const char* prefixPath, const char* subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_fullPath);
+	bool CheckCACSRule(RuleType a_type, std::uint32_t a_formId);
+	const std::string GetCACSPath(RuleType a_type, std::uint32_t a_formId);
+	bool SetCustomPaths(RuleType a_type, std::uint32_t a_formId, const std::string& a_meshPath, const char* a_prefixPath, const char* a_subPath, std::string& o_prefixPath, std::string& o_subPath, std::string& o_fullPath);
 }
