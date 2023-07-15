@@ -13,10 +13,11 @@ F4SEScaleformInterface* g_scaleform;
 
 PluginSettings			g_pluginSettings;
 
-void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
-	switch (msg->type) {
+void OnF4SEMessage(F4SEMessagingInterface::Message* a_msg) {
+	switch (a_msg->type) {
 	case F4SEMessagingInterface::kMessage_GameLoaded:
-		ScaleformManager::PNIOPAMenu::RegisterMenu();
+		ScaleformManager::RegisterMenu();
+		ScaleformManager::LoadLocalizations();
 		Inputs::RegisterInputHandler();
 		Events::Attach_Events();
 		break;
@@ -25,140 +26,132 @@ void OnF4SEMessage(F4SEMessagingInterface::Message* msg) {
 	case F4SEMessagingInterface::kMessage_PostLoadGame:
 		ScaleformManager::ClearMenuSelection();
 		InputEnableManager::ResetInputEnableLayer();
-		Nodes::ClearAll();
 		Utility::UnfreezeActor(*g_player);
+		Nodes::ClearAll();
+		Inputs::ClearInputs();
 		break;
 	}
 }
 
-bool RegisterFuncs(VirtualMachine* vm) {
-	PapyrusFuncs::Register(vm);
+bool RegisterFuncs(VirtualMachine* a_vm) {
+	PapyrusFuncs::Register(a_vm);
 	return true;
 }
 
-bool RegisterScaleform(GFxMovieView* view, GFxValue* f4se_root) {
-	ScaleformManager::RegisterScaleform(view, f4se_root);
+bool RegisterScaleform(GFxMovieView* a_view, GFxValue* a_f4se_root) {
+	ScaleformManager::RegisterScaleform(a_view, a_f4se_root);
 	return true;
 }
 
-UInt32 ReadKey(const std::string& str) {
+std::uint32_t ReadKey(const std::string& a_str) {
 	char* p;
-	UInt32 value;
-	value = strtoul(str.c_str(), &p, 16);
+	std::uint32_t value = strtoul(a_str.c_str(), &p, 16);
 	if (*p == 0)
 		return value;
 	return 0;
 }
 
 void ReadINIFile() {
-	UInt32 value;
+	std::uint32_t value;
 	std::string data;
 
 	if (ConfigReader::GetConfigValue("Keys", "DirXKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DirXKey = value;
-			_MESSAGE("DirXKey: 0x%02X", g_pluginSettings.DirXKey);
-		}
 	}
+	_MESSAGE("DirXKey: 0x%02X", g_pluginSettings.DirXKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "DirYKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DirYKey = value;
-			_MESSAGE("DirYKey: 0x%02X", g_pluginSettings.DirYKey);
-		}
 	}
+	_MESSAGE("DirYKey: 0x%02X", g_pluginSettings.DirYKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "DirZKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DirZKey = value;
-			_MESSAGE("DirZKey: 0x%02X", g_pluginSettings.DirZKey);
-		}
 	}
+	_MESSAGE("DirZKey: 0x%02X", g_pluginSettings.DirZKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "IncTransKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.IncTransKey = value;
-			_MESSAGE("IncTransKey: 0x%02X", g_pluginSettings.IncTransKey);
-		}
 	}
+	_MESSAGE("IncTransKey: 0x%02X", g_pluginSettings.IncTransKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "DecTransKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DecTransKey = value;
-			_MESSAGE("DecTransKey: 0x%02X", g_pluginSettings.DecTransKey);
-		}
 	}
+	_MESSAGE("DecTransKey: 0x%02X", g_pluginSettings.DecTransKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "IncRotKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.IncRotKey = value;
-			_MESSAGE("IncRotKey: 0x%02X", g_pluginSettings.IncRotKey);
-		}
 	}
+	_MESSAGE("IncRotKey: 0x%02X", g_pluginSettings.IncRotKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "DecRotKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DecRotKey = value;
-			_MESSAGE("DecRotKey: 0x%02X", g_pluginSettings.DecRotKey);
-		}
 	}
+	_MESSAGE("DecRotKey: 0x%02X", g_pluginSettings.DecRotKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "IncScaleKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.IncScaleKey = value;
-			_MESSAGE("IncScaleKey: 0x%02X", g_pluginSettings.IncScaleKey);
-		}
 	}
+	_MESSAGE("IncScaleKey: 0x%02X", g_pluginSettings.IncScaleKey);
+
 	if (ConfigReader::GetConfigValue("Keys", "DecScaleKey", &data)) {
 		value = ReadKey(data);
-		if (value) {
+		if (value)
 			g_pluginSettings.DecScaleKey = value;
-			_MESSAGE("DecScaleKey: 0x%02X", g_pluginSettings.DecScaleKey);
-		}
 	}
-	if (ConfigReader::GetConfigValue("Keys", "CloseMenukey", &data)) {
-		value = ReadKey(data);
-		if (value) {
-			g_pluginSettings.CloseMenukey = value;
-			_MESSAGE("CloseMenukey: 0x%02X", g_pluginSettings.CloseMenukey);
-		}
-	}
+	_MESSAGE("DecScaleKey: 0x%02X", g_pluginSettings.DecScaleKey);
 }
 
 /* Plugin Query */
 extern "C" {
-	bool F4SEPlugin_Query(const F4SEInterface* f4se, PluginInfo* info) {
+	bool F4SEPlugin_Query(const F4SEInterface* a_f4se, PluginInfo* a_info) {
 		std::string logPath{ "\\My Games\\Fallout4\\F4SE\\" PLUGIN_NAME ".log" };
 		gLog.OpenRelative(CSIDL_MYDOCUMENTS, logPath.c_str());
 		gLog.SetPrintLevel(IDebugLog::kLevel_Error);
 		gLog.SetLogLevel(IDebugLog::kLevel_DebugMessage);
 
-		info->infoVersion = PluginInfo::kInfoVersion;
-		info->name = PLUGIN_NAME;
-		info->version = PLUGIN_VERSION;
+		a_info->infoVersion = PluginInfo::kInfoVersion;
+		a_info->name = PLUGIN_NAME;
+		a_info->version = PLUGIN_VERSION;
 
-		if (f4se->runtimeVersion != RUNTIME_VERSION_1_10_163) {
-			_MESSAGE("unsupported runtime version %d", f4se->runtimeVersion);
+		if (a_f4se->runtimeVersion != RUNTIME_VERSION_1_10_163) {
+			_MESSAGE("unsupported runtime version %d", a_f4se->runtimeVersion);
 			return false;
 		}
 
-		g_pluginHandle = f4se->GetPluginHandle();
+		g_pluginHandle = a_f4se->GetPluginHandle();
 
 		// Get the messaging interface
-		g_messaging = (F4SEMessagingInterface*)f4se->QueryInterface(kInterface_Messaging);
+		g_messaging = (F4SEMessagingInterface*)a_f4se->QueryInterface(kInterface_Messaging);
 		if (!g_messaging) {
 			_MESSAGE("couldn't get messaging interface");
 			return false;
 		}
 
-		g_papyrus = (F4SEPapyrusInterface*)f4se->QueryInterface(kInterface_Papyrus);
+		g_papyrus = (F4SEPapyrusInterface*)a_f4se->QueryInterface(kInterface_Papyrus);
 		if (!g_papyrus) {
 			_FATALERROR("couldn't get papyrus interface");
 			return false;
 		}
 
-		g_scaleform = (F4SEScaleformInterface*)f4se->QueryInterface(kInterface_Scaleform);
+		g_scaleform = (F4SEScaleformInterface*)a_f4se->QueryInterface(kInterface_Scaleform);
 		if (!g_scaleform) {
 			_FATALERROR("couldn't get scaleform interface");
 			return false;
@@ -167,8 +160,8 @@ extern "C" {
 		return true;
 	}
 
-	bool F4SEPlugin_Load(const F4SEInterface* f4se) {
-		_MESSAGE("%s Loaded", PLUGIN_NAME);
+	bool F4SEPlugin_Load(const F4SEInterface* a_f4se) {
+		_MESSAGE("%s v%d.%d.%d Loaded", PLUGIN_NAME, (PLUGIN_VERSION >> 24) & 0xFF, (PLUGIN_VERSION >> 16) & 0xFF, (PLUGIN_VERSION >> 4) & 0xFF);
 
 		ReadINIFile();
 

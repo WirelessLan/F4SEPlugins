@@ -1,5 +1,5 @@
 #pragma once
 
 namespace PapyrusFuncs {
-	void Register(VirtualMachine* vm);
+	void Register(VirtualMachine* a_vm);
 };

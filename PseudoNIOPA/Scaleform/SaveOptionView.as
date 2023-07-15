@@ -16,7 +16,11 @@
 
 		public function SaveOptionView(saveName:String) {
 			this.saveName = saveName;
-        	super(menuWidth, menuHeight, "불러오기 옵션");
+			
+			var titleText = "_$PNIOPAMenuLoadSaveOption";
+			if (Shared.Localizations.$PNIOPAMenuLoadSaveOption)
+				titleText = Shared.Localizations.$PNIOPAMenuLoadSaveOption;
+        	super(menuWidth, menuHeight, titleText);
 		}
 		
 		protected override function InitializeView() : void {
@@ -32,7 +36,10 @@
 			loadSaveBtn = new Button(menuWidth - 20, 30);
 			loadSaveBtn.x = 10;
 			loadSaveBtn.y = nextBtnPos;
-			loadSaveBtn.text = "불러오기";
+			var loadSaveBtnText = "_$PNIOPAMenuLoadSave";
+			if (Shared.Localizations.$PNIOPAMenuLoadSave)
+				loadSaveBtnText = Shared.Localizations.$PNIOPAMenuLoadSave;
+			loadSaveBtn.text = loadSaveBtnText;
 			loadSaveBtn.addEventListener(UIEvent.ACTIVATE, loadSaveBtn_Activated);
 			this.AddComponent(loadSaveBtn);
 			
@@ -41,7 +48,10 @@
 			deleteSaveBtn = new Button(menuWidth - 20, 30);
 			deleteSaveBtn.x = 10;
 			deleteSaveBtn.y = nextBtnPos;
-			deleteSaveBtn.text = "삭제";
+			var deleteSaveBtnText = "_$PNIOPAMenuDelete";
+			if (Shared.Localizations.$PNIOPAMenuDelete)
+				deleteSaveBtnText = Shared.Localizations.$PNIOPAMenuDelete;
+			deleteSaveBtn.text = deleteSaveBtnText;
 			deleteSaveBtn.addEventListener(UIEvent.ACTIVATE, deleteSaveBtn_Activated);
 			this.AddComponent(deleteSaveBtn);
 		}
@@ -50,14 +60,28 @@
 			if (Shared.F4SEPlugin) {
 				var result:String = Shared.F4SEPlugin.LoadSave(this.saveName);
 				if (result.length != 0) {
-					if (result == "ESAVENAME" || result == "ENOPATH")
-						Shared.ShowMessageBox('오류', '잘못된 파일 이름입니다');
-					else
-						Shared.ShowMessageBox('오류', '불러올 수 없습니다');
+					var errTitle = "_$PNIOPAMenuError"
+					if (Shared.Localizations.$PNIOPAMenuError)
+						errTitle = Shared.Localizations.$PNIOPAMenuError;
+				
+					var errMsg = "";
+					
+					if (result == "ESAVENAME" || result == "ENOPATH") {
+						errMsg = "_$PNIOPAMenuWrongSaveNameError";
+						if (Shared.Localizations.$PNIOPAMenuWrongSaveNameError)
+							errMsg = Shared.Localizations.$PNIOPAMenuWrongSaveNameError;
+					}
+					else {
+						errMsg = "_$PNIOPAMenuCannotLoadError";
+						if (Shared.Localizations.$PNIOPAMenuCannotLoadError)
+							errMsg = Shared.Localizations.$PNIOPAMenuCannotLoadError;
+					}
+					
+					Shared.ShowMessageBox(errTitle, 'errMsg');
 					return;
 				}
 			}
-			Shared.CloseMenu(0);
+			Shared.CloseView(0);
 		}
 		
 		private function deleteSaveBtn_Activated(evn:UIEvent) : * {

@@ -10,7 +10,10 @@
 		private var nodeList:ListBox;
 
 		public function SelectChildNodesView(childNodes:Array) {
-        	super(menuWidth, menuHeight, "자식 노드 조회");
+			var titleText = "_$PNIOPAMenuSelectChildNodesBtn";
+			if (Shared.Localizations.$PNIOPAMenuSelectChildNodesBtn)
+				titleText = Shared.Localizations.$PNIOPAMenuSelectChildNodesBtn;
+        	super(menuWidth, menuHeight, titleText);
 			
 			nodeList.SetItems(childNodes);
 		}
@@ -29,7 +32,7 @@
 			if (!nodeList.SelectedItem)
 				return;
 						
-			Shared.CloseMenu(2);
+			Shared.CloseView(2);
 			var view = new SearchNodeView(nodeList.SelectedItem);
 			Shared.ShowView(view);
 		}

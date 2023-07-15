@@ -17,7 +17,11 @@
 
 		public function SearchNodeView(nodeName:String) {
 			this.nodeName = nodeName;
-        	super(menuWidth, menuHeight, "노드 탐색");
+			
+			var titleText = "_$PNIOPAMenuSearchNode";
+			if (Shared.Localizations.$PNIOPAMenuSearchNode)
+				titleText = Shared.Localizations.$PNIOPAMenuSearchNode;
+        	super(menuWidth, menuHeight, titleText);
 		}
 		
 		protected override function InitializeView() : void {
@@ -33,7 +37,10 @@
 			selectNodeBtn = new Button(menuWidth - 20, 30);
 			selectNodeBtn.x = 10;
 			selectNodeBtn.y = nextBtnPos;
-			selectNodeBtn.text = "현재 노드 선택";
+			var selectNodeBtnText = "_$PNIOPAMenuSelectCurrentNodeBtn";
+			if (Shared.Localizations.$PNIOPAMenuSelectCurrentNodeBtn)
+				selectNodeBtnText = Shared.Localizations.$PNIOPAMenuSelectCurrentNodeBtn;
+			selectNodeBtn.text = selectNodeBtnText;
 			selectNodeBtn.addEventListener(UIEvent.ACTIVATE, selectNodeBtn_Activated);
 			this.AddComponent(selectNodeBtn);
 			
@@ -42,7 +49,10 @@
 			selectChildNodesBtn = new Button(menuWidth - 20, 30);
 			selectChildNodesBtn.x = 10;
 			selectChildNodesBtn.y = nextBtnPos;
-			selectChildNodesBtn.text = "자식노드 조회";
+			var selectChildNodesBtnText = "_$PNIOPAMenuSelectChildNodesBtn";
+			if (Shared.Localizations.$PNIOPAMenuSelectChildNodesBtn)
+				selectChildNodesBtnText = Shared.Localizations.$PNIOPAMenuSelectChildNodesBtn;
+			selectChildNodesBtn.text = selectChildNodesBtnText;
 			selectChildNodesBtn.addEventListener(UIEvent.ACTIVATE, selectChildNodesBtn_Activated);
 			this.AddComponent(selectChildNodesBtn);
 			
@@ -51,7 +61,10 @@
 			selectParentNodeBtn = new Button(menuWidth - 20, 30);
 			selectParentNodeBtn.x = 10;
 			selectParentNodeBtn.y = nextBtnPos;
-			selectParentNodeBtn.text = "부모노드로 이동";
+			var selectParentNodeBtnText = "_$PNIOPAMenuSelectParentNodeBtn";
+			if (Shared.Localizations.$PNIOPAMenuSelectParentNodeBtn)
+				selectParentNodeBtnText = Shared.Localizations.$PNIOPAMenuSelectParentNodeBtn;
+			selectParentNodeBtn.text = selectParentNodeBtnText;
 			selectParentNodeBtn.addEventListener(UIEvent.ACTIVATE, selectParentNodeBtn_Activated);
 			this.AddComponent(selectParentNodeBtn);
 		}
@@ -59,17 +72,25 @@
 		private function selectNodeBtn_Activated(evn:UIEvent) : * {
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.SelectNode(this.nodeName);
-			Shared.CloseMenu(0);
+			Shared.CloseView(0);
 		}
 		
 		private function selectParentNodeBtn_Activated(evn:UIEvent) : * {
 			var parentNode:String = Shared.F4SEPlugin.GetParentNodeName(this.nodeName);
 			if (!parentNode) {
-				Shared.ShowMessageBox('오류', "부모 노드가 존재하지 않습니다");
+				var errTitle = "_$PNIOPAMenuError";
+				if (Shared.Localizations.$PNIOPAMenuError)
+					errTitle = Shared.Localizations.$PNIOPAMenuError;
+					
+				var errMsg = "_$PNIOPAMenuNoParentError";
+				if (Shared.Localizations.$PNIOPAMenuNoParentError)
+					errMsg = Shared.Localizations.$PNIOPAMenuNoParentError;
+					
+				Shared.ShowMessageBox(errTitle, errMsg);
 				return;
 			}
 			
-			Shared.CloseMenu(1);
+			Shared.CloseView(1);
 			
 			var view = new SearchNodeView(parentNode);
 			Shared.ShowView(view);

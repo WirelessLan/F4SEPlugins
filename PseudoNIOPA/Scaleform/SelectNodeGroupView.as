@@ -17,7 +17,11 @@
 
 		public function SelectNodeGroupView(selectedNode:String) {
 			this.selectedNode = selectedNode;
-        	super(menuWidth, menuHeight, "노드 선택");
+			
+			var titleText = "_$PNIOPAMenuSelectNode";
+			if (Shared.Localizations.$PNIOPAMenuSelectNode)
+				titleText = Shared.Localizations.$PNIOPAMenuSelectNode;
+        	super(menuWidth, menuHeight, titleText);
 		}
 		
 		protected override function InitializeView() : void {
@@ -28,7 +32,10 @@
 			searchNodeBtn = new Button(menuWidth - 20, 30);
 			searchNodeBtn.x = 10;
 			searchNodeBtn.y = nextBtnPos;
-			searchNodeBtn.text = "노드 탐색";
+			var searchNodeBtnText = "_$PNIOPAMenuSearchNode";
+			if (Shared.Localizations.$PNIOPAMenuSearchNode)
+				searchNodeBtnText = Shared.Localizations.$PNIOPAMenuSearchNode;
+			searchNodeBtn.text = searchNodeBtnText;
 			searchNodeBtn.addEventListener(UIEvent.ACTIVATE, searchNodeBtn_Activated);
 			this.AddComponent(searchNodeBtn);
 			
@@ -37,7 +44,10 @@
 			upperNodesBtn = new Button(menuWidth - 20, 30);
 			upperNodesBtn.x = 10;
 			upperNodesBtn.y = nextBtnPos;
-			upperNodesBtn.text = "Upper";
+			var upperNodesBtnText = "_$PNIOPAMenuUpperNodes";
+			if (Shared.Localizations.$PNIOPAMenuUpperNodes)
+				upperNodesBtnText = Shared.Localizations.$PNIOPAMenuUpperNodes;
+			upperNodesBtn.text = upperNodesBtnText;
 			upperNodesBtn.addEventListener(UIEvent.ACTIVATE, OnButtonActivated);
 			this.AddComponent(upperNodesBtn);
 			
@@ -46,7 +56,10 @@
 			lowerNodesBtn = new Button(menuWidth - 20, 30);
 			lowerNodesBtn.x = 10;
 			lowerNodesBtn.y = nextBtnPos;
-			lowerNodesBtn.text = "Lower";
+			var lowerNodesBtnText = "_$PNIOPAMenuLowerNodes";
+			if (Shared.Localizations.$PNIOPAMenuLowerNodes)
+				lowerNodesBtnText = Shared.Localizations.$PNIOPAMenuLowerNodes;
+			lowerNodesBtn.text = lowerNodesBtnText;
 			lowerNodesBtn.addEventListener(UIEvent.ACTIVATE, OnButtonActivated);
 			this.AddComponent(lowerNodesBtn);
 			
@@ -55,7 +68,10 @@
 			fingerNodesBtn = new Button(menuWidth - 20, 30);
 			fingerNodesBtn.x = 10;
 			fingerNodesBtn.y = nextBtnPos;
-			fingerNodesBtn.text = "Fingers";
+			var fingerNodesBtnText = "_$PNIOPAMenuFingerNodes";
+			if (Shared.Localizations.$PNIOPAMenuFingerNodes)
+				fingerNodesBtnText = Shared.Localizations.$PNIOPAMenuFingerNodes;
+			fingerNodesBtn.text = fingerNodesBtnText;
 			fingerNodesBtn.addEventListener(UIEvent.ACTIVATE, OnButtonActivated);
 			this.AddComponent(fingerNodesBtn);
 			
@@ -64,7 +80,10 @@
 			etcNodesBtn = new Button(menuWidth - 20, 30);
 			etcNodesBtn.x = 10;
 			etcNodesBtn.y = nextBtnPos;
-			etcNodesBtn.text = "ETC";
+			var etcNodesBtnText = "_$PNIOPAMenuETCNodes";
+			if (Shared.Localizations.$PNIOPAMenuETCNodes)
+				etcNodesBtnText = Shared.Localizations.$PNIOPAMenuETCNodes;
+			etcNodesBtn.text = etcNodesBtnText;
 			etcNodesBtn.addEventListener(UIEvent.ACTIVATE, OnButtonActivated);
 			this.AddComponent(etcNodesBtn);
 		}
@@ -77,7 +96,15 @@
 				nodeName = "Root";
 			
 			if (!nodeName) {
-				Shared.ShowMessageBox("오류", "선택된 액터의 노드를 가져올 수 없습니다");
+				var errTitle = "_$PNIOPAMenuError";
+				if (Shared.Localizations.$PNIOPAMenuError)
+					errTitle = Shared.Localizations.$PNIOPAMenuError;
+					
+				var errMsg = "_$PNIOPAMenuGetNodeError";
+				if (Shared.Localizations.$PNIOPAMenuGetNodeError)
+					errMsg = Shared.Localizations.$PNIOPAMenuGetNodeError;
+					
+				Shared.ShowMessageBox(errTitle, errMsg);
 				return;
 			}
 			var view = new SearchNodeView(nodeName);

@@ -12,7 +12,11 @@
 
 		public function SelectNodeView(group:String, selectedNode:String) {
 			this.group = group;
-        	super(menuWidth, menuHeight, "노드 선택");
+			
+			var titleText = "_$PNIOPAMenuSelectNode";
+			if (Shared.Localizations.$PNIOPAMenuSelectNode)
+				titleText = Shared.Localizations.$PNIOPAMenuSelectNode;
+        	super(menuWidth, menuHeight, titleText);
 			
 			nodeList.SetItems(GetNodes(this.group));
 			
@@ -45,7 +49,7 @@
 			
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.SelectNode(nodeList.SelectedItem);
-			Shared.CloseMenu(0);
+			Shared.CloseView(0);
 		}
 	}
 }

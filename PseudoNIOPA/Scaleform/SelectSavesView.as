@@ -10,7 +10,10 @@
 		private var nodeList:ListBox;
 
 		public function SelectSavesView() {
-        	super(menuWidth, menuHeight, "불러오기");
+			var titleText = "_$PNIOPAMenuLoadSave";
+			if (Shared.Localizations.$PNIOPAMenuLoadSave)
+				titleText = Shared.Localizations.$PNIOPAMenuLoadSave;
+        	super(menuWidth, menuHeight, titleText);
 			
 			nodeList.SetItems(GetSaves());
 		}

@@ -1,10 +1,6 @@
 #pragma once
-namespace Inputs {
-	class PNIOPAInputHandler : public PlayerInputHandler {
-	public:
-		PNIOPAInputHandler() : PlayerInputHandler() { }
-		virtual void OnButtonEvent(ButtonEvent* inputEvent) override;
-	};
 
+namespace Inputs {
 	void RegisterInputHandler();
+	void ClearInputs();
 };

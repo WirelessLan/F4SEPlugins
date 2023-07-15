@@ -1,10 +1,10 @@
 #pragma once
 
 namespace Utility {
-	bool IsActorFrozen(Actor* actor);
-	void ToggleFreeze(Actor* actor);
-	void FreezeActor(Actor* actor);
-	void UnfreezeActor(Actor* actor);
+	bool IsActorFrozen(Actor* a_actor);
+	void ToggleFreeze(Actor* a_actor);
+	void FreezeActor(Actor* a_actor);
+	void UnfreezeActor(Actor* a_actor);
 	Actor* GetCurrentConsoleActor();
-	void Trim(std::string& s);
+	std::string Trim(std::string a_str);
 };

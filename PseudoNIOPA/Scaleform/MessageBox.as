@@ -21,7 +21,7 @@
 		}
 		
 		private function confirmBtn_Activated(evn:UIEvent) : * {
-			Shared.CloseMenu(1);
+			Shared.CloseView(1);
 		}
 		
 		protected override function InitializeView() : void {
@@ -35,7 +35,10 @@
 			this.AddComponent(messageLbl);
 			
 			confirmBtn = new Button(menuWidth - 20, 30);
-			confirmBtn.text = "확인";
+			var confirmBtnText = "_$PNIOPAMenuConfirm";
+			if (Shared.Localizations.$PNIOPAMenuConfirm)
+				confirmBtnText = Shared.Localizations.$PNIOPAMenuConfirm;
+			confirmBtn.text = confirmBtnText;
 			confirmBtn.y = menuHeight - 42;
 			confirmBtn.x = 10;
 			confirmBtn.addEventListener(UIEvent.ACTIVATE, confirmBtn_Activated);

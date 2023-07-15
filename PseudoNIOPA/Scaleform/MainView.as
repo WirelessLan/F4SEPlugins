@@ -18,7 +18,11 @@
 
 		public function MainView(selectedNode:String) {
 			this.selectedNode = selectedNode;
-        	super(menuWidth, menuHeight, "Pseudo NIOPA");
+			
+			var titleText = "_$PNIOPAMenuMainTitle";
+			if (Shared.Localizations.$PNIOPAMenuMainTitle)
+				titleText = Shared.Localizations.$PNIOPAMenuMainTitle;
+        	super(menuWidth, menuHeight, titleText);
 		}
 		
 		protected override function InitializeView() : void {
@@ -29,7 +33,10 @@
 			selectNodeBtn = new Button(menuWidth - 20, 30);
 			selectNodeBtn.x = 10;
 			selectNodeBtn.y = nextBtnPos;
-			selectNodeBtn.text = "노드 선택";
+			var selectNodeBtnText = "_$PNIOPAMenuSelectNode";
+			if (Shared.Localizations.$PNIOPAMenuSelectNode)
+				selectNodeBtnText = Shared.Localizations.$PNIOPAMenuSelectNode;
+			selectNodeBtn.text = selectNodeBtnText;
 			selectNodeBtn.addEventListener(UIEvent.ACTIVATE, selectNodeBtn_Activated);
 			this.AddComponent(selectNodeBtn);
 			
@@ -38,7 +45,10 @@
 			saveBtn = new Button(menuWidth - 20, 30);
 			saveBtn.x = 10;
 			saveBtn.y = nextBtnPos;
-			saveBtn.text = "저장하기";
+			var saveBtnText = "_$PNIOPAMenuSave";
+			if (Shared.Localizations.$PNIOPAMenuSave)
+				saveBtnText = Shared.Localizations.$PNIOPAMenuSave;
+			saveBtn.text = saveBtnText;
 			saveBtn.addEventListener(UIEvent.ACTIVATE, saveBtn_Activated);
 			this.AddComponent(saveBtn);
 			
@@ -47,7 +57,10 @@
 			loadSaveBtn = new Button(menuWidth - 20, 30);
 			loadSaveBtn.x = 10;
 			loadSaveBtn.y = nextBtnPos;
-			loadSaveBtn.text = "불러오기";
+			var loadSaveBtnText = "_$PNIOPAMenuLoadSave";
+			if (Shared.Localizations.$PNIOPAMenuLoadSave)
+				loadSaveBtnText = Shared.Localizations.$PNIOPAMenuLoadSave;
+			loadSaveBtn.text = loadSaveBtnText;
 			loadSaveBtn.addEventListener(UIEvent.ACTIVATE, loadSaveBtn_Activated);
 			this.AddComponent(loadSaveBtn);
 			
@@ -56,7 +69,10 @@
 			toggleFreezeBtn = new Button(menuWidth - 20, 30);
 			toggleFreezeBtn.x = 10;
 			toggleFreezeBtn.y = nextBtnPos;
-			toggleFreezeBtn.text = "액터 동결/해동";
+			var toggleFreezeBtnText = "_$PNIOPAMenuToggleFreeze";
+			if (Shared.Localizations.$PNIOPAMenuToggleFreeze)
+				toggleFreezeBtnText = Shared.Localizations.$PNIOPAMenuToggleFreeze;
+			toggleFreezeBtn.text = toggleFreezeBtnText;
 			toggleFreezeBtn.addEventListener(UIEvent.ACTIVATE, toggleFreezeBtn_Activated);
 			this.AddComponent(toggleFreezeBtn);
 			
@@ -65,7 +81,10 @@
 			resetActorBtn = new Button(menuWidth - 20, 30);
 			resetActorBtn.x = 10;
 			resetActorBtn.y = nextBtnPos;
-			resetActorBtn.text = "액터 초기화";
+			var resetActorBtnText = "_$PNIOPAMenuResetActor";
+			if (Shared.Localizations.$PNIOPAMenuResetActor)
+				resetActorBtnText = Shared.Localizations.$PNIOPAMenuResetActor;
+			resetActorBtn.text = resetActorBtnText;
 			resetActorBtn.addEventListener(UIEvent.ACTIVATE, resetActorBtn_Activated);
 			this.AddComponent(resetActorBtn);
 		}
@@ -88,13 +107,13 @@
 		private function toggleFreezeBtn_Activated(evn:UIEvent) : * {
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.ToggleFreeze();
-			Shared.CloseMenu(0);
+			Shared.CloseView(0);
 		}
 		
 		private function resetActorBtn_Activated(evn:UIEvent) : * {
 			if (Shared.F4SEPlugin)
 				Shared.F4SEPlugin.ResetActor();
-			Shared.CloseMenu(0);
+			Shared.CloseView(0);
 		}
 	}
 }

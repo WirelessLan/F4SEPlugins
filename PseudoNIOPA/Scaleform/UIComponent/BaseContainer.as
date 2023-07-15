@@ -1,94 +1,38 @@
 ﻿package UIComponent {
 	import flash.display.Sprite;
-	import flash.geom.Rectangle;
-	import flash.events.MouseEvent;
 	import flash.display.DisplayObject;
+	import flash.geom.Rectangle;
 	import flash.ui.Keyboard;
+	import flash.events.MouseEvent;
 	
 	public class BaseContainer extends Sprite {
-		protected var componentList:Array;
-		protected var componentContainer:Sprite;
-		protected var focusedComponent:IComponent;
-		
 		protected var _width:Number;
 		protected var _height:Number;
+		
+		protected var _componentArr:Array;
+		
+		protected var componentContainer:Sprite;
+		protected var focusedComponent:IComponent;
 
 		public function BaseContainer(width:Number, height:Number) {
 			super();
 			
 			this._width = width;
 			this._height = height;
-			this.componentList = new Array();
+			
+			this._componentArr = new Array();
 			this.focusedComponent = null;
 			
-			this.componentContainer = new Sprite();
-			this.componentContainer.graphics.beginFill(0xFFFFFF, 0);
-			this.componentContainer.graphics.drawRect(0, 0, this._width, this._height);
-			this.componentContainer.graphics.endFill();
-			this.addChild(this.componentContainer);
+			initializeComponent();
 		}
 		
-		protected function FindFirstFocusableComponent() : IComponent {
-			for (var com_idx:int = 0; com_idx < this.componentList.length; com_idx++)
-				if ((this.componentList[com_idx] as IComponent).IsFocusable())
-					return this.componentList[com_idx] as IComponent;
-					
-			return null;
-		}
-		
-		protected function FindLastFocusableComponent() : IComponent {
-			for (var com_idx:int = this.componentList.length - 1; com_idx >= 0; com_idx--)
-				if ((this.componentList[com_idx] as IComponent).IsFocusable())
-					return this.componentList[com_idx] as IComponent;
-					
-			return null;
-		}
-		
-		protected function FindPreviousFocusableComponent(currComponent:IComponent) : IComponent {
-			var currComponentIndex:int = GetComponentIndex(currComponent);				
-			if (currComponentIndex < 0)
-				return null;
+		public function AddComponent(component:DisplayObject) : void {
+			if (component is IComponent) {
+				this._componentArr.push(component);
+				component.addEventListener(MouseEvent.ROLL_OVER, onMouseOver);
+			}
 			
-			var prevComponentIndex:int = currComponentIndex - 1;
-			for (; prevComponentIndex >= 0; prevComponentIndex--)
-				if ((this.componentList[prevComponentIndex] as IComponent).IsFocusable())
-					break;
-
-			if (prevComponentIndex < 0)
-				return null;
-				
-			return this.componentList[prevComponentIndex];
-		}
-		
-		protected function FindNextFocusableComponent(currComponent:IComponent) : IComponent {
-			var currComponentIndex:int = GetComponentIndex(currComponent);				
-			if (currComponentIndex < 0)
-				return null;
-			
-			var nextComponentIndex:int = currComponentIndex + 1;
-			for (; nextComponentIndex < this.componentList.length; nextComponentIndex++)
-				if ((this.componentList[nextComponentIndex] as IComponent).IsFocusable())
-					break;
-
-			if (nextComponentIndex >= this.componentList.length)
-				return null;
-				
-			return this.componentList[nextComponentIndex];
-		}
-		
-		protected function GetComponentIndex(component:IComponent) : int {
-			if (!component)
-				return -1;
-				
-			var currComponentIndex:int = 0;
-			for (; currComponentIndex < this.componentList.length; currComponentIndex++)
-				if (this.componentList[currComponentIndex] == component)
-					break;
-			
-			if (currComponentIndex == this.componentList.length)
-				return -1;
-
-			return currComponentIndex;
+			this.componentContainer.addChild(component);
 		}
 		
 		public function ProcessKeyEvent(keyCode:uint) : void {
@@ -150,13 +94,75 @@
 			}
 		}
 		
-		public function AddComponent(component:DisplayObject) : void {
-			if (component is IComponent) {
-				this.componentList.push(component);
-				component.addEventListener(MouseEvent.ROLL_OVER, onMouseOver);
-			}
+		protected function FindFirstFocusableComponent() : IComponent {
+			for (var com_idx:int = 0; com_idx < this._componentArr.length; com_idx++)
+				if ((this._componentArr[com_idx] as IComponent).IsFocusable())
+					return this._componentArr[com_idx] as IComponent;
+					
+			return null;
+		}
+		
+		protected function FindLastFocusableComponent() : IComponent {
+			for (var com_idx:int = this._componentArr.length - 1; com_idx >= 0; com_idx--)
+				if ((this._componentArr[com_idx] as IComponent).IsFocusable())
+					return this._componentArr[com_idx] as IComponent;
+					
+			return null;
+		}
+		
+		protected function FindPreviousFocusableComponent(currComponent:IComponent) : IComponent {
+			var currComponentIndex:int = GetComponentIndex(currComponent);				
+			if (currComponentIndex < 0)
+				return null;
 			
-			this.componentContainer.addChild(component);
+			var prevComponentIndex:int = currComponentIndex - 1;
+			for (; prevComponentIndex >= 0; prevComponentIndex--)
+				if ((this._componentArr[prevComponentIndex] as IComponent).IsFocusable())
+					break;
+
+			if (prevComponentIndex < 0)
+				return null;
+				
+			return this._componentArr[prevComponentIndex];
+		}
+		
+		protected function FindNextFocusableComponent(currComponent:IComponent) : IComponent {
+			var currComponentIndex:int = GetComponentIndex(currComponent);				
+			if (currComponentIndex < 0)
+				return null;
+			
+			var nextComponentIndex:int = currComponentIndex + 1;
+			for (; nextComponentIndex < this._componentArr.length; nextComponentIndex++)
+				if ((this._componentArr[nextComponentIndex] as IComponent).IsFocusable())
+					break;
+
+			if (nextComponentIndex >= this._componentArr.length)
+				return null;
+				
+			return this._componentArr[nextComponentIndex];
+		}
+		
+		protected function GetComponentIndex(component:IComponent) : int {
+			if (!component)
+				return -1;
+				
+			var currComponentIndex:int = 0;
+			for (; currComponentIndex < this._componentArr.length; currComponentIndex++)
+				if (this._componentArr[currComponentIndex] == component)
+					break;
+			
+			if (currComponentIndex == this._componentArr.length)
+				return -1;
+
+			return currComponentIndex;
+		}
+		
+		private function initializeComponent() {
+			this.componentContainer = new Sprite();
+			this.componentContainer.graphics.beginFill(0xFFFFFF, 0);
+			this.componentContainer.graphics.drawRect(0, 0, this._width, this._height);
+			this.componentContainer.graphics.endFill();
+			this.addChild(this.componentContainer);
 		}
 		
 		private function onMouseOver(evn:MouseEvent) : * {

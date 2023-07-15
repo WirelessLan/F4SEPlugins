@@ -27,6 +27,24 @@
 				"script": "PNIOPA",
 				"function": "ResetNode"
 			}
+    	},
+		{
+			"id": "ToggleFreezeKey",
+			"desc": "액터 동결/해동 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "PNIOPA",
+				"function": "ToggleFreeze"
+			}
+    	},
+		{
+			"id": "ResetActorKey",
+			"desc": "액터 초기화 단축키",
+			"action": {
+				"type": "CallGlobalFunction",
+				"script": "PNIOPA",
+				"function": "ResetActor"
+			}
     	}
 	]
 }

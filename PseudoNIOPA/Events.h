@@ -1,10 +1,6 @@
 #pragma once
-namespace Events {
-	class UnloadedActorManager : public BSTEventSink<TESObjectLoadedEvent> {
-	protected:
-		virtual	EventResult ReceiveEvent(TESObjectLoadedEvent* evn, void* dispatcher) override;
-	};
 
+namespace Events {
 	void Attach_Events();
 };
 
