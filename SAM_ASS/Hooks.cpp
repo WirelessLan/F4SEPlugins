@@ -47,10 +47,44 @@ namespace Hooks {
 							extraData = CreateNiIntegerExtraData(safVersionName, safVersion);
 							if (extraData) {
 								rootNode->AddExtraData(extraData);
-								_MESSAGE("[Info] SAF_Version NiIntegerExtraData inserted into %s", s_modelName.c_str());
+								_MESSAGE("[Info] SAF_Version NiIntegerExtraData inserted into %s", modelName);
 							}
 						}
 						rootNode->DecRef();
+					}
+
+					for (auto nodePair : Configs::g_nodeMap) {
+						NiAVObject* insertingNode = (*root)->GetObjectByName(&BSFixedString(nodePair.second.c_str()));
+						if (insertingNode)
+							continue;
+
+						NiAVObject* targetNode = (*root)->GetObjectByName(&BSFixedString(nodePair.first.c_str()));
+						if (!targetNode) {
+							_MESSAGE("[Warning] Node %s was not found on skeleton %s", nodePair.first.c_str(), modelName);
+							continue;
+						}
+
+						NiNode* parentNode = targetNode->m_parent;
+						if (!parentNode)
+							continue;
+
+						NiNode* newNode = parentNode->Create(0);
+						if (!newNode) {
+							_MESSAGE("[Warning] Failed to attach new node %s on skeleton %s", nodePair.second.c_str(), modelName);
+							continue;
+						}
+
+						newNode->m_name = nodePair.second.c_str();
+
+						targetNode->IncRef();
+
+						parentNode->RemoveChild(targetNode);
+						parentNode->AttachChild(newNode, true);
+						newNode->AttachChild(targetNode, true);
+
+						targetNode->DecRef();
+
+						_MESSAGE("[Info] Node %s was attached to skeleton %s", nodePair.second.c_str(), modelName);
 					}
 				}
 
