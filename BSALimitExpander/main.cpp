@@ -5,6 +5,7 @@
 
 #include "Version.h"
 #include "BSResource.h"
+#include "BSTextureIndex.h"
 
 extern "C" {
 	bool F4SEPlugin_Query(const F4SEInterface* a_f4se, PluginInfo* a_info) {
@@ -40,6 +41,8 @@ extern "C" {
 
 		BSResource::Archive2::Hooks_AddDataFile();
 		BSResource::SDirectory2::Hooks_Retrieve();
+		BSTextureIndex::Overwrites_Instruction();
+		BSTextureIndex::Hooks_AddDataFile();
 
 		_MESSAGE("[Info] Hooking successfully completed!");
 
