@@ -3,7 +3,7 @@
 #include <f4se/GameForms.h>
 #include <f4se/GameObjects.h>
 #include <f4se/GameReferences.h>
-#include <f4se/xbyak/xbyak.h>
+#include <xbyak/xbyak.h>
 #include <f4se_common/BranchTrampoline.h>
 
 #include "Utils.h"
@@ -82,7 +82,7 @@ namespace ZoomData {
 			}
 		};
 
-		RelocAddr<std::uintptr_t> target(0x12444E6);
+		RelocAddr<std::uintptr_t> target(0xF9B181);
 
 		void* codeBuf = g_localTrampoline.StartAlloc();
 		asm_code code(codeBuf, (std::uintptr_t)GetZoomData, target.GetUIntPtr());

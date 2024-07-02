@@ -8,13 +8,13 @@
 namespace Utils {
 	float GetScale(TESObjectREFR* a_ref) {
 		using func_t = float(*)(TESObjectREFR*);
-		func_t func = RelocAddr<func_t>(0x3F8540);
+		func_t func = RelocAddr<func_t>(0x4AB5F0);
 		return func(a_ref);
 	}
 
 	void SetScale(TESObjectREFR* a_ref, float a_scale) {
 		using func_t = float(*)(TESObjectREFR*, float);
-		func_t func = RelocAddr<func_t>(0x3F85B0);
+		func_t func = RelocAddr<func_t>(0x50FAC0);
 		func(a_ref, a_scale);
 	}
 

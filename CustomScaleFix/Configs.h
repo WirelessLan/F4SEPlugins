@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+#include <string>
+
 namespace Configs {
 	bool GetConfigValue(const char* section, const char* key, bool* dataOut);
 	bool GetConfigValue(const char* section, const char* key, std::uint32_t* dataOut);

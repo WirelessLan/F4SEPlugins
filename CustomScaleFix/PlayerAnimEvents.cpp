@@ -14,7 +14,7 @@ namespace PlayerAnimEvents {
 	};
 
 	using PlayerAnimationGraphEventHandler_t = EventResult(*)(void*, BSAnimationGraphEvent*, void*);
-	RelocAddr<std::uintptr_t> PlayerAnimationGraphEventHandler_Target(0x2D442D8 + 0x8);
+	RelocAddr<std::uintptr_t> PlayerAnimationGraphEventHandler_Target(0x236A4C8 + 0x8);
 	PlayerAnimationGraphEventHandler_t PlayerAnimationGraphEventHandler;
 
 	EventResult PlayerAnimationGraphEventHandler_Hook(void* arg1, BSAnimationGraphEvent* a_evn, void* a_dispatcher) {

@@ -2,3 +2,4 @@ LIBRARY	"CustomScaleFix"
 EXPORTS
 F4SEPlugin_Query
 F4SEPlugin_Load
+F4SEPlugin_Version
