@@ -38,7 +38,7 @@ extern "C" {
 		info->name = PLUGIN_NAME;
 		info->version = PLUGIN_VERSION;
 
-		if (f4se->runtimeVersion != RUNTIME_VERSION_1_10_163) {
+		if (f4se->runtimeVersion != RUNTIME_VERSION_1_10_984) {
 			_MESSAGE("[Critical] unsupported runtime version %d", f4se->runtimeVersion);
 			return false;
 		}
@@ -78,14 +78,29 @@ extern "C" {
 		if (bUseCameraOverrideScaleFix)
 			PlayerAnimEvents::Hooks_PlayerAnimEvents();
 
-		if (bUseCustomFurniturePosition) {
+		/*if (bUseCustomFurniturePosition) {
 			FurniturePositions::Hooks_PlayFurnitureAnimation();
 			FurniturePositions::Hooks_InitializeChairBedQuickPosition();
 
 			if (g_messaging)
 				g_messaging->RegisterListener(g_pluginHandle, "F4SE", OnF4SEMessage);
-		}
+		}*/
 
 		return true;
 	}
+
+	F4SEPluginVersionData F4SEPlugin_Version =
+	{
+		F4SEPluginVersionData::kVersion,
+
+		PLUGIN_VERSION,
+		PLUGIN_NAME,
+		"VG",
+
+		0,	// not version independent
+		0,	// not version independent (extended field)
+		{ RUNTIME_VERSION_1_10_984, 0 },	// compatible with 1.10.980
+
+		0,	// works with any version of the script extender. you probably do not need to put anything here
+	};
 };

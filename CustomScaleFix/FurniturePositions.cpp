@@ -8,7 +8,7 @@
 #include <f4se/GameForms.h>
 #include <f4se/GameObjects.h>
 #include <f4se/GameReferences.h>
-#include <f4se/xbyak/xbyak.h>
+#include <xbyak/xbyak.h>
 #include <f4se_common/BranchTrampoline.h>
 #include <f4se_common/SafeWrite.h>
 
@@ -128,7 +128,7 @@ namespace FurniturePositions {
 			}
 		};
 
-		RelocAddr<std::uintptr_t> target(0xE85836);
+		RelocAddr<std::uintptr_t> target(0x7435F9);
 
 		void* codeBuf = g_localTrampoline.StartAlloc();
 		asm_code code(codeBuf, (std::uintptr_t)GetModifiedFurniturePosition, target.GetUIntPtr());
@@ -177,7 +177,7 @@ namespace FurniturePositions {
 			}
 		};
 
-		RelocAddr<std::uintptr_t> target(0xD79950);
+		RelocAddr<std::uintptr_t> target(0x514E5D);
 
 		void* codeBuf = g_localTrampoline.StartAlloc();
 		asm_code code(codeBuf, (std::uintptr_t)GetModifiedFurniturePosition, target.GetUIntPtr());
